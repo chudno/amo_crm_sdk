@@ -22,3 +22,11 @@ services:
     volumes:
       - .:/app
     command: go fmt ./...
+  
+  cyclo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: sh -c "gocyclo -over 15 . || true"

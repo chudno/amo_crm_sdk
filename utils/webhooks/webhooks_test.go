@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/chudno/amo_crm_sdk/client"
@@ -295,19 +296,43 @@ func TestListWebhooks(t *testing.T) {
 	}
 }
 
+// Вспомогательная функция для проверки метода и пути запроса
+func validateRequestBasics(t *testing.T, r *http.Request, expectedMethod, expectedPath string) {
+	if r.Method != expectedMethod {
+		t.Errorf("Ожидался метод %s, получен %s", expectedMethod, r.Method)
+	}
+
+	if r.URL.Path != expectedPath {
+		t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+	}
+}
+
+// Вспомогательная функция для проверки параметров вебхука
+func validateWebhook(t *testing.T, webhook Webhook, expectedDestination string, expectedEntities, expectedActions []string) {
+	if webhook.Destination != expectedDestination {
+		t.Errorf("Ожидался URL вебхука '%s', получен '%s'", expectedDestination, webhook.Destination)
+	}
+
+	if !reflect.DeepEqual(webhook.Settings.Entities, expectedEntities) {
+		t.Errorf("Ожидались типы сущностей %v, получено %v", expectedEntities, webhook.Settings.Entities)
+	}
+
+	if !reflect.DeepEqual(webhook.Settings.Actions, expectedActions) {
+		t.Errorf("Ожидались типы действий %v, получено %v", expectedActions, webhook.Settings.Actions)
+	}
+}
+
 func TestCreateSimpleWebhook(t *testing.T) {
+	// Константы для теста
+	expectedDestination := "https://example.com/simple-webhook"
+	expectedEntities := []string{"leads"}
+	expectedActions := []string{"add"}
+	expectedID := 789
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
-		if r.Method != "POST" {
-			t.Errorf("Ожидался метод POST, получен %s", r.Method)
-		}
-
-		// Проверяем путь запроса
-		expectedPath := "/api/v4/webhooks"
-		if r.URL.Path != expectedPath {
-			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-		}
+		// Проверяем базовые параметры запроса
+		validateRequestBasics(t, r, "POST", "/api/v4/webhooks")
 
 		// Проверяем тело запроса
 		var webhook Webhook
@@ -315,17 +340,8 @@ func TestCreateSimpleWebhook(t *testing.T) {
 			t.Errorf("Ошибка декодирования тела запроса: %v", err)
 		}
 
-		if webhook.Destination != "https://example.com/simple-webhook" {
-			t.Errorf("Ожидался URL вебхука 'https://example.com/simple-webhook', получен '%s'", webhook.Destination)
-		}
-
-		if len(webhook.Settings.Entities) != 1 || webhook.Settings.Entities[0] != "leads" {
-			t.Errorf("Ожидался тип сущности 'leads', получено '%v'", webhook.Settings.Entities)
-		}
-
-		if len(webhook.Settings.Actions) != 1 || webhook.Settings.Actions[0] != "add" {
-			t.Errorf("Ожидался тип действия 'add', получено '%v'", webhook.Settings.Actions)
-		}
+		// Проверяем параметры вебхука
+		validateWebhook(t, webhook, expectedDestination, expectedEntities, expectedActions)
 
 		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
@@ -346,32 +362,18 @@ func TestCreateSimpleWebhook(t *testing.T) {
 	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Задаем параметры для создания вебхука
-	destination := "https://example.com/simple-webhook"
-	entities := []string{"leads"}
-	actions := []string{"add"}
-
 	// Вызываем тестируемый метод
-	createdWebhook, err := CreateSimpleWebhook(apiClient, destination, entities, actions)
+	createdWebhook, err := CreateSimpleWebhook(apiClient, expectedDestination, expectedEntities, expectedActions)
 
 	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании простого вебхука: %v", err)
 	}
 
-	if createdWebhook.ID != 789 {
-		t.Errorf("Ожидался ID вебхука 789, получен %d", createdWebhook.ID)
+	if createdWebhook.ID != expectedID {
+		t.Errorf("Ожидался ID вебхука %d, получен %d", expectedID, createdWebhook.ID)
 	}
 
-	if createdWebhook.Destination != "https://example.com/simple-webhook" {
-		t.Errorf("Ожидался URL вебхука 'https://example.com/simple-webhook', получен '%s'", createdWebhook.Destination)
-	}
-
-	if len(createdWebhook.Settings.Entities) != 1 || createdWebhook.Settings.Entities[0] != "leads" {
-		t.Errorf("Ожидался тип сущности 'leads', получено '%v'", createdWebhook.Settings.Entities)
-	}
-
-	if len(createdWebhook.Settings.Actions) != 1 || createdWebhook.Settings.Actions[0] != "add" {
-		t.Errorf("Ожидался тип действия 'add', получено '%v'", createdWebhook.Settings.Actions)
-	}
+	// Проверяем параметры созданного вебхука
+	validateWebhook(t, *createdWebhook, expectedDestination, expectedEntities, expectedActions)
 }

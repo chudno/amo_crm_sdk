@@ -6,6 +6,18 @@
 
 Эта библиотека предоставляет SDK на языке Go для работы с API amoCRM. Она поддерживает все методы API, что даёт возможность полноценно взаимодействовать с сервисом amoCRM.
 
+## Оглавление
+
+- [Особенности](#особенности)
+- [Установка](#установка)
+- [Быстрый старт](#быстрый-старт)
+  - [Инициализация клиента](#инициализация-клиента)
+  - [Примеры использования](#примеры-использования)
+- [Структура проекта](#структура-проекта)
+- [Аутентификация](#аутентификация)
+- [Работа с сущностями](#работа-с-сущностями)
+- [Тестирование](#тестирование)
+
 ## Установка
 
 ```bash
@@ -21,59 +33,93 @@ go get github.com/chudno/amo_crm_sdk
 * Поддержка вебхуков
 * Полная документация на русском языке
 
+## Быстрый старт
 
-## Запуск тестов
+### Инициализация клиента
 
-Для запуска тестов в SDK используется стандартный инструментарий Go. Вы можете запустить тесты следующими способами:
+```go
+import (
+    "github.com/chudno/amo_crm_sdk/client"
+    "github.com/chudno/amo_crm_sdk/auth"
+)
 
-### Запуск всех тестов
+// Инициализация с токеном доступа
+apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
-```bash
-go test ./...
+// ИЛИ получение токена через OAuth
+baseURL := "https://your-domain.amocrm.ru"
+clientID := "your_client_id"
+clientSecret := "your_client_secret"
+redirectURI := "your_redirect_uri"
+code := "authorization_code" // полученный после авторизации пользователя
+
+auth, err := auth.GetAccessToken(baseURL, clientID, clientSecret, code, redirectURI)
+if err != nil {
+    // обработка ошибки
+}
+
+apiClient := client.NewClient(baseURL, auth.AccessToken)
 ```
 
-Эта команда запустит все тесты во всех пакетах проекта.
+### Примеры использования
 
-### Запуск тестов для конкретного пакета
+#### Контакты
 
-```bash
-go test ./webhooks
+```go
+import "github.com/chudno/amo_crm_sdk/entities/contacts"
+
+// Создание контакта
+newContact := &contacts.Contact{
+    Name: "Иван Иванов",
+    ResponsibleUserID: 12345,
+}
+createdContact, err := contacts.CreateContact(apiClient, newContact)
+
+// Получение контакта
+contact, err := contacts.GetContact(apiClient, contactID)
+
+// Список контактов
+contactsList, err := contacts.GetContacts(apiClient, 1, 50)
 ```
 
-Эта команда запустит только тесты в пакете webhooks.
+#### Сделки
 
-### Запуск конкретного теста
+```go
+import "github.com/chudno/amo_crm_sdk/entities/deals"
 
-```bash
-go test -run TestCreateWebhook ./webhooks
+// Создание сделки
+newDeal := &deals.Deal{
+    Name: "Новая сделка",
+    Value: 10000,
+    StatusID: 12345,
+    PipelineID: 67890,
+}
+createdDeal, err := deals.CreateDeal(apiClient, newDeal)
+
+// Изменение статуса сделки
+dealToUpdate := &deals.Deal{
+    ID: dealID,
+    StatusID: newStatusID,
+}
+updatedDeal, err := deals.UpdateDeal(apiClient, dealToUpdate)
 ```
 
-Эта команда запустит только тест с именем TestCreateWebhook в пакете webhooks.
+#### Пользовательские поля
 
-### Подробный вывод тестов
+```go
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
 
-Для получения подробной информации о выполнении тестов используйте флаг -v:
-
-```bash
-go test -v ./...
+// Добавление пользовательского поля к контакту
+contact.CustomFieldsValues = []custom_fields.CustomFieldValue{
+    {
+        FieldID: 12345,
+        Values: []custom_fields.FieldValue{
+            {Value: "Значение поля"},
+        },
+    },
+}
 ```
 
-### Анализ покрытия кода тестами
-
-Для анализа покрытия кода тестами используйте флаг -cover:
-
-```bash
-go test -cover ./...
-```
-
-Для более детального анализа покрытия можно использовать:
-
-```bash
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
-```
-
-Это создаст HTML-отчет о покрытии кода тестами и откроет его в браузере.
 
 ## Структура проекта
 
@@ -89,11 +135,14 @@ go tool cover -html=coverage.out
 - `utils/webhooks`: Методы для работы с вебхуками.
 - `auth`: Методы для аутентификации в API amoCRM.
 - `client`: Клиент для работы с API amoCRM.
-- `utils`: Вспомогательные утилиты и общие функции.
 
 Каждый пакет содержит функции для соответствующих методов API. Вся функциональность сопровождается комментариями на русском языке.
 
-## Использование
+
+
+## Работа с сущностями
+
+В SDK доступны различные модули для работы с основными сущностями amoCRM. Для использования импортируйте необходимые пакеты:
 
 ```go
 import (
@@ -111,6 +160,8 @@ import (
     "github.com/chudno/amo_crm_sdk/utils/custom_fields"
 )
 ```
+
+Более подробные примеры работы с различными сущностями можно найти в каталоге `examples`:
 
 ## Аутентификация
 
@@ -365,6 +416,40 @@ func main() {
         fmt.Println("Результат удаления компаний:", response.Message)
     }
 }
+```
+
+### Примеры использования
+
+В проекте есть несколько готовых примеров использования SDK:
+
+- [examples/auth](./examples/auth) - Пример аутентификации через OAuth 2.0
+- [examples/auth_long_lived](./examples/auth_long_lived) - Пример получения долгоживущего токена
+- [examples/contacts](./examples/contacts) - Пример работы с контактами
+- [examples/deals](./examples/deals) - Пример работы со сделками
+- [examples/tasks](./examples/tasks) - Пример работы с задачами
+
+## Тестирование
+
+Для запуска тестов в проекте используется Docker. Все команды доступны через Makefile:
+
+```bash
+# Запуск всех проверок
+make all
+
+# Только тесты
+make test
+
+# Проверка кода с помощью go vet
+make lint
+
+# Форматирование кода
+make fmt
+
+# Проверка цикломатической сложности
+make cyclo
+```
+
+Все команды запускаются в Docker-контейнере, поэтому нет необходимости устанавливать Go или другие инструменты локально.
 ```
 
 ## Работа с задачами
