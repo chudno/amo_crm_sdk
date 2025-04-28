@@ -6,6 +6,9 @@ RUN apk add --no-cache git make
 # Устанавливаем golangci-lint для расширенной проверки кода
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2
 
+# Устанавливаем gocyclo для проверки цикломатической сложности
+RUN go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
@@ -17,4 +20,4 @@ RUN go mod download && go mod tidy
 COPY . .
 
 # Команда, выполняемая по умолчанию
-CMD ["sh", "-c", "go test -v ./... && go vet ./... && golangci-lint run ./..."]
+CMD ["sh", "-c", "go test -v ./... && go vet ./... && golangci-lint run ./... && gocyclo -over 15 ."]
