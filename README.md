@@ -29,24 +29,6 @@
 go get github.com/chudno/amo_crm_sdk
 ```
 
-## Быстрый старт
-
-```go
-// Инициализация клиента
-import "github.com/chudno/amo_crm_sdk/client"
-
-apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
-
-// Создание контакта
-import "github.com/chudno/amo_crm_sdk/entities/contacts"
-
-newContact := &contacts.Contact{
-    Name: "Иван Иванов",
-    ResponsibleUserID: 12345,
-}
-createdContact, err := contacts.CreateContact(apiClient, newContact)
-```
-
 ## Документация
 
 SDK разделен на модули, каждый из которых отвечает за работу с определенной сущностью в amoCRM:
@@ -70,6 +52,16 @@ SDK разделен на модули, каждый из которых отв�
 | `entities/notes` | Работа с примечаниями | [Подробнее](./entities/notes/README.md) |
 | `entities/pipelines` | Работа с воронками и статусами | [Подробнее](./entities/pipelines/README.md) |
 | `entities/users` | Работа с пользователями | [Подробнее](./entities/users/README.md) |
+| `entities/tags` | Работа с тегами | [Подробнее](./entities/tags/README.md) |
+| `entities/catalogs` | Работа с каталогами | [Подробнее](./entities/catalogs/README.md) |
+| `entities/catalog_elements` | Работа с элементами пользовательских каталогов | [Подробнее](./entities/catalog_elements/README.md) |
+| `entities/unsorted` | Работа с неразобранными заявками | [Подробнее](./entities/unsorted/README.md) |
+| `entities/files` | Работа с файлами | [Подробнее](./entities/files/README.md) |
+| `entities/calls` | Работа со звонками | [Подробнее](./entities/calls/README.md) |
+| `entities/events` | Работа с событиями | [Подробнее](./entities/events/README.md) |
+| `entities/segments` | Работа с сегментами | [Подробнее](./entities/segments/README.md) |
+| `entities/widgets` | Работа с виджетами | [Подробнее](./entities/widgets/README.md) |
+| `entities/access_rights` | Работа с правами доступа | [Подробнее](./entities/access_rights/README.md) |
 
 ### Утилиты
 
