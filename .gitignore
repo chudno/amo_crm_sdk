@@ -18,3 +18,8 @@
 
 coverage.txt
 coverage.out
+
+# Codecov files
+codecov
+codecov.SHA256SUM
+codecov.SHA256SUM.sig
