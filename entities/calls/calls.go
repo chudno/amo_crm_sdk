@@ -206,11 +206,9 @@ func GetCalls(apiClient *client.Client, page, limit int, filter map[string]strin
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем фильтры, если они указаны
-	if filter != nil {
-		for key, value := range filter {
-			params.Add(key, value)
-		}
+	// Добавляем фильтры
+	for key, value := range filter {
+		params.Add(key, value)
 	}
 
 	// Добавляем параметр with, если указаны withOptions

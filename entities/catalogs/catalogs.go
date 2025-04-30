@@ -82,11 +82,9 @@ func GetCatalogs(apiClient *client.Client, page, limit int, filter map[string]st
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем фильтры, если они указаны
-	if filter != nil {
-		for key, value := range filter {
-			params.Add(key, value)
-		}
+	// Добавляем фильтры
+	for key, value := range filter {
+		params.Add(key, value)
 	}
 
 	// Добавляем параметры к URL

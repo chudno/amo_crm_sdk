@@ -2,10 +2,8 @@ package segments
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/chudno/amo_crm_sdk/client"
@@ -213,64 +211,6 @@ func TestGetSegment(t *testing.T) {
 }
 
 // Используем интерфейс Requester из segments_test_helpers.go
-
-// mockSegmentsServer заменяет функцию DoRequest в клиенте для тестирования сегментов
-type mockSegmentsServer struct {
-	*client.Client
-}
-
-func (m *mockSegmentsServer) DoRequest(req *http.Request) (*http.Response, error) {
-	// Для запроса списка сегментов
-	if req.URL.Path == "/api/v4/segments" && req.Method == "GET" {
-		// Мок-ответ с сегментами
-		responseBody := `{
-			"page": 1,
-			"per_page": 50,
-			"_embedded": {
-				"segments": [
-					{
-						"id": 123,
-						"name": "Активные клиенты",
-						"color": "#FF5555",
-						"type": "dynamic",
-						"created_by": 789,
-						"updated_by": 789,
-						"created_at": 1609459200,
-						"updated_at": 1609459200,
-						"account_id": 12345,
-						"contacts_count": 42,
-						"is_deleted": false
-					},
-					{
-						"id": 456,
-						"name": "Потенциальные клиенты",
-						"color": "#55FF55",
-						"type": "dynamic",
-						"created_by": 789,
-						"updated_by": 789,
-						"created_at": 1609459200,
-						"updated_at": 1609459200,
-						"account_id": 12345,
-						"contacts_count": 18,
-						"is_deleted": false
-					}
-				]
-			}
-		}`
-
-		respHeaders := http.Header{}
-		respHeaders.Set("Content-Type", "application/json")
-
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(strings.NewReader(responseBody)),
-			Header:     respHeaders,
-		}, nil
-	}
-
-	// Для других запросов возвращаем дефолтный ответ
-	return m.Client.DoRequest(req)
-}
 
 // TestGetSegments проверяет получение списка сегментов
 func TestGetSegments(t *testing.T) {

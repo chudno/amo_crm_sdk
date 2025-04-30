@@ -282,11 +282,9 @@ func GetUnsortedLeads(apiClient *client.Client, page, limit int, filter map[stri
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем фильтры, если они указаны
-	if filter != nil {
-		for key, value := range filter {
-			params.Add(key, value)
-		}
+	// Добавляем фильтры
+	for key, value := range filter {
+		params.Add(key, value)
 	}
 
 	// Добавляем параметры к URL
@@ -332,11 +330,9 @@ func GetUnsortedContacts(apiClient *client.Client, page, limit int, filter map[s
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем фильтры, если они указаны
-	if filter != nil {
-		for key, value := range filter {
-			params.Add(key, value)
-		}
+	// Добавляем фильтры
+	for key, value := range filter {
+		params.Add(key, value)
 	}
 
 	// Добавляем параметры к URL
