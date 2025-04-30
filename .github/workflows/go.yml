@@ -24,8 +24,13 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+    - name: Test with Coverage
+      run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+      
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Vet
       run: go vet ./...

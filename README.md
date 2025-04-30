@@ -3,6 +3,11 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/chudno/amo_crm_sdk)](https://goreportcard.com/report/github.com/chudno/amo_crm_sdk)
 [![GoDoc](https://godoc.org/github.com/chudno/amo_crm_sdk?status.svg)](https://godoc.org/github.com/chudno/amo_crm_sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/chudno/amo_crm_sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/chudno/amo_crm_sdk)
+[![GitHub Actions](https://github.com/chudno/amo_crm_sdk/workflows/Go/badge.svg)](https://github.com/chudno/amo_crm_sdk/actions)
+[![CodeQL](https://github.com/chudno/amo_crm_sdk/workflows/CodeQL/badge.svg)](https://github.com/chudno/amo_crm_sdk/security/code-scanning)
+[![Repo Size](https://img.shields.io/github/repo-size/chudno/amo_crm_sdk)](https://github.com/chudno/amo_crm_sdk)
+[![Last Commit](https://img.shields.io/github/last-commit/chudno/amo_crm_sdk)](https://github.com/chudno/amo_crm_sdk/commits/main)
 
 Эта библиотека предоставляет SDK на языке Go для работы с API amoCRM. Она позволяет полноценно взаимодействовать с amoCRM и работать со всеми типами сущностей.
 
