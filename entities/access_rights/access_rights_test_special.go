@@ -14,10 +14,10 @@ import (
 func TestSetEntityRights(t *testing.T) {
 	// ID права доступа для теста
 	accessRightID := 123
-	
+
 	// Тип сущности для теста
 	entityType := EntityLead
-	
+
 	// Права для установки
 	entityRights := EntityRights{
 		View:   true,
@@ -129,10 +129,10 @@ func TestSetEntityRights(t *testing.T) {
 func TestAddUsersToAccessRight(t *testing.T) {
 	// ID права доступа для теста
 	accessRightID := 123
-	
+
 	// Существующие пользователи
 	existingUsers := []int{101, 102}
-	
+
 	// Новые пользователи для добавления
 	newUsers := []int{103, 104}
 
@@ -168,10 +168,10 @@ func TestAddUsersToAccessRight(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, existingRightResponse, nil)
-		
+
 		// Добавляем ответ для обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, updatedRightResponse, nil)
 
@@ -197,7 +197,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 		for _, id := range updatedRight.UserIDs {
 			userMap[id] = true
 		}
-		
+
 		for _, id := range expectedUsers {
 			if !userMap[id] {
 				t.Errorf("Пользователь с ID %d отсутствует в обновленном праве доступа", id)
@@ -209,7 +209,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 	t.Run("ErrorGettingAccessRight", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ с ошибкой для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
@@ -226,10 +226,10 @@ func TestAddUsersToAccessRight(t *testing.T) {
 	t.Run("ErrorUpdatingAccessRight", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, existingRightResponse, nil)
-		
+
 		// Добавляем ответ с ошибкой для обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
@@ -247,7 +247,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 func TestRemoveUsersFromAccessRight(t *testing.T) {
 	// ID права доступа для теста
 	accessRightID := 123
-	
+
 	// Пользователи для удаления
 	usersToRemove := []int{103, 104}
 
@@ -283,10 +283,10 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, existingRightResponse, nil)
-		
+
 		// Добавляем ответ для обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, updatedRightResponse, nil)
 
@@ -311,7 +311,7 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 		for _, id := range usersToRemove {
 			removedUserMap[id] = true
 		}
-		
+
 		for _, id := range updatedRight.UserIDs {
 			if removedUserMap[id] {
 				t.Errorf("Пользователь с ID %d должен был быть удален, но присутствует", id)
@@ -323,7 +323,7 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 	t.Run("ErrorGettingAccessRight", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ с ошибкой для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
@@ -340,10 +340,10 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 	t.Run("ErrorUpdatingAccessRight", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для получения существующего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, existingRightResponse, nil)
-		
+
 		// Добавляем ответ с ошибкой для обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 

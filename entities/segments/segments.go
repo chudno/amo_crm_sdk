@@ -13,21 +13,21 @@ import (
 
 // Segment представляет структуру сегмента в amoCRM.
 type Segment struct {
-	ID                 int          `json:"id,omitempty"`
-	Name               string       `json:"name"`
-	Color              string       `json:"color,omitempty"`
-	Type               SegmentType  `json:"type,omitempty"`
-	Filter             *Filter      `json:"filter,omitempty"`
-	AccountID          int          `json:"account_id,omitempty"`
-	CreatedBy          int          `json:"created_by,omitempty"`
-	UpdatedBy          int          `json:"updated_by,omitempty"`
-	CreatedAt          int64        `json:"created_at,omitempty"`
-	UpdatedAt          int64        `json:"updated_at,omitempty"`
-	AvailableContactsCount int      `json:"available_contacts_count,omitempty"`
-	ContactsCount      int          `json:"contacts_count,omitempty"`
-	IsDeleted          bool         `json:"is_deleted,omitempty"`
-	Embedded          *Embedded     `json:"_embedded,omitempty"`
-	Links             *Links        `json:"_links,omitempty"`
+	ID                     int         `json:"id,omitempty"`
+	Name                   string      `json:"name"`
+	Color                  string      `json:"color,omitempty"`
+	Type                   SegmentType `json:"type,omitempty"`
+	Filter                 *Filter     `json:"filter,omitempty"`
+	AccountID              int         `json:"account_id,omitempty"`
+	CreatedBy              int         `json:"created_by,omitempty"`
+	UpdatedBy              int         `json:"updated_by,omitempty"`
+	CreatedAt              int64       `json:"created_at,omitempty"`
+	UpdatedAt              int64       `json:"updated_at,omitempty"`
+	AvailableContactsCount int         `json:"available_contacts_count,omitempty"`
+	ContactsCount          int         `json:"contacts_count,omitempty"`
+	IsDeleted              bool        `json:"is_deleted,omitempty"`
+	Embedded               *Embedded   `json:"_embedded,omitempty"`
+	Links                  *Links      `json:"_links,omitempty"`
 }
 
 // SegmentType тип сегмента
@@ -42,31 +42,31 @@ const (
 
 // Filter фильтр сегмента
 type Filter struct {
-	Term  string        `json:"term,omitempty"`
-	Logic string        `json:"logic,omitempty"`
-	Nodes []FilterNode  `json:"nodes,omitempty"`
+	Term  string       `json:"term,omitempty"`
+	Logic string       `json:"logic,omitempty"`
+	Nodes []FilterNode `json:"nodes,omitempty"`
 }
 
 // FilterNode узел фильтра
 type FilterNode struct {
-	FieldID     int      `json:"field_id,omitempty"`
-	FieldCode   string   `json:"field_code,omitempty"`
-	EntityType  string   `json:"entity_type,omitempty"`
-	Operator    string   `json:"operator,omitempty"`
-	Value       string   `json:"value,omitempty"`
-	Values     []string  `json:"values,omitempty"`
-	MinValue    string   `json:"min_value,omitempty"`
-	MaxValue    string   `json:"max_value,omitempty"`
-	Term        string   `json:"term,omitempty"`
-	Logic       string   `json:"logic,omitempty"`
+	FieldID    int          `json:"field_id,omitempty"`
+	FieldCode  string       `json:"field_code,omitempty"`
+	EntityType string       `json:"entity_type,omitempty"`
+	Operator   string       `json:"operator,omitempty"`
+	Value      string       `json:"value,omitempty"`
+	Values     []string     `json:"values,omitempty"`
+	MinValue   string       `json:"min_value,omitempty"`
+	MaxValue   string       `json:"max_value,omitempty"`
+	Term       string       `json:"term,omitempty"`
+	Logic      string       `json:"logic,omitempty"`
 	Nodes      []FilterNode `json:"nodes,omitempty"`
 }
 
 // Embedded вложенные поля
 type Embedded struct {
 	Contacts []struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
+		ID    int    `json:"id"`
+		Name  string `json:"name"`
 		Links struct {
 			Self struct {
 				Href string `json:"href"`
@@ -84,8 +84,8 @@ type Links struct {
 
 // SegmentsResponse ответ при получении списка сегментов
 type SegmentsResponse struct {
-	Page     int      `json:"page"`
-	PerPage  int      `json:"per_page"`
+	Page     int `json:"page"`
+	PerPage  int `json:"per_page"`
 	Embedded struct {
 		Segments []Segment `json:"segments"`
 	} `json:"_embedded"`
@@ -485,7 +485,7 @@ func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactI
 //	contactIDs, err := segments.GetSegmentContacts(apiClient, 42, 1, 50)
 func GetSegmentContacts(apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
 	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts?page=%d&limit=%d", 
+	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts?page=%d&limit=%d",
 		apiClient.GetBaseURL(), segmentID, page, limit)
 
 	// Создаем запрос

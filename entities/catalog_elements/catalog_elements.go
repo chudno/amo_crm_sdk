@@ -13,29 +13,29 @@ import (
 
 // CatalogElement представляет собой структуру элемента каталога в amoCRM.
 type CatalogElement struct {
-	ID                 int                       `json:"id,omitempty"`
-	Name               string                    `json:"name"`
-	CreatedBy          int                       `json:"created_by,omitempty"`
-	UpdatedBy          int                       `json:"updated_by,omitempty"`
-	CreatedAt          int64                     `json:"created_at,omitempty"`
-	UpdatedAt          int64                     `json:"updated_at,omitempty"`
-	CatalogID          int                       `json:"catalog_id"`
-	CustomFieldsValues []CustomFieldValue        `json:"custom_fields_values,omitempty"`
-	AccountID          int                       `json:"account_id,omitempty"`
-	IsDeleted          bool                      `json:"is_deleted,omitempty"`
-	QuantityBounded    bool                      `json:"quantity_bounded,omitempty"`
-	QuantityRaw        int                       `json:"quantity_raw,omitempty"`
-	Embedded           *CatalogElementEmbedded   `json:"_embedded,omitempty"`
-	Links              *CatalogElementLinks      `json:"_links,omitempty"`
+	ID                 int                     `json:"id,omitempty"`
+	Name               string                  `json:"name"`
+	CreatedBy          int                     `json:"created_by,omitempty"`
+	UpdatedBy          int                     `json:"updated_by,omitempty"`
+	CreatedAt          int64                   `json:"created_at,omitempty"`
+	UpdatedAt          int64                   `json:"updated_at,omitempty"`
+	CatalogID          int                     `json:"catalog_id"`
+	CustomFieldsValues []CustomFieldValue      `json:"custom_fields_values,omitempty"`
+	AccountID          int                     `json:"account_id,omitempty"`
+	IsDeleted          bool                    `json:"is_deleted,omitempty"`
+	QuantityBounded    bool                    `json:"quantity_bounded,omitempty"`
+	QuantityRaw        int                     `json:"quantity_raw,omitempty"`
+	Embedded           *CatalogElementEmbedded `json:"_embedded,omitempty"`
+	Links              *CatalogElementLinks    `json:"_links,omitempty"`
 }
 
 // CustomFieldValue представляет значение пользовательского поля элемента каталога
 type CustomFieldValue struct {
-	FieldID   int                   `json:"field_id"`
-	FieldName string                `json:"field_name,omitempty"`
-	FieldCode string                `json:"field_code,omitempty"`
-	FieldType string                `json:"field_type,omitempty"`
-	Values    []FieldValueItem      `json:"values"`
+	FieldID   int              `json:"field_id"`
+	FieldName string           `json:"field_name,omitempty"`
+	FieldCode string           `json:"field_code,omitempty"`
+	FieldType string           `json:"field_type,omitempty"`
+	Values    []FieldValueItem `json:"values"`
 }
 
 // FieldValueItem представляет значение поля
@@ -143,12 +143,12 @@ func stringsJoin(strings []string, sep string) string {
 	if len(strings) == 0 {
 		return ""
 	}
-	
+
 	result := strings[0]
 	for i := 1; i < len(strings); i++ {
 		result += sep + strings[i]
 	}
-	
+
 	return result
 }
 

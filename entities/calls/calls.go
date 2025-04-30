@@ -55,42 +55,42 @@ const (
 
 // Call представляет структуру звонка в amoCRM.
 type Call struct {
-	ID                   int          `json:"id,omitempty"`
-	Direction            CallDirection `json:"direction"`
-	Status               CallStatus   `json:"status"`
-	ResponsibleUserID    int          `json:"responsible_user_id,omitempty"`
-	CreatedBy            int          `json:"created_by,omitempty"`
-	UpdatedBy            int          `json:"updated_by,omitempty"`
-	CreatedAt            int64        `json:"created_at,omitempty"`
-	UpdatedAt            int64        `json:"updated_at,omitempty"`
-	AccountID            int64        `json:"account_id,omitempty"`
-	Uniq                 string       `json:"uniq,omitempty"`
-	Duration             int          `json:"duration,omitempty"`
-	Source               string       `json:"source,omitempty"`
-	CallResult           string       `json:"call_result,omitempty"`
-	Link                 string       `json:"link,omitempty"`
-	ServiceCode          string       `json:"service_code,omitempty"`
-	Phone                string       `json:"phone,omitempty"`
-	APIID                int          `json:"api_id,omitempty"`
-	ManagerName          string       `json:"manager_name,omitempty"`
-	ManagerEmail         string       `json:"manager_email,omitempty"`
-	ManagerPhone         string       `json:"manager_phone,omitempty"`
-	ManagerICQ           string       `json:"manager_icq,omitempty"`
-	ContactID            int          `json:"contact_id,omitempty"`
-	LeadID               int          `json:"lead_id,omitempty"`
-	CompanyID            int          `json:"company_id,omitempty"`
-	SourceName           string       `json:"source_name,omitempty"`
-	SourceUID            string       `json:"source_uid,omitempty"`
-	IsCallbackCall       bool         `json:"is_callback_call,omitempty"`
-	IsRinging            bool         `json:"is_ringing,omitempty"`
-	Voice               *Voice        `json:"voice,omitempty"`
-	CallStartTime        string       `json:"call_start_time,omitempty"`
-	CallEndTime          string       `json:"call_end_time,omitempty"`
-	Version              int          `json:"version,omitempty"`
-	Embedded            *CallEmbedded `json:"_embedded,omitempty"`
-	Links              *CallLinks     `json:"_links,omitempty"`
-	EntityType          *EntityType   `json:"entity_type,omitempty"`
-	EntityID             int          `json:"entity_id,omitempty"`
+	ID                int           `json:"id,omitempty"`
+	Direction         CallDirection `json:"direction"`
+	Status            CallStatus    `json:"status"`
+	ResponsibleUserID int           `json:"responsible_user_id,omitempty"`
+	CreatedBy         int           `json:"created_by,omitempty"`
+	UpdatedBy         int           `json:"updated_by,omitempty"`
+	CreatedAt         int64         `json:"created_at,omitempty"`
+	UpdatedAt         int64         `json:"updated_at,omitempty"`
+	AccountID         int64         `json:"account_id,omitempty"`
+	Uniq              string        `json:"uniq,omitempty"`
+	Duration          int           `json:"duration,omitempty"`
+	Source            string        `json:"source,omitempty"`
+	CallResult        string        `json:"call_result,omitempty"`
+	Link              string        `json:"link,omitempty"`
+	ServiceCode       string        `json:"service_code,omitempty"`
+	Phone             string        `json:"phone,omitempty"`
+	APIID             int           `json:"api_id,omitempty"`
+	ManagerName       string        `json:"manager_name,omitempty"`
+	ManagerEmail      string        `json:"manager_email,omitempty"`
+	ManagerPhone      string        `json:"manager_phone,omitempty"`
+	ManagerICQ        string        `json:"manager_icq,omitempty"`
+	ContactID         int           `json:"contact_id,omitempty"`
+	LeadID            int           `json:"lead_id,omitempty"`
+	CompanyID         int           `json:"company_id,omitempty"`
+	SourceName        string        `json:"source_name,omitempty"`
+	SourceUID         string        `json:"source_uid,omitempty"`
+	IsCallbackCall    bool          `json:"is_callback_call,omitempty"`
+	IsRinging         bool          `json:"is_ringing,omitempty"`
+	Voice             *Voice        `json:"voice,omitempty"`
+	CallStartTime     string        `json:"call_start_time,omitempty"`
+	CallEndTime       string        `json:"call_end_time,omitempty"`
+	Version           int           `json:"version,omitempty"`
+	Embedded          *CallEmbedded `json:"_embedded,omitempty"`
+	Links             *CallLinks    `json:"_links,omitempty"`
+	EntityType        *EntityType   `json:"entity_type,omitempty"`
+	EntityID          int           `json:"entity_id,omitempty"`
 }
 
 // Voice содержит информацию о голосовом сообщении
@@ -256,12 +256,12 @@ func stringsJoin(strings []string, sep string) string {
 	if len(strings) == 0 {
 		return ""
 	}
-	
+
 	result := strings[0]
 	for i := 1; i < len(strings); i++ {
 		result += sep + strings[i]
 	}
-	
+
 	return result
 }
 

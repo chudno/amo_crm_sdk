@@ -55,12 +55,12 @@ func (c *AdvancedMockClient) AddResponse(method, path string, statusCode int, bo
 func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
 	// Ищем подходящий ответ для метода и пути
 	resp, found := c.Responses[MockRequest{Method: req.Method, Path: req.URL.Path}]
-	
+
 	// Если не найден, возвращаем ответ по умолчанию
 	if !found {
 		resp = c.DefaultResponse
 	}
-	
+
 	// Формируем HTTP-ответ
 	response := &http.Response{
 		StatusCode: resp.StatusCode,
@@ -68,11 +68,11 @@ func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error
 		Header:     make(http.Header),
 		Request:    req,
 	}
-	
+
 	// Добавляем заголовки
 	for k, v := range resp.Headers {
 		response.Header.Set(k, v)
 	}
-	
+
 	return response, nil
 }

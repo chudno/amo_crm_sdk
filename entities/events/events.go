@@ -180,7 +180,7 @@ func WithOrder(field, order string) WithOption {
 }
 
 // GetEvents получает список событий с возможностью фильтрации.
-// 
+//
 // Пример использования:
 //
 //	filter := map[string]string{
@@ -233,7 +233,7 @@ func GetEvents(apiClient *client.Client, options ...WithOption) ([]Event, error)
 }
 
 // GetEvent получает информацию о конкретном событии по его ID.
-// 
+//
 // Пример использования:
 //
 //	event, err := events.GetEvent(apiClient, 123, events.WithEntity())

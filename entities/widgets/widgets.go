@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	
+
 	"github.com/chudno/amo_crm_sdk/client"
 )
 
@@ -20,18 +20,18 @@ type WidgetType string
 
 // Константы для типов виджетов
 const (
-	WidgetTypeIntercom     WidgetType = "intercom"
-	WidgetTypeJivosite     WidgetType = "jivosite"
-	WidgetTypeCallback     WidgetType = "callback"
-	WidgetTypePipeline     WidgetType = "pipeline"
-	WidgetTypeMailchimp    WidgetType = "mailchimp"
-	WidgetTypeCustom       WidgetType = "custom"
-	WidgetTypeGoalMeter    WidgetType = "goal_meter"
-	WidgetTypeDigitalPipeline WidgetType = "digital_pipeline"
-	WidgetTypeSupport      WidgetType = "support"
-	WidgetTypeIpTelephony  WidgetType = "ip_telephony"
-	WidgetTypePayment      WidgetType = "payment"
-	WidgetTypeAmoButtons   WidgetType = "amo_buttons"
+	WidgetTypeIntercom          WidgetType = "intercom"
+	WidgetTypeJivosite          WidgetType = "jivosite"
+	WidgetTypeCallback          WidgetType = "callback"
+	WidgetTypePipeline          WidgetType = "pipeline"
+	WidgetTypeMailchimp         WidgetType = "mailchimp"
+	WidgetTypeCustom            WidgetType = "custom"
+	WidgetTypeGoalMeter         WidgetType = "goal_meter"
+	WidgetTypeDigitalPipeline   WidgetType = "digital_pipeline"
+	WidgetTypeSupport           WidgetType = "support"
+	WidgetTypeIpTelephony       WidgetType = "ip_telephony"
+	WidgetTypePayment           WidgetType = "payment"
+	WidgetTypeAmoButtons        WidgetType = "amo_buttons"
 	WidgetTypeEmailSubscription WidgetType = "email_subscription"
 )
 
@@ -47,24 +47,24 @@ const (
 
 // Widget структура для работы с виджетами в amoCRM
 type Widget struct {
-	ID            int          `json:"id,omitempty"`
-	Name          string       `json:"name,omitempty"`
-	Code          string       `json:"code,omitempty"`
-	Type          WidgetType   `json:"type,omitempty"`
-	Status        WidgetStatus `json:"status,omitempty"`
-	CreatedBy     int          `json:"created_by,omitempty"`
-	UpdatedBy     int          `json:"updated_by,omitempty"`
-	CreatedAt     int          `json:"created_at,omitempty"`
-	UpdatedAt     int          `json:"updated_at,omitempty"`
-	AccountID     int          `json:"account_id,omitempty"`
-	Settings      interface{}  `json:"settings,omitempty"`
-	Rights        *Rights      `json:"rights,omitempty"`
-	Marketplace   *Marketplace `json:"marketplace,omitempty"`
-	IsConfigured  bool         `json:"is_configured,omitempty"`
-	VerifiedAt    int          `json:"verified_at,omitempty"`
-	MainVersion   string       `json:"main_version,omitempty"`
-	CurrentVersion string      `json:"current_version,omitempty"`
-	IsDeleted     bool         `json:"is_deleted,omitempty"`
+	ID             int          `json:"id,omitempty"`
+	Name           string       `json:"name,omitempty"`
+	Code           string       `json:"code,omitempty"`
+	Type           WidgetType   `json:"type,omitempty"`
+	Status         WidgetStatus `json:"status,omitempty"`
+	CreatedBy      int          `json:"created_by,omitempty"`
+	UpdatedBy      int          `json:"updated_by,omitempty"`
+	CreatedAt      int          `json:"created_at,omitempty"`
+	UpdatedAt      int          `json:"updated_at,omitempty"`
+	AccountID      int          `json:"account_id,omitempty"`
+	Settings       interface{}  `json:"settings,omitempty"`
+	Rights         *Rights      `json:"rights,omitempty"`
+	Marketplace    *Marketplace `json:"marketplace,omitempty"`
+	IsConfigured   bool         `json:"is_configured,omitempty"`
+	VerifiedAt     int          `json:"verified_at,omitempty"`
+	MainVersion    string       `json:"main_version,omitempty"`
+	CurrentVersion string       `json:"current_version,omitempty"`
+	IsDeleted      bool         `json:"is_deleted,omitempty"`
 }
 
 // Rights структура прав для виджета
@@ -130,9 +130,9 @@ func WithWidgetTypes(types []WidgetType) WithOption {
 //
 // Пример использования:
 //
-//  // Фильтрация по типу
-//  types := []widgets.WidgetType{widgets.WidgetTypeIntercom, widgets.WidgetTypeCallback}
-//  widgetsList, err := widgets.GetWidgets(apiClient, 1, 50, widgets.WithWidgetTypes(types))
+//	// Фильтрация по типу
+//	types := []widgets.WidgetType{widgets.WidgetTypeIntercom, widgets.WidgetTypeCallback}
+//	widgetsList, err := widgets.GetWidgets(apiClient, 1, 50, widgets.WithWidgetTypes(types))
 func GetWidgets(apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error) {
 	return GetWidgetsWithRequester(apiClient, page, limit, options...)
 }
@@ -164,7 +164,7 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -190,8 +190,8 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 
 	// Разбираем ответ
 	var widgetsResponse struct {
-		Page    int `json:"page"`
-		PerPage int `json:"per_page"`
+		Page     int `json:"page"`
+		PerPage  int `json:"per_page"`
 		Embedded struct {
 			Widgets []Widget `json:"widgets"`
 		} `json:"_embedded"`
@@ -207,7 +207,7 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 //
 // Пример использования:
 //
-//  widget, err := widgets.GetWidget(apiClient, 123)
+//	widget, err := widgets.GetWidget(apiClient, 123)
 func GetWidget(apiClient *client.Client, widgetID int) (*Widget, error) {
 	return GetWidgetWithRequester(apiClient, widgetID)
 }
@@ -222,7 +222,7 @@ func GetWidgetWithRequester(requester Requester, widgetID int) (*Widget, error) 
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -259,7 +259,7 @@ func GetWidgetWithRequester(requester Requester, widgetID int) (*Widget, error) 
 //
 // Пример использования:
 //
-//  widget, err := widgets.InstallWidget(apiClient, "intercom")
+//	widget, err := widgets.InstallWidget(apiClient, "intercom")
 func InstallWidget(apiClient *client.Client, code string) (*Widget, error) {
 	return InstallWidgetWithRequester(apiClient, code)
 }
@@ -287,7 +287,7 @@ func InstallWidgetWithRequester(requester Requester, code string) (*Widget, erro
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -325,11 +325,11 @@ func InstallWidgetWithRequester(requester Requester, code string) (*Widget, erro
 //
 // Пример использования:
 //
-//  settings := map[string]interface{}{
-//		"api_key": "abc123",
-//		"active": true,
-//  }
-//  widget, err := widgets.UpdateWidgetSettings(apiClient, 123, settings)
+//	 settings := map[string]interface{}{
+//			"api_key": "abc123",
+//			"active": true,
+//	 }
+//	 widget, err := widgets.UpdateWidgetSettings(apiClient, 123, settings)
 func UpdateWidgetSettings(apiClient *client.Client, widgetID int, settings interface{}) (*Widget, error) {
 	return UpdateWidgetSettingsWithRequester(apiClient, widgetID, settings)
 }
@@ -357,7 +357,7 @@ func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settin
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -395,7 +395,7 @@ func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settin
 //
 // Пример использования:
 //
-//  err := widgets.DeleteWidget(apiClient, 123)
+//	err := widgets.DeleteWidget(apiClient, 123)
 func DeleteWidget(apiClient *client.Client, widgetID int) error {
 	return DeleteWidgetWithRequester(apiClient, widgetID)
 }
@@ -410,7 +410,7 @@ func DeleteWidgetWithRequester(requester Requester, widgetID int) error {
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -454,17 +454,17 @@ type MarketplaceWidget struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	} `json:"categories"`
-	Version       string `json:"version,omitempty"`
-	Pricing       string `json:"pricing,omitempty"`
-	Rating        float64 `json:"rating,omitempty"`
-	ReviewsCount  int    `json:"reviews_count,omitempty"`
+	Version      string  `json:"version,omitempty"`
+	Pricing      string  `json:"pricing,omitempty"`
+	Rating       float64 `json:"rating,omitempty"`
+	ReviewsCount int     `json:"reviews_count,omitempty"`
 }
 
 // MarketplaceResponse структура ответа API amoCRM для списка виджетов в маркетплейсе
 type MarketplaceResponse struct {
-	Page       int                `json:"page"`
-	PerPage    int                `json:"per_page"`
-	TotalItems int                `json:"_total_items"`
+	Page       int                 `json:"page"`
+	PerPage    int                 `json:"per_page"`
+	TotalItems int                 `json:"_total_items"`
 	Widgets    []MarketplaceWidget `json:"_embedded.widgets"`
 }
 
@@ -479,8 +479,8 @@ func WithCategory(categoryID int) WithOption {
 //
 // Пример использования:
 //
-//  // Фильтрация по категории
-//  widgetsList, err := widgets.GetMarketplaceWidgets(apiClient, 1, 50, widgets.WithCategory(123))
+//	// Фильтрация по категории
+//	widgetsList, err := widgets.GetMarketplaceWidgets(apiClient, 1, 50, widgets.WithCategory(123))
 func GetMarketplaceWidgets(apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
 	return GetMarketplaceWidgetsWithRequester(apiClient, page, limit, options...)
 }
@@ -512,7 +512,7 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -538,8 +538,8 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 
 	// ��азбираем ответ
 	var marketplaceResponse struct {
-		Page    int `json:"page"`
-		PerPage int `json:"per_page"`
+		Page     int `json:"page"`
+		PerPage  int `json:"per_page"`
 		Embedded struct {
 			Widgets []MarketplaceWidget `json:"widgets"`
 		} `json:"_embedded"`
@@ -555,8 +555,8 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 //
 // Пример использования:
 //
-//  // Деактивация виджета
-//  widget, err := widgets.SetWidgetStatus(apiClient, 123, widgets.WidgetStatusInactive)
+//	// Деактивация виджета
+//	widget, err := widgets.SetWidgetStatus(apiClient, 123, widgets.WidgetStatusInactive)
 func SetWidgetStatus(apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error) {
 	return SetWidgetStatusWithRequester(apiClient, widgetID, status)
 }
@@ -584,7 +584,7 @@ func SetWidgetStatusWithRequester(requester Requester, widgetID int, status Widg
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -634,8 +634,8 @@ type BulkWidgetResponse struct {
 //
 // Пример использования:
 //
-//  codes := []string{"intercom", "callback"}
-//  widgets, err := widgets.BulkInstallWidgets(apiClient, codes)
+//	codes := []string{"intercom", "callback"}
+//	widgets, err := widgets.BulkInstallWidgets(apiClient, codes)
 func BulkInstallWidgets(apiClient *client.Client, codes []string) ([]Widget, error) {
 	return BulkInstallWidgetsWithRequester(apiClient, codes)
 }
@@ -661,7 +661,7 @@ func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Wid
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -703,8 +703,8 @@ func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Wid
 //
 // Пример использования:
 //
-//  ids := []int{123, 456}
-//  err := widgets.BulkDeleteWidgets(apiClient, ids)
+//	ids := []int{123, 456}
+//	err := widgets.BulkDeleteWidgets(apiClient, ids)
 func BulkDeleteWidgets(apiClient *client.Client, widgetIDs []int) error {
 	return BulkDeleteWidgetsWithRequester(apiClient, widgetIDs)
 }
@@ -730,7 +730,7 @@ func BulkDeleteWidgetsWithRequester(requester Requester, widgetIDs []int) error 
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url

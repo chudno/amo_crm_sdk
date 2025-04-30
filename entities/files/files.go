@@ -35,24 +35,24 @@ const (
 
 // File представляет структуру файла в amoCRM
 type File struct {
-	ID          int       `json:"id"`
-	UUID        string    `json:"uuid,omitempty"`
-	EntityID    int       `json:"entity_id"`
-	EntityType  EntityType `json:"entity_type"`
-	CreatedBy   int       `json:"created_by,omitempty"`
-	UpdatedBy   int       `json:"updated_by,omitempty"`
-	CreatedAt   int64     `json:"created_at,omitempty"`
-	UpdatedAt   int64     `json:"updated_at,omitempty"`
-	Size        int       `json:"size,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Type        string    `json:"type,omitempty"`
-	Version     int       `json:"version,omitempty"`
-	AccountID   int       `json:"account_id,omitempty"`
-	Title       string    `json:"title,omitempty"`
-	URL         string    `json:"url,omitempty"`
-	Download    string    `json:"download_link,omitempty"`
-	Preview     string    `json:"preview,omitempty"`
-	Links       FileLinks `json:"_links,omitempty"`
+	ID         int        `json:"id"`
+	UUID       string     `json:"uuid,omitempty"`
+	EntityID   int        `json:"entity_id"`
+	EntityType EntityType `json:"entity_type"`
+	CreatedBy  int        `json:"created_by,omitempty"`
+	UpdatedBy  int        `json:"updated_by,omitempty"`
+	CreatedAt  int64      `json:"created_at,omitempty"`
+	UpdatedAt  int64      `json:"updated_at,omitempty"`
+	Size       int        `json:"size,omitempty"`
+	Name       string     `json:"name,omitempty"`
+	Type       string     `json:"type,omitempty"`
+	Version    int        `json:"version,omitempty"`
+	AccountID  int        `json:"account_id,omitempty"`
+	Title      string     `json:"title,omitempty"`
+	URL        string     `json:"url,omitempty"`
+	Download   string     `json:"download_link,omitempty"`
+	Preview    string     `json:"preview,omitempty"`
+	Links      FileLinks  `json:"_links,omitempty"`
 }
 
 // FileLinks содержит URL-ссылки для файла

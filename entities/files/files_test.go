@@ -15,7 +15,7 @@ func TestUploadFile(t *testing.T) {
 	// Создаем временный файл для тестирования
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "test_file.txt")
-	
+
 	// Записываем тестовые данные во временный файл
 	testContent := []byte("Тестовое содержимое файла")
 	err := ioutil.WriteFile(tempFile, testContent, 0644)

@@ -12,7 +12,7 @@ import (
 
 func TestGetCatalogElements(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -141,7 +141,7 @@ func TestGetCatalogElements(t *testing.T) {
 
 func TestCreateCatalogElement(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -247,22 +247,22 @@ func TestCreateCatalogElement(t *testing.T) {
 func TestGetCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// Проверяем метод запроса
-if r.Method != "GET" {
-t.Errorf("Ожидался метод GET, получен %s", r.Method)
-}
+		// Проверяем метод запроса
+		if r.Method != "GET" {
+			t.Errorf("Ожидался метод GET, получен %s", r.Method)
+		}
 
-// Проверяем путь запроса
-expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
-if r.URL.Path != expectedPath {
-t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-}
+		// Проверяем путь запроса
+		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
 
-// Отправляем ответ
-w.Header().Set("Content-Type", "application/json")
+		// Отправляем ответ
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"id": 456,
@@ -331,22 +331,22 @@ w.Header().Set("Content-Type", "application/json")
 func TestUpdateCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// Проверяем метод запроса
-if r.Method != "PATCH" {
-t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
-}
+		// Проверяем метод запроса
+		if r.Method != "PATCH" {
+			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
+		}
 
-// Проверяем путь запроса
-expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
-if r.URL.Path != expectedPath {
-t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-}
+		// Проверяем путь запроса
+		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
 
-// Отправляем ответ
-w.Header().Set("Content-Type", "application/json")
+		// Отправляем ответ
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"id": 456,
@@ -432,23 +432,23 @@ w.Header().Set("Content-Type", "application/json")
 func TestDeleteCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// Проверяем метод запроса
-if r.Method != "DELETE" {
-t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
-}
+		// Проверяем метод запроса
+		if r.Method != "DELETE" {
+			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
+		}
 
-// Проверяем путь запроса
-expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
-if r.URL.Path != expectedPath {
-t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-}
+		// Проверяем путь запроса
+		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
 
-// Отправляем ответ
-w.WriteHeader(http.StatusNoContent)
-}))
+		// Отправляем ответ
+		w.WriteHeader(http.StatusNoContent)
+	}))
 	defer server.Close()
 
 	// Создаем клиент API
@@ -466,22 +466,22 @@ w.WriteHeader(http.StatusNoContent)
 func TestLinkCatalogElementWithTags(t *testing.T) {
 	catalogID := 123
 	elementID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// Проверяем метод запроса
-if r.Method != "POST" {
-t.Errorf("Ожидался метод POST, получен %s", r.Method)
-}
+		// Проверяем метод запроса
+		if r.Method != "POST" {
+			t.Errorf("Ожидался метод POST, получен %s", r.Method)
+		}
 
-// Проверяем путь запроса
-expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
-if r.URL.Path != expectedPath {
-t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-}
+		// Проверяем путь запроса
+		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
 
-// Отправляем ответ
-w.Header().Set("Content-Type", "application/json")
+		// Отправляем ответ
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {
@@ -529,22 +529,22 @@ w.Header().Set("Content-Type", "application/json")
 func TestGetCatalogElementTags(t *testing.T) {
 	catalogID := 123
 	elementID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// Проверяем метод запроса
-if r.Method != "GET" {
-t.Errorf("Ожидался метод GET, получен %s", r.Method)
-}
+		// Проверяем метод запроса
+		if r.Method != "GET" {
+			t.Errorf("Ожидался метод GET, получен %s", r.Method)
+		}
 
-// Проверяем путь запроса
-expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
-if r.URL.Path != expectedPath {
-t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-}
+		// Проверяем путь запроса
+		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
 
-// Отправляем ответ
-w.Header().Set("Content-Type", "application/json")
+		// Отправляем ответ
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {

@@ -392,10 +392,10 @@ func TestUpdateCall(t *testing.T) {
 
 	// Создаем звонок для обновления
 	call := &Call{
-		ID:              callID,
-		Duration:        180,
-		Source:          "test_source_updated",
-		CallResult:      "test_result_updated",
+		ID:         callID,
+		Duration:   180,
+		Source:     "test_source_updated",
+		CallResult: "test_result_updated",
 	}
 
 	// Вызываем тестируемый метод

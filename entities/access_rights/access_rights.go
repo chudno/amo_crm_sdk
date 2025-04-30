@@ -43,17 +43,17 @@ const (
 
 // AccessRight структура для права доступа
 type AccessRight struct {
-	ID          int              `json:"id,omitempty"`
-	Name        string           `json:"name,omitempty"`
-	Type        AccessRightsType `json:"type,omitempty"`
-	Rights      Rights           `json:"rights,omitempty"`
-	CreatedBy   int              `json:"created_by,omitempty"`
-	UpdatedBy   int              `json:"updated_by,omitempty"`
-	CreatedAt   int              `json:"created_at,omitempty"`
-	UpdatedAt   int              `json:"updated_at,omitempty"`
-	AccountID   int              `json:"account_id,omitempty"`
-	UserIDs     []int            `json:"user_ids,omitempty"`
-	UserGroups  []UserGroup      `json:"_embedded.user_groups,omitempty"`
+	ID         int              `json:"id,omitempty"`
+	Name       string           `json:"name,omitempty"`
+	Type       AccessRightsType `json:"type,omitempty"`
+	Rights     Rights           `json:"rights,omitempty"`
+	CreatedBy  int              `json:"created_by,omitempty"`
+	UpdatedBy  int              `json:"updated_by,omitempty"`
+	CreatedAt  int              `json:"created_at,omitempty"`
+	UpdatedAt  int              `json:"updated_at,omitempty"`
+	AccountID  int              `json:"account_id,omitempty"`
+	UserIDs    []int            `json:"user_ids,omitempty"`
+	UserGroups []UserGroup      `json:"_embedded.user_groups,omitempty"`
 }
 
 // UserGroup структура для группы пользователей
@@ -65,17 +65,17 @@ type UserGroup struct {
 
 // Rights структура для прав доступа к различным сущностям
 type Rights struct {
-	Leads       EntityRights `json:"leads,omitempty"`
-	Contacts    EntityRights `json:"contacts,omitempty"`
-	Companies   EntityRights `json:"companies,omitempty"`
-	Tasks       EntityRights `json:"tasks,omitempty"`
-	Customers   EntityRights `json:"customers,omitempty"`
-	Catalogs    EntityRights `json:"catalogs,omitempty"`
-	Unsorted    EntityRights `json:"unsorted,omitempty"`
-	Widgets     EntityRights `json:"widgets,omitempty"`
-	Mail        EntityRights `json:"mail,omitempty"`
-	ChatWidget  EntityRights `json:"chat_widget,omitempty"`
-	Settings    SettingsRights `json:"settings,omitempty"`
+	Leads      EntityRights   `json:"leads,omitempty"`
+	Contacts   EntityRights   `json:"contacts,omitempty"`
+	Companies  EntityRights   `json:"companies,omitempty"`
+	Tasks      EntityRights   `json:"tasks,omitempty"`
+	Customers  EntityRights   `json:"customers,omitempty"`
+	Catalogs   EntityRights   `json:"catalogs,omitempty"`
+	Unsorted   EntityRights   `json:"unsorted,omitempty"`
+	Widgets    EntityRights   `json:"widgets,omitempty"`
+	Mail       EntityRights   `json:"mail,omitempty"`
+	ChatWidget EntityRights   `json:"chat_widget,omitempty"`
+	Settings   SettingsRights `json:"settings,omitempty"`
 }
 
 // EntityRights структура прав доступа к конкретной сущности
@@ -157,7 +157,7 @@ func GetAccessRightsWithRequester(requester Requester, page, limit int, options 
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -183,8 +183,8 @@ func GetAccessRightsWithRequester(requester Requester, page, limit int, options 
 
 	// Разбираем ответ
 	var rightsResponse struct {
-		Page    int `json:"page"`
-		PerPage int `json:"per_page"`
+		Page     int `json:"page"`
+		PerPage  int `json:"per_page"`
 		Embedded struct {
 			AccessRights []AccessRight `json:"access_rights"`
 		} `json:"_embedded"`
@@ -215,7 +215,7 @@ func GetAccessRightWithRequester(requester Requester, accessRightID int) (*Acces
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -285,7 +285,7 @@ func CreateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -361,7 +361,7 @@ func UpdateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -414,7 +414,7 @@ func DeleteAccessRightWithRequester(requester Requester, accessRightID int) erro
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -480,7 +480,7 @@ func SetEntityRightsWithRequester(requester Requester, accessRightID int, entity
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -567,7 +567,7 @@ func AddUsersToAccessRightWithRequester(requester Requester, accessRightID int, 
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url
@@ -654,7 +654,7 @@ func RemoveUsersFromAccessRightWithRequester(requester Requester, accessRightID 
 	if client, ok := requester.(*client.Client); ok {
 		baseURL = client.GetBaseURL()
 	}
-	
+
 	fullURL := url
 	if baseURL != "" {
 		fullURL = baseURL + url

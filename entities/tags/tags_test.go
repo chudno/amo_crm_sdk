@@ -153,7 +153,7 @@ func TestCreateTag(t *testing.T) {
 
 func TestGetTag(t *testing.T) {
 	tagID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -202,7 +202,7 @@ func TestGetTag(t *testing.T) {
 
 func TestUpdateTag(t *testing.T) {
 	tagID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -258,7 +258,7 @@ func TestUpdateTag(t *testing.T) {
 
 func TestDeleteTag(t *testing.T) {
 	tagID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -291,7 +291,7 @@ func TestDeleteTag(t *testing.T) {
 
 func TestLinkEntityWithTags(t *testing.T) {
 	entityID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -353,7 +353,7 @@ func TestLinkEntityWithTags(t *testing.T) {
 
 func TestGetEntityTags(t *testing.T) {
 	entityID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса

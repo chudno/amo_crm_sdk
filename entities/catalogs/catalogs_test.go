@@ -182,7 +182,7 @@ func TestCreateCatalog(t *testing.T) {
 
 func TestGetCatalog(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -241,7 +241,7 @@ func TestGetCatalog(t *testing.T) {
 
 func TestUpdateCatalog(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -307,7 +307,7 @@ func TestUpdateCatalog(t *testing.T) {
 
 func TestDeleteCatalog(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -340,7 +340,7 @@ func TestDeleteCatalog(t *testing.T) {
 
 func TestAddCustomFieldToCatalog(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -394,10 +394,10 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 
 	// Проверяем содержимое созданного поля
 	expectedField := &CustomField{
-		ID:        456,
-		Name:      "Тестовое поле",
-		Type:      "text",
-		IsAPIOnly: false,
+		ID:         456,
+		Name:       "Тестовое поле",
+		Type:       "text",
+		IsAPIOnly:  false,
 		IsRequired: false,
 		IsMultiple: false,
 		IsSystem:   false,
@@ -411,7 +411,7 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 
 func TestGetCatalogCustomFields(t *testing.T) {
 	catalogID := 123
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -476,10 +476,10 @@ func TestGetCatalogCustomFields(t *testing.T) {
 
 	// Проверяем содержимое первого поля
 	expectedField1 := CustomField{
-		ID:        456,
-		Name:      "Тестовое поле 1",
-		Type:      "text",
-		IsAPIOnly: false,
+		ID:         456,
+		Name:       "Тестовое поле 1",
+		Type:       "text",
+		IsAPIOnly:  false,
 		IsRequired: false,
 		IsMultiple: false,
 		IsSystem:   false,
@@ -492,10 +492,10 @@ func TestGetCatalogCustomFields(t *testing.T) {
 
 	// Проверяем содержимое второго поля
 	expectedField2 := CustomField{
-		ID:        789,
-		Name:      "Тестовое поле 2",
-		Type:      "select",
-		IsAPIOnly: false,
+		ID:         789,
+		Name:       "Тестовое поле 2",
+		Type:       "select",
+		IsAPIOnly:  false,
 		IsRequired: true,
 		IsMultiple: false,
 		IsSystem:   false,
@@ -510,7 +510,7 @@ func TestGetCatalogCustomFields(t *testing.T) {
 func TestGetCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -554,10 +554,10 @@ func TestGetCatalogCustomField(t *testing.T) {
 
 	// Проверяем содержимое поля
 	expectedField := &CustomField{
-		ID:        456,
-		Name:      "Тестовое поле",
-		Type:      "text",
-		IsAPIOnly: false,
+		ID:         456,
+		Name:       "Тестовое поле",
+		Type:       "text",
+		IsAPIOnly:  false,
 		IsRequired: false,
 		IsMultiple: false,
 		IsSystem:   false,
@@ -572,7 +572,7 @@ func TestGetCatalogCustomField(t *testing.T) {
 func TestUpdateCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -625,10 +625,10 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 
 	// Проверяем содержимое обновленного поля
 	expectedField := &CustomField{
-		ID:        456,
-		Name:      "Обновленное поле",
-		Type:      "text",
-		IsAPIOnly: false,
+		ID:         456,
+		Name:       "Обновленное поле",
+		Type:       "text",
+		IsAPIOnly:  false,
 		IsRequired: true,
 		IsMultiple: false,
 		IsSystem:   false,
@@ -643,7 +643,7 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 func TestDeleteCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
-	
+
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса

@@ -61,15 +61,15 @@ const (
 
 // UnsortedBase базовая структура для неразобранной заявки
 type UnsortedBase struct {
-	UID         string      `json:"uid,omitempty"`
-	SourceUID   string      `json:"source_uid,omitempty"`
-	CreatedAt   int64       `json:"created_at,omitempty"`
-	PipelineID  int         `json:"pipeline_id,omitempty"`
-	SourceName  string      `json:"source_name,omitempty"`
-	SourceType  SourceType  `json:"source_type"`
-	Category    CategoryType  `json:"category"`
-	MetadataID  int64       `json:"metadata_id,omitempty"`
-	AccountID   int64       `json:"account_id,omitempty"`
+	UID        string       `json:"uid,omitempty"`
+	SourceUID  string       `json:"source_uid,omitempty"`
+	CreatedAt  int64        `json:"created_at,omitempty"`
+	PipelineID int          `json:"pipeline_id,omitempty"`
+	SourceName string       `json:"source_name,omitempty"`
+	SourceType SourceType   `json:"source_type"`
+	Category   CategoryType `json:"category"`
+	MetadataID int64        `json:"metadata_id,omitempty"`
+	AccountID  int64        `json:"account_id,omitempty"`
 }
 
 // UnsortedContact представляет контакт в неразобранной заявке
@@ -98,28 +98,28 @@ type UnsortedMetadata struct {
 // UnsortedLeadCreate представляет структуру для создания сделки из неразобранной заявки
 type UnsortedLeadCreate struct {
 	UnsortedBase
-	Metadata     UnsortedMetadata  `json:"metadata,omitempty"`
-	Contact      *UnsortedContact  `json:"contact,omitempty"`
-	Company      *UnsortedCompany  `json:"company,omitempty"`
-	LeadName     string            `json:"lead_name,omitempty"`
-	StatusID     int               `json:"status_id,omitempty"`
-	ResponsibleUserID int          `json:"responsible_user_id,omitempty"`
-	Price        int               `json:"price,omitempty"`
-	PipelineType PipelineType      `json:"pipeline_type,omitempty"`
+	Metadata          UnsortedMetadata `json:"metadata,omitempty"`
+	Contact           *UnsortedContact `json:"contact,omitempty"`
+	Company           *UnsortedCompany `json:"company,omitempty"`
+	LeadName          string           `json:"lead_name,omitempty"`
+	StatusID          int              `json:"status_id,omitempty"`
+	ResponsibleUserID int              `json:"responsible_user_id,omitempty"`
+	Price             int              `json:"price,omitempty"`
+	PipelineType      PipelineType     `json:"pipeline_type,omitempty"`
 }
 
 // UnsortedContactCreate представляет структуру для создания контакта из неразобранной заявки
 type UnsortedContactCreate struct {
 	UnsortedBase
-	Metadata     UnsortedMetadata  `json:"metadata,omitempty"`
-	Contact      *UnsortedContact  `json:"contact,omitempty"`
-	Company      *UnsortedCompany  `json:"company,omitempty"`
-	ResponsibleUserID int          `json:"responsible_user_id,omitempty"`
+	Metadata          UnsortedMetadata `json:"metadata,omitempty"`
+	Contact           *UnsortedContact `json:"contact,omitempty"`
+	Company           *UnsortedCompany `json:"company,omitempty"`
+	ResponsibleUserID int              `json:"responsible_user_id,omitempty"`
 }
 
 // UnsortedResponse представляет ответ от API при работе с неразобранными заявками
 type UnsortedResponse struct {
-	Links    *struct {
+	Links *struct {
 		Self struct {
 			Href string `json:"href"`
 		} `json:"self"`
@@ -127,22 +127,22 @@ type UnsortedResponse struct {
 	Embedded *struct {
 		Unsorted []UnsortedItem `json:"unsorted"`
 	} `json:"_embedded,omitempty"`
-	UID       string    `json:"uid,omitempty"`
-	AccountID int64     `json:"account_id,omitempty"`
+	UID       string `json:"uid,omitempty"`
+	AccountID int64  `json:"account_id,omitempty"`
 }
 
 // UnsortedItem представляет элемент неразобранных заявок в списке
 type UnsortedItem struct {
-	ID           string      `json:"id"`
-	UID          string      `json:"uid"`
-	SourceUID    string      `json:"source_uid,omitempty"`
-	CreatedAt    int64       `json:"created_at"`
-	PipelineID   int         `json:"pipeline_id,omitempty"`
+	ID           string       `json:"id"`
+	UID          string       `json:"uid"`
+	SourceUID    string       `json:"source_uid,omitempty"`
+	CreatedAt    int64        `json:"created_at"`
+	PipelineID   int          `json:"pipeline_id,omitempty"`
 	Category     CategoryType `json:"category"`
-	SourceType   SourceType  `json:"source_type"`
-	SourceName   string      `json:"source_name,omitempty"`
+	SourceType   SourceType   `json:"source_type"`
+	SourceName   string       `json:"source_name,omitempty"`
 	PipelineType PipelineType `json:"pipeline_type,omitempty"`
-	AccountID    int64       `json:"account_id,omitempty"`
+	AccountID    int64        `json:"account_id,omitempty"`
 	Embedded     *struct {
 		Contacts []struct {
 			ID    int    `json:"id"`
@@ -410,10 +410,10 @@ func AcceptUnsortedLead(apiClient *client.Client, unsortedUID string, statusID, 
 
 	// Создаем структуру для запроса
 	requestBody := struct {
-		StatusID         int `json:"status_id"`
+		StatusID          int `json:"status_id"`
 		ResponsibleUserID int `json:"responsible_user_id"`
 	}{
-		StatusID:         statusID,
+		StatusID:          statusID,
 		ResponsibleUserID: responsibleUserID,
 	}
 

@@ -257,10 +257,10 @@ func (m *mockSegmentsServer) DoRequest(req *http.Request) (*http.Response, error
 				]
 			}
 		}`
-		
+
 		respHeaders := http.Header{}
 		respHeaders.Set("Content-Type", "application/json")
-		
+
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(strings.NewReader(responseBody)),
@@ -515,7 +515,7 @@ func TestAddContactsToSegment(t *testing.T) {
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
-		
+
 		// Отправляем ответ без декодирования тела запроса
 		w.WriteHeader(http.StatusNoContent)
 	}))
