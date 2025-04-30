@@ -59,6 +59,7 @@ SDK разделен на модули, каждый из которых отв�
 | `entities/files` | Работа с файлами | [Подробнее](./entities/files/README.md) |
 | `entities/calls` | Работа со звонками | [Подробнее](./entities/calls/README.md) |
 | `entities/events` | Работа с событиями | [Подробнее](./entities/events/README.md) |
+| `entities/segments` | Работа с сегментами | [Подробнее](./entities/segments/README.md) |
 | `entities/widgets` | Работа с виджетами | [Подробнее](./entities/widgets/README.md) |
 | `entities/access_rights` | Работа с правами доступа | [Подробнее](./entities/access_rights/README.md) |
 
