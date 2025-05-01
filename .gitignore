@@ -16,8 +16,11 @@
 /vendor/
 .env
 
+# Code coverage files
 coverage.txt
 coverage.out
+coverage.html
+profile.out
 
 # Codecov files
 codecov
