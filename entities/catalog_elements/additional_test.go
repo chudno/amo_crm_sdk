@@ -269,15 +269,15 @@ func TestUpdateCatalogElements(t *testing.T) {
 	}
 
 	// Проверяем значения пользовательских полей
-	if len(updatedElements[0].CustomFieldsValues) != 1 || 
-	   len(updatedElements[0].CustomFieldsValues[0].Values) != 1 || 
-	   updatedElements[0].CustomFieldsValues[0].Values[0].Value != "EL-001-UPD" {
+	if len(updatedElements[0].CustomFieldsValues) != 1 ||
+		len(updatedElements[0].CustomFieldsValues[0].Values) != 1 ||
+		updatedElements[0].CustomFieldsValues[0].Values[0].Value != "EL-001-UPD" {
 		t.Errorf("Неверное значение пользовательского поля для первого элемента")
 	}
 
-	if len(updatedElements[1].CustomFieldsValues) != 1 || 
-	   len(updatedElements[1].CustomFieldsValues[0].Values) != 1 || 
-	   updatedElements[1].CustomFieldsValues[0].Values[0].Value != "EL-002-UPD" {
+	if len(updatedElements[1].CustomFieldsValues) != 1 ||
+		len(updatedElements[1].CustomFieldsValues[0].Values) != 1 ||
+		updatedElements[1].CustomFieldsValues[0].Values[0].Value != "EL-002-UPD" {
 		t.Errorf("Неверное значение пользовательского поля для второго элемента")
 	}
 }

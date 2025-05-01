@@ -107,7 +107,7 @@ func TestDoRequest(t *testing.T) {
 
 		// Отправляем успешный ответ
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"success":true}`)) 
+		_, _ = w.Write([]byte(`{"success":true}`))
 	}))
 	defer server.Close()
 

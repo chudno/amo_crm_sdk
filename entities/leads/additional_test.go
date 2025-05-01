@@ -46,11 +46,11 @@ func TestUpdateLead(t *testing.T) {
 
 	// Создаем данные для обновления
 	leadToUpdate := &Lead{
-		ID:               leadID,
-		Name:             "Обновленный лид",
-		Price:            25000,
-		StatusID:         142,
-		PipelineID:       777,
+		ID:                leadID,
+		Name:              "Обновленный лид",
+		Price:             25000,
+		StatusID:          142,
+		PipelineID:        777,
 		ResponsibleUserID: 456,
 	}
 

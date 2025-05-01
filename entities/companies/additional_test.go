@@ -222,7 +222,7 @@ func TestGetCompanies(t *testing.T) {
 		if companies[0].Name != "Компания с контактами" {
 			t.Errorf("Ожидалось название компании 'Компания с контактами', получено '%s'", companies[0].Name)
 		}
-		
+
 		// Проверяем наличие и содержимое контактов
 		if companies[0].Embedded == nil {
 			t.Errorf("Ожидалось наличие вложенных данных, но Embedded == nil")
@@ -354,7 +354,7 @@ func TestGetCompanyWithOptions(t *testing.T) {
 	if company.ID != 123 {
 		t.Errorf("Ожидался ID компании 123, получен %d", company.ID)
 	}
-	
+
 	// Проверяем наличие и содержимое контактов
 	if company.Embedded == nil {
 		t.Errorf("Ожидалось наличие вложенных данных, но Embedded == nil")

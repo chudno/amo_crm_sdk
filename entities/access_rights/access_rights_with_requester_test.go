@@ -171,14 +171,14 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
 			"name": "Тестовое право",
 			"user_ids": [103, 104]
 		}`, accessRightID), nil)
-		
+
 		// Добавляем ответ для запроса обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
@@ -206,7 +206,7 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 	t.Run("ErrorOnGet", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ошибку для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
@@ -222,14 +222,14 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 	t.Run("ErrorOnUpdate", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
 			"name": "Тестовое право",
 			"user_ids": [103, 104]
 		}`, accessRightID), nil)
-		
+
 		// Добавляем ошибку для запроса обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusInternalServerError, `{"error": "Server error"}`, nil)
 
@@ -254,14 +254,14 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
 			"name": "Тестовое право",
 			"user_ids": [101, 102, 103, 104]
 		}`, accessRightID), nil)
-		
+
 		// Добавляем ответ для запроса обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
@@ -289,7 +289,7 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 	t.Run("ErrorOnGet", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ошибку для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
@@ -305,14 +305,14 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 	t.Run("ErrorOnUpdate", func(t *testing.T) {
 		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
-		
+
 		// Добавляем ответ для запроса получения текущего права доступа
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, fmt.Sprintf(`{
 			"id": %d,
 			"name": "Тестовое право",
 			"user_ids": [101, 102, 103, 104]
 		}`, accessRightID), nil)
-		
+
 		// Добавляем ошибку для запроса обновления права доступа
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusInternalServerError, `{"error": "Server error"}`, nil)
 
