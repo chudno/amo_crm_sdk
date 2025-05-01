@@ -502,3 +502,168 @@ func TestGetUnsortedSummary(t *testing.T) {
 		t.Errorf("Ожидалось значение accepted.count равное 6, получено %v", acceptedCount)
 	}
 }
+
+// getUnsortedContactsServerHandler создает обработчик запросов для тестового сервера GetUnsortedContacts
+func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Проверяем метод запроса
+		if r.Method != "GET" {
+			t.Errorf("Ожидался метод GET, получен %s", r.Method)
+		}
+
+		// Проверяем путь запроса
+		expectedPath := "/api/v4/contacts/unsorted"
+		if r.URL.Path != expectedPath {
+			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
+		}
+
+		// Проверяем параметры запроса
+		query := r.URL.Query()
+		page := query.Get("page")
+		limit := query.Get("limit")
+		categoryFilter := query.Get("filter[category]")
+		createdAtFilter := query.Get("filter[created_at][from]")
+
+		if page != "1" {
+			t.Errorf("Ожидался параметр page=1, получен %s", page)
+		}
+		if limit != "50" {
+			t.Errorf("Ожидался параметр limit=50, получен %s", limit)
+		}
+
+		// Формируем JSON для ответа
+		response := `{
+			"_embedded": {
+				"unsorted": [
+					{
+						"id": "unsorted_1",
+						"uid": "test-unsorted-contact-uid-123",
+						"source_uid": "source-uid-123",
+						"source_name": "API Test",
+						"category": "forms",
+						"pipeline_id": 123,
+						"created_at": 1609459200,
+						"metadata": {
+							"from": "test@example.com",
+							"ip": "127.0.0.1"
+						},
+						"account_id": 12345,
+						"_links": {
+							"self": {
+								"href": "https://example.amocrm.ru/api/v4/leads/unsorted/1"
+							}
+						}
+					}`
+
+		// Если есть фильтр по категории, проверяем его и добавляем соответствующий элемент
+		if categoryFilter == "forms" {
+			response += `,
+					{
+						"id": "unsorted_2",
+						"uid": "test-unsorted-contact-uid-456",
+						"source_name": "API Test Forms",
+						"category": "forms",
+						"created_at": 1609459300,
+						"account_id": 12345
+					}`
+		}
+
+		// Если есть фильтр по дате создания, проверяем его и добавляем соответствующий элемент
+		if createdAtFilter != "" {
+			response += `,
+					{
+						"id": "unsorted_3",
+						"uid": "test-unsorted-contact-uid-789",
+						"source_name": "API Test Date Filtered",
+						"category": "forms",
+						"created_at": 1609459400,
+						"account_id": 12345
+					}`
+		}
+
+		// Завершаем JSON
+		response += `
+				]
+			}
+		}`
+
+		// Отправляем ответ
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(response))
+	}
+}
+
+func TestGetUnsortedContacts(t *testing.T) {
+	// Создаем тестовый сервер с обработчиком
+	server := httptest.NewServer(getUnsortedContactsServerHandler(t))
+	defer server.Close()
+
+	// Создаем клиент API
+	apiClient := client.NewClient(server.URL, "test_api_key")
+
+	// Базовый тест без фильтров
+	t.Run("Базовый запрос", func(t *testing.T) {
+		// Вызываем тестируемый метод
+		contacts, err := GetUnsortedContacts(apiClient, 1, 50, nil)
+
+		// Проверяем результаты
+		if err != nil {
+			t.Fatalf("Ошибка при получении неразобранных контактов: %v", err)
+		}
+
+		if len(contacts) < 1 {
+			t.Fatalf("Ожидался минимум 1 контакт, получено %d", len(contacts))
+		}
+
+		// Проверяем данные первого контакта
+		if contacts[0].UID != "test-unsorted-contact-uid-123" {
+			t.Errorf("Ожидался UID test-unsorted-contact-uid-123, получен %s", contacts[0].UID)
+		}
+
+		if contacts[0].Category != "forms" {
+			t.Errorf("Ожидалась категория forms, получена %s", contacts[0].Category)
+		}
+	})
+
+	// Тест с фильтром по категории
+	t.Run("С фильтром по категории", func(t *testing.T) {
+		// Устанавливаем фильтр
+		filter := map[string]string{
+			"filter[category]": "forms",
+		}
+
+		// Вызываем тестируемый метод
+		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+
+		// Проверяем результаты
+		if err != nil {
+			t.Fatalf("Ошибка при получении неразобранных контактов с фильтром: %v", err)
+		}
+
+		if len(contacts) < 2 {
+			t.Fatalf("Ожидалось минимум 2 контакта, получено %d", len(contacts))
+		}
+	})
+
+	// Тест с фильтром по дате создания
+	t.Run("С фильтром по дате", func(t *testing.T) {
+		// Устанавливаем фильтр
+		timeFrom := time.Now().AddDate(0, 0, -1).Unix()
+		filter := map[string]string{
+			"filter[created_at][from]": fmt.Sprintf("%d", timeFrom),
+		}
+
+		// Вызываем тестируемый метод
+		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+
+		// Проверяем результаты
+		if err != nil {
+			t.Fatalf("Ошибка при получении неразобранных контактов с фильтром по дате: %v", err)
+		}
+
+		if len(contacts) < 2 {
+			t.Fatalf("Ожидалось минимум 2 контакта, получено %d", len(contacts))
+		}
+	})
+}
