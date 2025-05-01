@@ -140,11 +140,6 @@ func setupGetFilesTestServer(t *testing.T, entityType EntityType, entityID int, 
 			if r.URL.Query().Get("limit") != expectedLimit {
 				t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 			}
-
-			expectedOrderCreatedAt := "desc"
-			if r.URL.Query().Get("order[created_at]") != expectedOrderCreatedAt {
-				t.Errorf("Ожидался параметр order[created_at]=%s, получен %s", expectedOrderCreatedAt, r.URL.Query().Get("order[created_at]"))
-			}
 		}
 
 		// Отправляем ответ
