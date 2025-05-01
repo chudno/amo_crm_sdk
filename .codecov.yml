@@ -1,3 +1,4 @@
+# Файл конфигурации Codecov
 coverage:
   precision: 2
   round: down
@@ -10,11 +11,17 @@ coverage:
       default:
         target: 50%
 
+# Конкретные файлы для исключения
 ignore:
   - "**/*_test.go"
+  - "**/test_*.go"
   - "**/*_mock.go"
-  - "test/**/*"
+  - "**/*_testdata.go"
+  - "**/mock_*.go"
   - "examples/**/*"
+  - "test/**/*"
+  - "**/entities/access_rights/access_rights_test_*.go"
+  - "**/entities/access_rights/access_rights_with_requester_test.go"
 
 comment:
   layout: "reach, diff, flags, files"
