@@ -67,6 +67,9 @@ SDK разделен на модули, каждый из которых отв�
 | `entities/segments` | Работа с сегментами | [Подробнее](./entities/segments/README.md) |
 | `entities/widgets` | Работа с виджетами | [Подробнее](./entities/widgets/README.md) |
 | `entities/access_rights` | Работа с правами доступа | [Подробнее](./entities/access_rights/README.md) |
+| `entities/short_links` | Работа с короткими ссылками | [Подробнее](./entities/short_links/README.md) |
+| `entities/mailing` | Работа с email-рассылками | [Подробнее](./entities/mailing/README.md) |
+| `entities/sources` | Работа с источниками сделок | [Подробнее](./entities/sources/README.md) |
 
 ### Утилиты
 

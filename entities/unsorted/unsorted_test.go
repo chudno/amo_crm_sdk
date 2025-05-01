@@ -146,9 +146,9 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}
 }
 
-func TestGetUnsortedLeads(t *testing.T) {
-	// Создаем тестовый сервер
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// getUnsortedLeadsServerHandler создает обработчик запросов для тестового сервера GetUnsortedLeads
+func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
@@ -210,26 +210,12 @@ func TestGetUnsortedLeads(t *testing.T) {
 				]
 			}
 		}`))
-	}))
-	defer server.Close()
-
-	// Создаем клиент API
-	apiClient := client.NewClient(server.URL, "test_api_key")
-
-	// Вызываем тестируемый метод
-	items, err := GetUnsortedLeads(apiClient, 1, 50, nil)
-
-	// Проверяем результаты
-	if err != nil {
-		t.Fatalf("Ошибка при получении неразобранных заявок: %v", err)
 	}
+}
 
-	if len(items) != 1 {
-		t.Fatalf("Ожидалось получение 1 заявки, получено %d", len(items))
-	}
-
-	// Проверяем содержимое первой заявки
-	expectedItem := UnsortedItem{
+// createExpectedUnsortedItem создает ожидаемый объект UnsortedItem для тестирования
+func createExpectedUnsortedItem() UnsortedItem {
+	return UnsortedItem{
 		ID:           "unsorted-lead-1",
 		UID:          "unsorted-uid-1",
 		SourceUID:    "src-1",
@@ -307,28 +293,62 @@ func TestGetUnsortedLeads(t *testing.T) {
 			},
 		},
 	}
+}
 
-	// Проверяем основные поля (полное сравнение сложно из-за вложенных структур)
-	if items[0].ID != expectedItem.ID ||
-		items[0].UID != expectedItem.UID ||
-		items[0].SourceUID != expectedItem.SourceUID ||
-		items[0].CreatedAt != expectedItem.CreatedAt ||
-		items[0].PipelineID != expectedItem.PipelineID ||
-		items[0].Category != expectedItem.Category ||
-		items[0].SourceType != expectedItem.SourceType ||
-		items[0].PipelineType != expectedItem.PipelineType ||
-		items[0].AccountID != expectedItem.AccountID {
+// verifyBasicFields проверяет основные поля UnsortedItem
+func verifyBasicFields(t *testing.T, actual, expected UnsortedItem) {
+	if actual.ID != expected.ID ||
+		actual.UID != expected.UID ||
+		actual.SourceUID != expected.SourceUID ||
+		actual.CreatedAt != expected.CreatedAt ||
+		actual.PipelineID != expected.PipelineID ||
+		actual.Category != expected.Category ||
+		actual.SourceType != expected.SourceType ||
+		actual.PipelineType != expected.PipelineType ||
+		actual.AccountID != expected.AccountID {
 		t.Errorf("Полученная заявка не соответствует ожидаемой")
 	}
+}
 
-	// Проверяем вложенные структуры
-	if items[0].Embedded != nil && items[0].Embedded.Leads != nil && len(items[0].Embedded.Leads) > 0 {
-		if items[0].Embedded.Leads[0].ID != 456 || items[0].Embedded.Leads[0].Name != "Тестовая сделка" {
+// verifyEmbeddedLeads проверяет вложенные сделки в UnsortedItem
+func verifyEmbeddedLeads(t *testing.T, item UnsortedItem) {
+	if item.Embedded != nil && item.Embedded.Leads != nil && len(item.Embedded.Leads) > 0 {
+		if item.Embedded.Leads[0].ID != 456 || item.Embedded.Leads[0].Name != "Тестовая сделка" {
 			t.Errorf("Вложенная сделка не соответствует ожидаемой")
 		}
 	} else {
 		t.Errorf("Вложенная сделка отсутствует")
 	}
+}
+
+func TestGetUnsortedLeads(t *testing.T) {
+	// Создаем тестовый сервер
+	server := httptest.NewServer(getUnsortedLeadsServerHandler(t))
+	defer server.Close()
+
+	// Создаем клиент API
+	apiClient := client.NewClient(server.URL, "test_api_key")
+
+	// Вызываем тестируемый метод
+	items, err := GetUnsortedLeads(apiClient, 1, 50, nil)
+
+	// Проверяем результаты
+	if err != nil {
+		t.Fatalf("Ошибка при получении неразобранных заявок: %v", err)
+	}
+
+	if len(items) != 1 {
+		t.Fatalf("Ожидалось получение 1 заявки, получено %d", len(items))
+	}
+
+	// Создаем ожидаемый объект для сравнения
+	expectedItem := createExpectedUnsortedItem()
+
+	// Проверяем основные поля
+	verifyBasicFields(t, items[0], expectedItem)
+
+	// Проверяем вложенные структуры
+	verifyEmbeddedLeads(t, items[0])
 }
 
 func TestAcceptUnsortedLead(t *testing.T) {
