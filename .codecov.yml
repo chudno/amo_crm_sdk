@@ -1,0 +1,22 @@
+coverage:
+  precision: 2
+  round: down
+  range: "50...80"
+  status:
+    project:
+      default:
+        target: 50%
+    patch:
+      default:
+        target: 50%
+
+ignore:
+  - "**/*_test.go"
+  - "**/*_mock.go"
+  - "test/**/*"
+  - "examples/**/*"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
