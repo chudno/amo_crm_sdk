@@ -169,7 +169,7 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		
+
 		var response string
 		if withEntity {
 			response = fmt.Sprintf(`{
@@ -214,7 +214,7 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 				}
 			}`, eventID, eventID)
 		}
-		
+
 		_, _ = w.Write([]byte(response))
 	}))
 }

@@ -6,8 +6,6 @@ import (
 	"github.com/chudno/amo_crm_sdk/client"
 )
 
-
-
 func TestGetEvents(t *testing.T) {
 	t.Run("GetEventsWithFiltersAndPagination", func(t *testing.T) {
 		// Создаем тестовый сервер
@@ -42,7 +40,7 @@ func TestGetEvents(t *testing.T) {
 
 	t.Run("GetEventsBasic", func(t *testing.T) {
 		// Создаем тестовый сервер без проверки параметров
-		server := setupGetEventsTestServer(t, false) 
+		server := setupGetEventsTestServer(t, false)
 		defer server.Close()
 
 		// Создаем клиент API
