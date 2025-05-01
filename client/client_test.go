@@ -56,6 +56,45 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+func TestGetBaseURL(t *testing.T) {
+	tests := []struct {
+		name     string
+		baseURL  string
+		expected string
+	}{
+		{
+			name:     "Базовый URL возвращается корректно",
+			baseURL:  "https://test.amocrm.ru",
+			expected: "https://test.amocrm.ru",
+		},
+		{
+			name:     "Пустой URL",
+			baseURL:  "",
+			expected: "",
+		},
+		{
+			name:     "URL с дополнительным путем",
+			baseURL:  "https://test.amocrm.ru/api/v4",
+			expected: "https://test.amocrm.ru/api/v4",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Создаем клиент с тестовым URL
+			client := NewClient(tt.baseURL, "test_api_key")
+
+			// Получаем базовый URL через метод
+			got := client.GetBaseURL()
+
+			// Проверяем результат
+			if got != tt.expected {
+				t.Errorf("GetBaseURL() = %v, хотим %v", got, tt.expected)
+			}
+		})
+	}
+}
+
 func TestDoRequest(t *testing.T) {
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
