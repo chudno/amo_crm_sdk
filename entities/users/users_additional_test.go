@@ -225,7 +225,7 @@ func TestListUsersErrors(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 			page := query.Get("page")
-			
+
 			if page == "0" {
 				// Вернуть ошибку для некорректного номера страницы
 				w.Header().Set("Content-Type", "application/json")
@@ -235,7 +235,7 @@ func TestListUsersErrors(t *testing.T) {
 				}
 				return
 			}
-			
+
 			// Успешный ответ для корректных параметров
 			w.WriteHeader(http.StatusOK)
 			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
