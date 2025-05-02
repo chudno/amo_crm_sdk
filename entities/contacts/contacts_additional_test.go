@@ -136,7 +136,7 @@ func TestGetContactWithOptions(t *testing.T) {
 			// Возвращаем статус 404 Not Found
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
-			_, _ = w.Write([]byte(`{"error": "Contact not found"}`))  
+			_, _ = w.Write([]byte(`{"error": "Contact not found"}`))
 		}))
 		defer server.Close()
 
@@ -299,7 +299,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 			t.Errorf("Ожидался пустой список контактов, получено %d контактов", len(contacts))
 		}
 	})
-	
+
 	t.Run("Ошибка сервера", func(t *testing.T) {
 		// Создаем тестовый сервер, который возвращает ошибку
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
