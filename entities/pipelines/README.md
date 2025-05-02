@@ -187,36 +187,34 @@ if err != nil {
 
 ## Настройка воронок для сделок
 
-При создании или обновлении сделки необходимо указать ID воронки и статуса:
+При создании или обновлении лида необходимо указать ID воронки и статуса:
 
 ```go
-import "github.com/chudno/amo_crm_sdk/entities/deals"
+import "github.com/chudno/amo_crm_sdk/entities/leads"
 
-// Создание сделки в определенной воронке и статусе
-newDeal := &deals.Deal{
-    Name: "Новая сделка",
-    PipelineID: 12345, // ID воронки
-    StatusID: 67890,   // ID статуса в этой воронке
+newLead := &leads.Lead{
+	Name:      "Новый лид",
+	PipelineID: pipeline.ID,
+	StatusID:  statusID,
+	// Другие поля лида
 }
 
-// Создание сделки
-createdDeal, err := deals.CreateDeal(apiClient, newDeal)
+createdLead, err := leads.CreateLead(apiClient, newLead)
 if err != nil {
     // Обработка ошибки
 }
 
-// Перемещение сделки в другой статус
-existingDeal, err := deals.GetDeal(apiClient, dealID)
+// Перемещение лида в другой статус
+existingLead, err := leads.GetLead(apiClient, leadID)
 if err != nil {
     // Обработка ошибки
 }
 
-existingDeal.StatusID = 54321 // ID нового статуса
+existingLead.StatusID = 54321 // ID нового статуса
 // При необходимости можно сменить и воронку
-// existingDeal.PipelineID = 98765
+// existingLead.PipelineID = 98765
 
-updatedDeal, err := deals.UpdateDeal(apiClient, existingDeal)
+updatedLead, err := leads.UpdateLead(apiClient, existingLead)
 if err != nil {
     // Обработка ошибки
 }
-```

@@ -158,7 +158,7 @@ if err != nil {
 ```go
 import (
     "github.com/chudno/amo_crm_sdk/entities/contacts"
-    "github.com/chudno/amo_crm_sdk/entities/deals"
+    "github.com/chudno/amo_crm_sdk/entities/leads"
 )
 
 // Добавление значения пользовательского поля для контакта
@@ -202,18 +202,18 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 createdContact, err := contacts.CreateContact(apiClient, contact)
 ```
 
-Работа с пользовательскими полями в сделках аналогична:
+Работа с пользовательскими полями в лидах аналогична:
 
 ```go
-// Добавление значения пользовательского поля для сделки
-deal := &deals.Deal{
+// Добавление значения пользовательского поля для лида
+lead := &leads.Lead{
     Name: "Продажа ПО",
 }
 
 // Добавление числового поля (например, "Бюджет")
-deal.CustomFields = append(deal.CustomFields, deals.CustomField{
+lead.CustomFields = append(lead.CustomFields, leads.CustomField{
     FieldID: 98765, // ID числового поля
-    Values: []deals.CustomFieldValue{
+    Values: []leads.CustomFieldValue{
         {
             Value: "50000", // Числовое значение передается в виде строки
         },
@@ -221,15 +221,15 @@ deal.CustomFields = append(deal.CustomFields, deals.CustomField{
 })
 
 // Добавление поля типа "Дата"
-deal.CustomFields = append(deal.CustomFields, deals.CustomField{
+lead.CustomFields = append(lead.CustomFields, leads.CustomField{
     FieldID: 45678, // ID поля типа "Дата"
-    Values: []deals.CustomFieldValue{
+    Values: []leads.CustomFieldValue{
         {
             Value: "1680307200", // Unix timestamp как строка
         },
     },
 })
 
-// Сохранение сделки с пользовательскими полями
-createdDeal, err := deals.CreateDeal(apiClient, deal)
+// Сохранение лида с пользовательскими полями
+createdLead, err := leads.CreateLead(apiClient, lead)
 ```

@@ -97,11 +97,11 @@ contact := &contacts.Contact{
     ResponsibleUserID: 12345, // ID ответственного менеджера
 }
 
-// Назначение ответственного за сделку
-import "github.com/chudno/amo_crm_sdk/entities/deals"
+// Назначение ответственного за лид
+import "github.com/chudno/amo_crm_sdk/entities/leads"
 
-deal := &deals.Deal{
-    Name: "Продажа ПО",
+lead := &leads.Lead{
+    Name:              "Тестовый лид",
     ResponsibleUserID: 12345, // ID ответственного менеджера
 }
 

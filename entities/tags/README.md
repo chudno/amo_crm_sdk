@@ -49,8 +49,8 @@ for _, tag := range contactTags {
     fmt.Printf("ID: %d, Название: %s, Цвет: %s\n", tag.ID, tag.Name, tag.Color)
 }
 
-// Получение тегов сделок
-dealTags, err := tags.GetTags(apiClient, tags.EntityTypeLead, 1, 50)
+// Получение тегов лидов
+leadTags, err := tags.GetTags(apiClient, tags.EntityTypeLead, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -153,9 +153,9 @@ if err != nil {
     // Обработка ошибки
 }
 
-// Связывание сделки с тегами
-dealID := 54321
-err = tags.LinkEntityWithTags(apiClient, tags.EntityTypeLead, dealID, tagsToLink)
+// Связывание лида с тегами
+leadID := 54321
+err = tags.LinkEntityWithTags(apiClient, tags.EntityTypeLead, leadID, tagsToLink)
 if err != nil {
     // Обработка ошибки
 }
@@ -176,9 +176,9 @@ for _, tag := range contactTags {
     fmt.Printf("- %s (Цвет: %s)\n", tag.Name, tag.Color)
 }
 
-// Получение тегов сделки
-dealID := 54321
-dealTags, err := tags.GetEntityTags(apiClient, tags.EntityTypeLead, dealID)
+// Получение тегов лида
+leadID := 54321
+leadTags, err := tags.GetEntityTags(apiClient, tags.EntityTypeLead, leadID)
 if err != nil {
     // Обработка ошибки
 }
