@@ -6,7 +6,6 @@
 
 - `contacts` - Контакты
 - `companies` - Компании
-- `deals` - Сделки
 - `leads` - Лиды
 - `tasks` - Задачи
 - `notes` - Примечания

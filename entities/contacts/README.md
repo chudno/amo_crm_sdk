@@ -137,12 +137,13 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 
 ## Связывание контактов с другими сущностями
 
-Для связывания контактов с другими сущностями используйте соответствующие методы из модулей leads, companies и deals:
+Для связывания контактов с другими сущностями используйте соответствующие методы из модулей leads и companies:
 
 ```go
 // Связывание контакта со сделкой
-import "github.com/chudno/amo_crm_sdk/entities/deals"
-err := deals.LinkDealWithContact(apiClient, dealID, contactID)
+import "github.com/chudno/amo_crm_sdk/entities/leads"
+
+err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
 
 // Связывание контакта с компанией
 import "github.com/chudno/amo_crm_sdk/entities/companies"

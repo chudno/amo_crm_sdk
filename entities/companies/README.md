@@ -137,12 +137,12 @@ company.CustomFields = append(company.CustomFields, companies.CustomField{
 
 ## Связывание компаний с другими сущностями
 
-Для связывания компаний с другими сущностями используйте соответствующие методы из модулей leads, contacts и deals:
+Для связывания компаний с другими сущностями используйте соответствующие методы из модулей leads и contacts:
 
 ```go
 // Связывание компании со сделкой
-import "github.com/chudno/amo_crm_sdk/entities/deals"
-err := deals.LinkDealWithCompany(apiClient, dealID, companyID)
+import "github.com/chudno/amo_crm_sdk/entities/leads"
+err := leads.LinkLeadWithCompany(apiClient, leadID, companyID)
 
 // Связывание компании с контактом
 import "github.com/chudno/amo_crm_sdk/entities/contacts"

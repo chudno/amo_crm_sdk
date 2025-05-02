@@ -236,3 +236,65 @@ func DeleteLead(apiClient *client.Client, leadID int) error {
 
 	return nil
 }
+
+// LeadsResponse представляет ответ от API при получении списка лидов
+type LeadsResponse struct {
+	Page     int `json:"page"`
+	PerPage  int `json:"per_page"`
+	Total    int `json:"total"`
+	Embedded struct {
+		Items []Lead `json:"leads"`
+	} `json:"_embedded"`
+}
+
+// GetLeads получает список лидов с возможностью фильтрации и пагинации.
+// Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидами.
+func GetLeads(apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
+	// Формируем базовый URL
+	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
+
+	// Добавляем параметры запроса
+	params := url.Values{}
+	params.Add("page", fmt.Sprintf("%d", page))
+	params.Add("limit", fmt.Sprintf("%d", limit))
+
+	// Добавляем параметр with, если указаны withOptions
+	if len(withOptions) > 0 {
+		var withValues []string
+		for _, opt := range withOptions {
+			withValues = append(withValues, string(opt))
+		}
+		params.Add("with", strings.Join(withValues, ","))
+	}
+
+	// Добавляем параметры фильтрации, если они есть
+	if len(filter) > 0 {
+		for key, value := range filter {
+			params.Add(key, value)
+		}
+	}
+
+	url := baseURL + "?" + params.Encode()
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := apiClient.DoRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// Проверяем статус-код ответа
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
+
+	var response LeadsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+
+	return response.Embedded.Items, nil
+}
