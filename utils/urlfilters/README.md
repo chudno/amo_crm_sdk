@@ -75,7 +75,6 @@ func main() {
 
 - `NewLeadFilterFromURL(rawURL string) (*LeadFilter, error)` - создает объект фильтра для лидов
 - `GetSDKFilterMap()` - получает карту фильтров для использования в SDK
-- `Example()` - генерирует пример кода для использования фильтра
 
 
 
@@ -98,8 +97,8 @@ type ParsedFilter struct {
 ```go
 type LeadFilter struct {
 	*ParsedFilter              // встроенный ParsedFilter
-	PageInt     int            // номер страницы (целочисленное значение)
-	LimitInt    int            // ограничение на количество элементов (целочисленное значение)
+	PageInt     int            // номер страницы
+	LimitInt    int            // ограничение на количество элементов
 }
 ```
 
