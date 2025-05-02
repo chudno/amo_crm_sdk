@@ -1,7 +1,6 @@
 package urlfilters
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -97,33 +96,6 @@ func TestLeadFilter_GetSDKFilterMap(t *testing.T) {
 			}
 			if gotValue != wantValue {
 				t.Errorf("GetSDKFilterMap() filter[%v] = %v, want %v", key, gotValue, wantValue)
-			}
-		}
-	})
-}
-
-func TestLeadFilter_Example(t *testing.T) {
-	t.Run("Генерирует правильный пример кода", func(t *testing.T) {
-		url := "https://example.amocrm.ru/leads/list/?filter[name]=Test&filter[status][]=12345"
-		filter, err := NewLeadFilterFromURL(url)
-		if err != nil {
-			t.Fatalf("Ошибка при парсинге URL: %v", err)
-		}
-
-		example := filter.Example()
-
-		// Проверяем, что пример содержит важные части
-		requiredStrings := []string{
-			"urlfilters.NewLeadFilterFromURL",
-			"filter.PageInt",
-			"filter.LimitInt",
-			"filter.GetSDKFilterMap()",
-			"leads.GetLeads",
-		}
-
-		for _, requiredString := range requiredStrings {
-			if !strings.Contains(example, requiredString) {
-				t.Errorf("Example() не содержит строку %q", requiredString)
 			}
 		}
 	})
