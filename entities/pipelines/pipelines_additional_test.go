@@ -27,7 +27,9 @@ func TestGetPipelineError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет некорректный JSON
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"id": 123, "name": "Тестовая воронка", "is_main": true, status`)) // Некорректный JSON
+			if _, err := w.Write([]byte(`{"id": 123, "name": "Тестовая воронка", "is_main": true, status`)); err != nil { // Некорректный JSON
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
 		}))
 		defer server.Close()
 
@@ -63,7 +65,9 @@ func TestListPipelinesError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет пустой список
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"_embedded": {"items": []}}`))
+			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
 		}))
 		defer server.Close()
 
@@ -87,7 +91,9 @@ func TestListPipelinesError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет некорректный JSON
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"_embedded": {"items": [{"id": 123, "name": "Тестовая воронка"`)) // Некорректный JSON
+			if _, err := w.Write([]byte(`{"_embedded": {"items": [{"id": 123, "name": "Тестовая воронка"`)); err != nil { // Некорректный JSON
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
 		}))
 		defer server.Close()
 
@@ -152,7 +158,9 @@ func TestDeletePipelineError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет ошибку
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(`{"error": "Forbidden to delete main pipeline"}`))
+			if _, err := w.Write([]byte(`{"error": "Forbidden to delete main pipeline"}`)); err != nil {
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
 		}))
 		defer server.Close()
 
@@ -172,7 +180,9 @@ func TestDeletePipelineError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет ответ OK вместо NoContent
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK) // Должен быть StatusNoContent
-			w.Write([]byte(`{}`))
+			if _, err := w.Write([]byte(`{}`)); err != nil {
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
 		}))
 		defer server.Close()
 
