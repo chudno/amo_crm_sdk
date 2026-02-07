@@ -252,7 +252,7 @@ func TestListPipelines(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {
-				"items": [
+				"pipelines": [
 					{
 						"id": 123,
 						"name": "Основная воронка",

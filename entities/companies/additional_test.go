@@ -101,7 +101,7 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 2,
 				"_embedded": {
-					"items": [
+					"companies": [
 						{
 							"id": 123,
 							"name": "Компания 1",
@@ -178,7 +178,7 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 1,
 				"_embedded": {
-					"items": [
+					"companies": [
 						{
 							"id": 123,
 							"name": "Компания с контактами",
@@ -250,7 +250,7 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 0,
 				"_embedded": {
-					"items": []
+					"companies": []
 				}
 			}`))
 		}))

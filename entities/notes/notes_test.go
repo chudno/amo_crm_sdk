@@ -246,7 +246,7 @@ func TestListNotes(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {
-				"items": [
+				"notes": [
 					{
 						"id": 456,
 						"entity_id": 123,

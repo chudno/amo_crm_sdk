@@ -128,7 +128,7 @@ func ListPipelines(ctx context.Context, apiClient *client.Client) ([]Pipeline, e
 
 	var pipelines struct {
 		Embedded struct {
-			Items []Pipeline `json:"items"`
+			Items []Pipeline `json:"pipelines"`
 		} `json:"_embedded"`
 	}
 

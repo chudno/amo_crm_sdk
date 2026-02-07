@@ -163,7 +163,7 @@ func TestListUsersErrors(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": []}}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
@@ -190,7 +190,7 @@ func TestListUsersErrors(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": [{`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": [{`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
@@ -239,7 +239,7 @@ func TestListUsersErrors(t *testing.T) {
 
 			// Успешный ответ для корректных параметров
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": []}}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))

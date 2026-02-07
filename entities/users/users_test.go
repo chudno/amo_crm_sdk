@@ -179,7 +179,7 @@ func TestListUsers(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {
-				"items": [
+				"users": [
 					{
 						"id": 123,
 						"name": "Иван Иванов",

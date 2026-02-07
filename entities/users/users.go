@@ -107,7 +107,7 @@ func ListUsers(ctx context.Context, apiClient *client.Client, limit int, page in
 
 	var users struct {
 		Embedded struct {
-			Items []User `json:"items"`
+			Items []User `json:"users"`
 		} `json:"_embedded"`
 	}
 

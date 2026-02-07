@@ -130,7 +130,7 @@ func ListNotes(ctx context.Context, apiClient *client.Client, entityType string,
 
 	var notes struct {
 		Embedded struct {
-			Items []Note `json:"items"`
+			Items []Note `json:"notes"`
 		} `json:"_embedded"`
 	}
 

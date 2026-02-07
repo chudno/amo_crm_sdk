@@ -158,7 +158,7 @@ type CompaniesResponse struct {
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
 	Embedded struct {
-		Items []Company `json:"items"`
+		Items []Company `json:"companies"`
 	} `json:"_embedded"`
 }
 

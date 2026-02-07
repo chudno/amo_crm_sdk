@@ -66,7 +66,7 @@ func TestListPipelinesError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет пустой список
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"pipelines": []}}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
@@ -92,7 +92,7 @@ func TestListPipelinesError(t *testing.T) {
 		// Создаем тестовый сервер, который вернет некорректный JSON
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": [{"id": 123, "name": "Тестовая воронка"`)); err != nil { // Некорректный JSON
+			if _, err := w.Write([]byte(`{"_embedded": {"pipelines": [{"id": 123, "name": "Тестовая воронка"`)); err != nil { // Некорректный JSON
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
