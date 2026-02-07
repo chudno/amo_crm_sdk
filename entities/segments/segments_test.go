@@ -1,6 +1,7 @@
 package segments
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -75,7 +76,7 @@ func TestAddSegment(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdSegment, err := AddSegment(apiClient, segment)
+	createdSegment, err := AddSegment(context.Background(), apiClient, segment)
 
 	// Проверяем результаты
 	if err != nil {
@@ -173,7 +174,7 @@ func TestGetSegment(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод с параметром WithContacts
-	segment, err := GetSegment(apiClient, segmentID, WithContacts())
+	segment, err := GetSegment(context.Background(), apiClient, segmentID, WithContacts())
 
 	// Проверяем результаты
 	if err != nil {
@@ -381,7 +382,7 @@ func TestUpdateSegment(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedSegment, err := UpdateSegment(apiClient, segment)
+	updatedSegment, err := UpdateSegment(context.Background(), apiClient, segment)
 
 	// Проверяем результаты
 	if err != nil {
@@ -428,7 +429,7 @@ func TestDeleteSegment(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteSegment(apiClient, segmentID)
+	err := DeleteSegment(context.Background(), apiClient, segmentID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -465,7 +466,7 @@ func TestAddContactsToSegment(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := AddContactsToSegment(apiClient, segmentID, contactIDs)
+	err := AddContactsToSegment(context.Background(), apiClient, segmentID, contactIDs)
 
 	// Проверяем результаты
 	if err != nil {
@@ -502,7 +503,7 @@ func TestRemoveContactsFromSegment(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := RemoveContactsFromSegment(apiClient, segmentID, contactIDs)
+	err := RemoveContactsFromSegment(context.Background(), apiClient, segmentID, contactIDs)
 
 	// Проверяем результаты
 	if err != nil {
@@ -560,7 +561,7 @@ func TestGetSegmentContacts(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	contactIDs, err := GetSegmentContacts(apiClient, segmentID, 1, 50)
+	contactIDs, err := GetSegmentContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 	// Проверяем результаты
 	if err != nil {

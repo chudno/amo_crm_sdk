@@ -1,8 +1,9 @@
-// Пакет catalog_elements предоставляет методы для взаимодействия с сущностями "Элементы каталогов" в API amoCRM.
+// Package catalog_elements предоставляет методы для взаимодействия с сущностями "Элементы каталогов" в API amoCRM.
 package catalog_elements
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -40,7 +41,7 @@ type CustomFieldValue struct {
 
 // FieldValueItem представляет значение поля
 type FieldValueItem struct {
-	Value  interface{} `json:"value"`
+	Value  any `json:"value"`
 	EnumID int         `json:"enum_id,omitempty"`
 	Enum   string      `json:"enum,omitempty"`
 }
@@ -85,7 +86,7 @@ const (
 )
 
 // GetCatalogElements получает список элементов каталога с возможностью пагинации и фильтрации.
-func GetCatalogElements(apiClient *client.Client, catalogID, page, limit int, filter map[string]string, withOptions ...WithOption) ([]CatalogElement, error) {
+func GetCatalogElements(ctx context.Context, apiClient *client.Client, catalogID, page, limit int, filter map[string]string, withOptions ...WithOption) ([]CatalogElement, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
@@ -112,12 +113,12 @@ func GetCatalogElements(apiClient *client.Client, catalogID, page, limit int, fi
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +152,7 @@ func stringsJoin(strings []string, sep string) string {
 }
 
 // CreateCatalogElement создает новый элемент каталога.
-func CreateCatalogElement(apiClient *client.Client, catalogID int, element *CatalogElement) (*CatalogElement, error) {
+func CreateCatalogElement(ctx context.Context, apiClient *client.Client, catalogID int, element *CatalogElement) (*CatalogElement, error) {
 	// Проверяем, что указан ID каталога
 	element.CatalogID = catalogID
 
@@ -165,7 +166,7 @@ func CreateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(elementJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(elementJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +174,7 @@ func CreateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func CreateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 }
 
 // CreateCatalogElements создает несколько элементов каталога за один запрос.
-func CreateCatalogElements(apiClient *client.Client, catalogID int, elements []CatalogElement) ([]CatalogElement, error) {
+func CreateCatalogElements(ctx context.Context, apiClient *client.Client, catalogID int, elements []CatalogElement) ([]CatalogElement, error) {
 	// Проверяем, что указан ID каталога для всех элементов
 	for i := range elements {
 		elements[i].CatalogID = catalogID
@@ -217,7 +218,7 @@ func CreateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(elementsJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(elementsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +226,7 @@ func CreateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +250,7 @@ func CreateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 }
 
 // GetCatalogElement получает информацию об элементе каталога по его ID.
-func GetCatalogElement(apiClient *client.Client, catalogID, elementID int, withOptions ...WithOption) (*CatalogElement, error) {
+func GetCatalogElement(ctx context.Context, apiClient *client.Client, catalogID, elementID int, withOptions ...WithOption) (*CatalogElement, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d", apiClient.GetBaseURL(), catalogID, elementID)
 
@@ -265,13 +266,13 @@ func GetCatalogElement(apiClient *client.Client, catalogID, elementID int, withO
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +292,7 @@ func GetCatalogElement(apiClient *client.Client, catalogID, elementID int, withO
 }
 
 // UpdateCatalogElement обновляет информацию об элементе каталога по его ID.
-func UpdateCatalogElement(apiClient *client.Client, catalogID int, element *CatalogElement) (*CatalogElement, error) {
+func UpdateCatalogElement(ctx context.Context, apiClient *client.Client, catalogID int, element *CatalogElement) (*CatalogElement, error) {
 	if element.ID == 0 {
 		return nil, fmt.Errorf("ID элемента каталога не может быть пустым")
 	}
@@ -309,7 +310,7 @@ func UpdateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(elementJSON))
+	req, err := http.NewRequestWithContext(ctx,"PATCH", url, bytes.NewBuffer(elementJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -317,7 +318,7 @@ func UpdateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +338,7 @@ func UpdateCatalogElement(apiClient *client.Client, catalogID int, element *Cata
 }
 
 // UpdateCatalogElements обновляет информацию о нескольких элементах каталога за один запрос.
-func UpdateCatalogElements(apiClient *client.Client, catalogID int, elements []CatalogElement) ([]CatalogElement, error) {
+func UpdateCatalogElements(ctx context.Context, apiClient *client.Client, catalogID int, elements []CatalogElement) ([]CatalogElement, error) {
 	// Проверяем, что у всех элементов есть ID
 	for i := range elements {
 		if elements[i].ID == 0 {
@@ -357,7 +358,7 @@ func UpdateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(elementsJSON))
+	req, err := http.NewRequestWithContext(ctx,"PATCH", url, bytes.NewBuffer(elementsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +366,7 @@ func UpdateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -389,18 +390,18 @@ func UpdateCatalogElements(apiClient *client.Client, catalogID int, elements []C
 }
 
 // DeleteCatalogElement удаляет элемент каталога по его ID.
-func DeleteCatalogElement(apiClient *client.Client, catalogID, elementID int) error {
+func DeleteCatalogElement(ctx context.Context, apiClient *client.Client, catalogID, elementID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d", apiClient.GetBaseURL(), catalogID, elementID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -415,7 +416,7 @@ func DeleteCatalogElement(apiClient *client.Client, catalogID, elementID int) er
 }
 
 // BatchDeleteCatalogElements удаляет несколько элементов каталога за один запрос.
-func BatchDeleteCatalogElements(apiClient *client.Client, catalogID int, elementIDs []int) error {
+func BatchDeleteCatalogElements(ctx context.Context, apiClient *client.Client, catalogID int, elementIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
@@ -436,7 +437,7 @@ func BatchDeleteCatalogElements(apiClient *client.Client, catalogID int, element
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"DELETE", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -444,7 +445,7 @@ func BatchDeleteCatalogElements(apiClient *client.Client, catalogID int, element
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -459,7 +460,7 @@ func BatchDeleteCatalogElements(apiClient *client.Client, catalogID int, element
 }
 
 // LinkCatalogElementWithTags связывает элемент каталога с тегами.
-func LinkCatalogElementWithTags(apiClient *client.Client, catalogID, elementID int, tags []Tag) error {
+func LinkCatalogElementWithTags(ctx context.Context, apiClient *client.Client, catalogID, elementID int, tags []Tag) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d/tags", apiClient.GetBaseURL(), catalogID, elementID)
 
@@ -470,7 +471,7 @@ func LinkCatalogElementWithTags(apiClient *client.Client, catalogID, elementID i
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagsJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return err
 	}
@@ -478,7 +479,7 @@ func LinkCatalogElementWithTags(apiClient *client.Client, catalogID, elementID i
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -493,18 +494,18 @@ func LinkCatalogElementWithTags(apiClient *client.Client, catalogID, elementID i
 }
 
 // GetCatalogElementTags получает теги элемента каталога.
-func GetCatalogElementTags(apiClient *client.Client, catalogID, elementID int) ([]Tag, error) {
+func GetCatalogElementTags(ctx context.Context, apiClient *client.Client, catalogID, elementID int) ([]Tag, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d/tags", apiClient.GetBaseURL(), catalogID, elementID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

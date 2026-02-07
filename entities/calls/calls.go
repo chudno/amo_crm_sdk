@@ -1,8 +1,9 @@
-// Пакет calls предоставляет методы для работы со звонками в amoCRM.
+// Package calls предоставляет методы для работы со звонками в amoCRM.
 package calls
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -134,7 +135,7 @@ const (
 )
 
 // AddCall добавляет новый звонок в amoCRM.
-func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
+func AddCall(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
 	// Проверяем обязательные поля
 	if call.Direction == "" {
 		return nil, fmt.Errorf("direction is required")
@@ -161,7 +162,7 @@ func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(callJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(callJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +170,7 @@ func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +198,7 @@ func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
 }
 
 // GetCalls получает список звонков с возможностью фильтрации и пагинации.
-func GetCalls(apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Call, error) {
+func GetCalls(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Call, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/calls", apiClient.GetBaseURL())
 
@@ -224,13 +225,13 @@ func GetCalls(apiClient *client.Client, page, limit int, filter map[string]strin
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +265,7 @@ func stringsJoin(strings []string, sep string) string {
 }
 
 // GetCall получает информацию о конкретном звонке по его ID.
-func GetCall(apiClient *client.Client, callID int, withOptions ...WithOption) (*Call, error) {
+func GetCall(ctx context.Context, apiClient *client.Client, callID int, withOptions ...WithOption) (*Call, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
 
@@ -280,13 +281,13 @@ func GetCall(apiClient *client.Client, callID int, withOptions ...WithOption) (*
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +307,7 @@ func GetCall(apiClient *client.Client, callID int, withOptions ...WithOption) (*
 }
 
 // UpdateCall обновляет информацию о звонке.
-func UpdateCall(apiClient *client.Client, call *Call) (*Call, error) {
+func UpdateCall(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
 	if call.ID == 0 {
 		return nil, fmt.Errorf("ID звонка не может быть пустым")
 	}
@@ -321,7 +322,7 @@ func UpdateCall(apiClient *client.Client, call *Call) (*Call, error) {
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(callJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(callJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +330,7 @@ func UpdateCall(apiClient *client.Client, call *Call) (*Call, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -349,18 +350,18 @@ func UpdateCall(apiClient *client.Client, call *Call) (*Call, error) {
 }
 
 // DeleteCall удаляет звонок по его ID.
-func DeleteCall(apiClient *client.Client, callID int) error {
+func DeleteCall(ctx context.Context, apiClient *client.Client, callID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -375,7 +376,7 @@ func DeleteCall(apiClient *client.Client, callID int) error {
 }
 
 // LinkCallWithEntity связывает звонок с сущностью (сделкой, контактом, компанией).
-func LinkCallWithEntity(apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
+func LinkCallWithEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d/link", apiClient.GetBaseURL(), callID)
 
@@ -395,7 +396,7 @@ func LinkCallWithEntity(apiClient *client.Client, callID int, entityType EntityT
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -403,7 +404,7 @@ func LinkCallWithEntity(apiClient *client.Client, callID int, entityType EntityT
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -418,7 +419,7 @@ func LinkCallWithEntity(apiClient *client.Client, callID int, entityType EntityT
 }
 
 // UnlinkCallFromEntity отвязывает звонок от сущности.
-func UnlinkCallFromEntity(apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
+func UnlinkCallFromEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d/unlink", apiClient.GetBaseURL(), callID)
 
@@ -438,7 +439,7 @@ func UnlinkCallFromEntity(apiClient *client.Client, callID int, entityType Entit
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -446,7 +447,7 @@ func UnlinkCallFromEntity(apiClient *client.Client, callID int, entityType Entit
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}

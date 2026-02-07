@@ -26,12 +26,17 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/notes"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+
+// Создаем контекст
+ctx := context.Background()
 
 // Создание текстового примечания для контакта
 newNote := &notes.Note{
@@ -44,7 +49,7 @@ newNote := &notes.Note{
 }
 
 // Сохранение примечания
-createdNote, err := notes.CreateNote(apiClient, newNote)
+createdNote, err := notes.CreateNote(ctx, apiClient, newNote)
 if err != nil {
     // Обработка ошибки
 }
@@ -63,7 +68,7 @@ callNote := &notes.Note{
 }
 
 // Сохранение примечания о звонке
-createdCallNote, err := notes.CreateNote(apiClient, callNote)
+createdCallNote, err := notes.CreateNote(ctx, apiClient, callNote)
 ```
 
 ## Получение примечания
@@ -71,7 +76,7 @@ createdCallNote, err := notes.CreateNote(apiClient, callNote)
 ```go
 // Получение примечания по ID
 noteID := 12345
-note, err := notes.GetNote(apiClient, noteID)
+note, err := notes.GetNote(ctx, apiClient, noteID)
 if err != nil {
     // Обработка ошибки
 }
@@ -86,7 +91,7 @@ filter := map[string]string{
     "filter[entity_id]": fmt.Sprintf("%d", contactID),
     "filter[entity_type]": notes.EntityTypeContact,
 }
-notesList, err := notes.GetNotes(apiClient, 1, 50, filter)
+notesList, err := notes.GetNotes(ctx, apiClient, 1, 50, filter)
 if err != nil {
     // Обработка ошибки
 }
@@ -97,7 +102,7 @@ typeFilter := map[string]string{
     "filter[entity_type]": notes.EntityTypeContact,
     "filter[note_type]": fmt.Sprintf("%d", notes.TypeIncomingCall), // Только примечания о входящих звонках
 }
-callNotes, err := notes.GetNotes(apiClient, 1, 50, typeFilter)
+callNotes, err := notes.GetNotes(ctx, apiClient, 1, 50, typeFilter)
 ```
 
 ## Обновление примечания
@@ -106,7 +111,7 @@ callNotes, err := notes.GetNotes(apiClient, 1, 50, typeFilter)
 // Обновление существующего примечания
 note.Params.Text = "Клиент очень заинтересован в нашем предложении"
 
-updatedNote, err := notes.UpdateNote(apiClient, note)
+updatedNote, err := notes.UpdateNote(ctx, apiClient, note)
 if err != nil {
     // Обработка ошибки
 }

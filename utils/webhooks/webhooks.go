@@ -1,8 +1,9 @@
-// Пакет webhooks предоставляет методы для взаимодействия с вебхуками в API amoCRM.
+// Package webhooks предоставляет методы для взаимодействия с вебхуками в API amoCRM.
 package webhooks
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/chudno/amo_crm_sdk/client"
@@ -46,15 +47,15 @@ const (
 )
 
 // GetWebhook получает вебхук по его ID.
-func GetWebhook(apiClient *client.Client, webhookID int) (*Webhook, error) {
+func GetWebhook(ctx context.Context, apiClient *client.Client, webhookID int) (*Webhook, error) {
 	url := fmt.Sprintf("%s/api/v4/webhooks/%d", apiClient.GetBaseURL(), webhookID)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +70,7 @@ func GetWebhook(apiClient *client.Client, webhookID int) (*Webhook, error) {
 }
 
 // CreateWebhook создает новый вебхук в amoCRM.
-func CreateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
+func CreateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
 	url := fmt.Sprintf("%s/api/v4/webhooks", apiClient.GetBaseURL())
 
 	webhookData, err := json.Marshal(webhook)
@@ -77,14 +78,14 @@ func CreateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error)
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(webhookData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(webhookData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +100,7 @@ func CreateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error)
 }
 
 // UpdateWebhook обновляет существующий вебхук в amoCRM.
-func UpdateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
+func UpdateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
 	if webhook.ID == 0 {
 		return nil, fmt.Errorf("ID вебхука не указан")
 	}
@@ -111,14 +112,14 @@ func UpdateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error)
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(webhookData))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(webhookData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +134,7 @@ func UpdateWebhook(apiClient *client.Client, webhook *Webhook) (*Webhook, error)
 }
 
 // ListWebhooks получает список вебхуков с возможностью пагинации.
-func ListWebhooks(apiClient *client.Client, limit int, page int) ([]*Webhook, error) {
+func ListWebhooks(ctx context.Context, apiClient *client.Client, limit int, page int) ([]*Webhook, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/webhooks", apiClient.GetBaseURL())
 
 	// Добавляем параметры запроса
@@ -143,12 +144,12 @@ func ListWebhooks(apiClient *client.Client, limit int, page int) ([]*Webhook, er
 
 	url := baseURL + "?" + params.Encode()
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -173,15 +174,15 @@ func ListWebhooks(apiClient *client.Client, limit int, page int) ([]*Webhook, er
 }
 
 // DeleteWebhook удаляет вебхук по его ID.
-func DeleteWebhook(apiClient *client.Client, webhookID int) error {
+func DeleteWebhook(ctx context.Context, apiClient *client.Client, webhookID int) error {
 	url := fmt.Sprintf("%s/api/v4/webhooks/%d", apiClient.GetBaseURL(), webhookID)
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -196,7 +197,7 @@ func DeleteWebhook(apiClient *client.Client, webhookID int) error {
 }
 
 // CreateSimpleWebhook создает новый вебхук с указанными параметрами.
-func CreateSimpleWebhook(apiClient *client.Client, destination string, entities []string, actions []string) (*Webhook, error) {
+func CreateSimpleWebhook(ctx context.Context, apiClient *client.Client, destination string, entities []string, actions []string) (*Webhook, error) {
 	webhook := &Webhook{
 		Destination: destination,
 		Settings: &WebhookSettings{
@@ -205,5 +206,5 @@ func CreateSimpleWebhook(apiClient *client.Client, destination string, entities 
 		},
 	}
 
-	return CreateWebhook(apiClient, webhook)
+	return CreateWebhook(ctx, apiClient, webhook)
 }

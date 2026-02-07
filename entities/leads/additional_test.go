@@ -1,6 +1,7 @@
 package leads
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +56,7 @@ func TestUpdateLead(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedLead, err := UpdateLead(apiClient, leadToUpdate)
+	updatedLead, err := UpdateLead(context.Background(), apiClient, leadToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -95,7 +96,7 @@ func TestUpdateLeadWithoutID(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	_, err := UpdateLead(apiClient, leadToUpdate)
+	_, err := UpdateLead(context.Background(), apiClient, leadToUpdate)
 
 	// Проверяем результаты - должна быть ошибка
 	if err == nil {
@@ -128,7 +129,7 @@ func TestDeleteLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteLead(apiClient, leadID)
+	err := DeleteLead(context.Background(), apiClient, leadID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -240,7 +241,7 @@ func TestGetLeadWithOptions(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемый метод с опциями
-			lead, err := GetLead(apiClient, leadID, tc.withOptions...)
+			lead, err := GetLead(context.Background(), apiClient, leadID, tc.withOptions...)
 
 			// Проверяем результаты
 			if err != nil {

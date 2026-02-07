@@ -1,6 +1,7 @@
 package leads
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -41,7 +42,7 @@ func TestGetLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	lead, err := GetLead(apiClient, 123)
+	lead, err := GetLead(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -108,7 +109,7 @@ func TestCreateLead(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdLead, err := CreateLead(apiClient, leadToCreate)
+	createdLead, err := CreateLead(context.Background(), apiClient, leadToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -197,7 +198,7 @@ func TestListLeads(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			leads, err := ListLeads(apiClient, tt.limit, tt.page, nil)
+			leads, err := ListLeads(context.Background(), apiClient, tt.limit, tt.page, nil)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {

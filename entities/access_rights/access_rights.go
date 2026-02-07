@@ -1,6 +1,8 @@
+// Package access_rights предоставляет методы для работы с правами доступа в amoCRM.
 package access_rights
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,7 +14,7 @@ import (
 
 // Requester интерфейс для выполнения HTTP-запросов
 type Requester interface {
-	DoRequest(req *http.Request) (*http.Response, error)
+	DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 }
 
 // AccessRightsType определяет тип доступа
@@ -125,13 +127,13 @@ func WithType(accessType AccessRightsType) WithOption {
 // Пример использования:
 //
 //	// Фильтрация по типу
-//	rights, err := access_rights.GetAccessRights(apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
-func GetAccessRights(apiClient *client.Client, page, limit int, options ...WithOption) ([]AccessRight, error) {
-	return GetAccessRightsWithRequester(apiClient, page, limit, options...)
+//	rights, err := access_rights.GetAccessRights(ctx, apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
+func GetAccessRights(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]AccessRight, error) {
+	return GetAccessRightsWithRequester(ctx, apiClient, page, limit, options...)
 }
 
 // GetAccessRightsWithRequester получает список прав доступа с использованием интерфейса Requester
-func GetAccessRightsWithRequester(requester Requester, page, limit int, options ...WithOption) ([]AccessRight, error) {
+func GetAccessRightsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]AccessRight, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -154,8 +156,8 @@ func GetAccessRightsWithRequester(requester Requester, page, limit int, options 
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -164,13 +166,13 @@ func GetAccessRightsWithRequester(requester Requester, page, limit int, options 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -200,20 +202,20 @@ func GetAccessRightsWithRequester(requester Requester, page, limit int, options 
 //
 // Пример использования:
 //
-//	accessRight, err := access_rights.GetAccessRight(apiClient, 123)
-func GetAccessRight(apiClient *client.Client, accessRightID int) (*AccessRight, error) {
-	return GetAccessRightWithRequester(apiClient, accessRightID)
+//	accessRight, err := access_rights.GetAccessRight(ctx, apiClient, 123)
+func GetAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int) (*AccessRight, error) {
+	return GetAccessRightWithRequester(ctx, apiClient, accessRightID)
 }
 
 // GetAccessRightWithRequester получает информацию о конкретном праве доступа по ID с использованием интерфейса Requester
-func GetAccessRightWithRequester(requester Requester, accessRightID int) (*AccessRight, error) {
+func GetAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int) (*AccessRight, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -222,13 +224,13 @@ func GetAccessRightWithRequester(requester Requester, accessRightID int) (*Acces
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -264,13 +266,13 @@ func GetAccessRightWithRequester(requester Requester, accessRightID int) (*Acces
 //		},
 //		UserIDs: []int{123, 456},
 //	}
-//	createdRight, err := access_rights.CreateAccessRight(apiClient, newRight)
-func CreateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
-	return CreateAccessRightWithRequester(apiClient, accessRight)
+//	createdRight, err := access_rights.CreateAccessRight(ctx, apiClient, newRight)
+func CreateAccessRight(ctx context.Context, apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
+	return CreateAccessRightWithRequester(ctx, apiClient, accessRight)
 }
 
 // CreateAccessRightWithRequester создает новое право доступа с использованием интерфейса Requester
-func CreateAccessRightWithRequester(requester Requester, accessRight *AccessRight) (*AccessRight, error) {
+func CreateAccessRightWithRequester(ctx context.Context, requester Requester, accessRight *AccessRight) (*AccessRight, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/access_rights"
 
@@ -282,8 +284,8 @@ func CreateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -292,14 +294,14 @@ func CreateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -336,13 +338,13 @@ func CreateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 //		},
 //		UserIDs: []int{123, 456, 789},
 //	}
-//	updatedRight, err := access_rights.UpdateAccessRight(apiClient, updateRight)
-func UpdateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
-	return UpdateAccessRightWithRequester(apiClient, accessRight)
+//	updatedRight, err := access_rights.UpdateAccessRight(ctx, apiClient, updateRight)
+func UpdateAccessRight(ctx context.Context, apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
+	return UpdateAccessRightWithRequester(ctx, apiClient, accessRight)
 }
 
 // UpdateAccessRightWithRequester обновляет существующее право доступа с использованием интерфейса Requester
-func UpdateAccessRightWithRequester(requester Requester, accessRight *AccessRight) (*AccessRight, error) {
+func UpdateAccessRightWithRequester(ctx context.Context, requester Requester, accessRight *AccessRight) (*AccessRight, error) {
 	if accessRight.ID == 0 {
 		return nil, fmt.Errorf("ID права доступа не может быть пустым")
 	}
@@ -358,8 +360,8 @@ func UpdateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -368,14 +370,14 @@ func UpdateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -399,20 +401,20 @@ func UpdateAccessRightWithRequester(requester Requester, accessRight *AccessRigh
 //
 // Пример использования:
 //
-//	err := access_rights.DeleteAccessRight(apiClient, 123)
-func DeleteAccessRight(apiClient *client.Client, accessRightID int) error {
-	return DeleteAccessRightWithRequester(apiClient, accessRightID)
+//	err := access_rights.DeleteAccessRight(ctx, apiClient, 123)
+func DeleteAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int) error {
+	return DeleteAccessRightWithRequester(ctx, apiClient, accessRightID)
 }
 
 // DeleteAccessRightWithRequester удаляет право доступа с использованием интерфейса Requester
-func DeleteAccessRightWithRequester(requester Requester, accessRightID int) error {
+func DeleteAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -421,13 +423,13 @@ func DeleteAccessRightWithRequester(requester Requester, accessRightID int) erro
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -450,13 +452,13 @@ func DeleteAccessRightWithRequester(requester Requester, accessRightID int) erro
 //		Edit: true,
 //		Add: true,
 //	}
-//	updatedRight, err := access_rights.SetEntityRights(apiClient, 123, access_rights.EntityLead, entityRights)
-func SetEntityRights(apiClient *client.Client, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
-	return SetEntityRightsWithRequester(apiClient, accessRightID, entityType, rights)
+//	updatedRight, err := access_rights.SetEntityRights(ctx, apiClient, 123, access_rights.EntityLead, entityRights)
+func SetEntityRights(ctx context.Context, apiClient *client.Client, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
+	return SetEntityRightsWithRequester(ctx, apiClient, accessRightID, entityType, rights)
 }
 
 // SetEntityRightsWithRequester обновляет права доступа к конкретной сущности с использованием интерфейса Requester
-func SetEntityRightsWithRequester(requester Requester, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
+func SetEntityRightsWithRequester(ctx context.Context, requester Requester, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
@@ -477,8 +479,8 @@ func SetEntityRightsWithRequester(requester Requester, accessRightID int, entity
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -487,14 +489,14 @@ func SetEntityRightsWithRequester(requester Requester, accessRightID int, entity
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -519,15 +521,15 @@ func SetEntityRightsWithRequester(requester Requester, accessRightID int, entity
 // Пример использования:
 //
 //	userIDs := []int{123, 456, 789}
-//	updatedRight, err := access_rights.AddUsersToAccessRight(apiClient, 123, userIDs)
-func AddUsersToAccessRight(apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
-	return AddUsersToAccessRightWithRequester(apiClient, accessRightID, userIDs)
+//	updatedRight, err := access_rights.AddUsersToAccessRight(ctx, apiClient, 123, userIDs)
+func AddUsersToAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
+	return AddUsersToAccessRightWithRequester(ctx, apiClient, accessRightID, userIDs)
 }
 
 // AddUsersToAccessRightWithRequester добавляет пользователей в право доступа с использованием интерфейса Requester
-func AddUsersToAccessRightWithRequester(requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
+func AddUsersToAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
 	// Получаем текущее право доступа
-	currentRight, err := GetAccessRightWithRequester(requester, accessRightID)
+	currentRight, err := GetAccessRightWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
@@ -564,8 +566,8 @@ func AddUsersToAccessRightWithRequester(requester Requester, accessRightID int, 
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -574,14 +576,14 @@ func AddUsersToAccessRightWithRequester(requester Requester, accessRightID int, 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -606,15 +608,15 @@ func AddUsersToAccessRightWithRequester(requester Requester, accessRightID int, 
 // Пример использования:
 //
 //	userIDs := []int{123, 456}
-//	updatedRight, err := access_rights.RemoveUsersFromAccessRight(apiClient, 123, userIDs)
-func RemoveUsersFromAccessRight(apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
-	return RemoveUsersFromAccessRightWithRequester(apiClient, accessRightID, userIDs)
+//	updatedRight, err := access_rights.RemoveUsersFromAccessRight(ctx, apiClient, 123, userIDs)
+func RemoveUsersFromAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
+	return RemoveUsersFromAccessRightWithRequester(ctx, apiClient, accessRightID, userIDs)
 }
 
 // RemoveUsersFromAccessRightWithRequester удаляет пользователей из права доступа с использованием интерфейса Requester
-func RemoveUsersFromAccessRightWithRequester(requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
+func RemoveUsersFromAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
 	// Получаем текущее право доступа
-	currentRight, err := GetAccessRightWithRequester(requester, accessRightID)
+	currentRight, err := GetAccessRightWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
@@ -651,8 +653,8 @@ func RemoveUsersFromAccessRightWithRequester(requester Requester, accessRightID 
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -661,14 +663,14 @@ func RemoveUsersFromAccessRightWithRequester(requester Requester, accessRightID 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}

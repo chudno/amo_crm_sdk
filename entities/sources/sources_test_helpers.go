@@ -1,6 +1,7 @@
 package sources
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -44,7 +45,7 @@ func NewAdvancedMockClient(baseURL string, defaultResponse MockResponse) *Advanc
 }
 
 // DoRequest реализует метод DoRequest из интерфейса Requester
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Получаем тело запроса, если оно есть
 	var bodyStr string
 	if req.Body != nil {

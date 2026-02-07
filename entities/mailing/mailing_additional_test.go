@@ -1,6 +1,7 @@
 package mailing
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -24,7 +25,7 @@ func TestGetMailingStats(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		stats, err := GetMailingStatsWithRequester(mockClient, 1001)
+		stats, err := GetMailingStatsWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -83,7 +84,7 @@ func TestGetMailingStats(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		stats, err := GetMailingStatsWithRequester(mockClient, 9999)
+		stats, err := GetMailingStatsWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -109,7 +110,7 @@ func TestAddMailingRecipients(t *testing.T) {
 		contactIDs := []int{1001, 1002, 1003}
 
 		// Вызываем тестируемую функцию
-		err := AddMailingRecipientsWithRequester(mockClient, 1001, contactIDs)
+		err := AddMailingRecipientsWithRequester(context.Background(), mockClient, 1001, contactIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -152,7 +153,7 @@ func TestAddMailingRecipients(t *testing.T) {
 		contactIDs := []int{-1, -2}
 
 		// Вызываем тестируемую функцию
-		err := AddMailingRecipientsWithRequester(mockClient, 1001, contactIDs)
+		err := AddMailingRecipientsWithRequester(context.Background(), mockClient, 1001, contactIDs)
 
 		// Проверяем результаты
 		if err == nil {
@@ -174,7 +175,7 @@ func TestRemoveMailingRecipients(t *testing.T) {
 		contactIDs := []int{1001, 1002}
 
 		// Вызываем тестируемую функцию
-		err := RemoveMailingRecipientsWithRequester(mockClient, 1001, contactIDs)
+		err := RemoveMailingRecipientsWithRequester(context.Background(), mockClient, 1001, contactIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -217,7 +218,7 @@ func TestRemoveMailingRecipients(t *testing.T) {
 		contactIDs := []int{-1, -2}
 
 		// Вызываем тестируемую функцию
-		err := RemoveMailingRecipientsWithRequester(mockClient, 1001, contactIDs)
+		err := RemoveMailingRecipientsWithRequester(context.Background(), mockClient, 1001, contactIDs)
 
 		// Проверяем результаты
 		if err == nil {
@@ -255,7 +256,7 @@ func TestGetMailingTemplates(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		templates, err := GetMailingTemplatesWithRequester(mockClient, 1, 50)
+		templates, err := GetMailingTemplatesWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -315,7 +316,7 @@ func TestGetMailingTemplates(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		templates, err := GetMailingTemplatesWithRequester(mockClient, 1, 50)
+		templates, err := GetMailingTemplatesWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -336,7 +337,7 @@ func TestGetMailingTemplates(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		templates, err := GetMailingTemplatesWithRequester(mockClient, 1, 50)
+		templates, err := GetMailingTemplatesWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err == nil {
@@ -365,7 +366,7 @@ func TestGetMailingTemplate(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		template, err := GetMailingTemplateWithRequester(mockClient, 101)
+		template, err := GetMailingTemplateWithRequester(context.Background(), mockClient, 101)
 
 		// Проверяем результаты
 		if err != nil {
@@ -418,7 +419,7 @@ func TestGetMailingTemplate(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		template, err := GetMailingTemplateWithRequester(mockClient, 9999)
+		template, err := GetMailingTemplateWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {

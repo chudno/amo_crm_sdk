@@ -1,13 +1,15 @@
-// Пакет notes предоставляет методы для взаимодействия с сущностями "Примечания" в API amoCRM.
+// Package notes предоставляет методы для взаимодействия с сущностями "Примечания" в API amoCRM.
 package notes
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/chudno/amo_crm_sdk/client"
 	"net/http"
 	"time"
+
+	"github.com/chudno/amo_crm_sdk/client"
 )
 
 // Note представляет собой структуру примечания в amoCRM.
@@ -33,14 +35,14 @@ type NoteParams struct {
 }
 
 // GetNote получает примечание по его ID.
-func GetNote(apiClient *client.Client, entityType string, entityID int, noteID int) (*Note, error) {
+func GetNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, noteID)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -55,21 +57,21 @@ func GetNote(apiClient *client.Client, entityType string, entityID int, noteID i
 }
 
 // CreateNote создает новое примечание в amoCRM.
-func CreateNote(apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
+func CreateNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes", apiClient.GetBaseURL(), entityType, entityID)
 	noteJSON, err := json.Marshal(note)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(noteJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(noteJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -84,21 +86,21 @@ func CreateNote(apiClient *client.Client, entityType string, entityID int, note 
 }
 
 // UpdateNote обновляет существующее примечание в amoCRM.
-func UpdateNote(apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
+func UpdateNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, note.ID)
 	noteJSON, err := json.Marshal(note)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(noteJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(noteJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +115,14 @@ func UpdateNote(apiClient *client.Client, entityType string, entityID int, note 
 }
 
 // ListNotes получает список примечаний для указанной сущности с возможностью фильтрации и пагинации.
-func ListNotes(apiClient *client.Client, entityType string, entityID int, limit int, page int) ([]Note, error) {
+func ListNotes(ctx context.Context, apiClient *client.Client, entityType string, entityID int, limit int, page int) ([]Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes?limit=%d&page=%d", apiClient.GetBaseURL(), entityType, entityID, limit, page)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -140,14 +142,14 @@ func ListNotes(apiClient *client.Client, entityType string, entityID int, limit 
 }
 
 // DeleteNote удаляет примечание по его ID.
-func DeleteNote(apiClient *client.Client, entityType string, entityID int, noteID int) error {
+func DeleteNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) error {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, noteID)
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}

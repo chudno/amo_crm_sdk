@@ -1,8 +1,9 @@
-// Пакет catalogs предоставляет методы для взаимодействия с сущностями "Каталоги" в API amoCRM.
+// Package catalogs предоставляет методы для взаимодействия с сущностями "Каталоги" в API amoCRM.
 package catalogs
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -73,7 +74,7 @@ const (
 )
 
 // GetCatalogs получает список каталогов с возможностью пагинации и фильтрации.
-func GetCatalogs(apiClient *client.Client, page, limit int, filter map[string]string) ([]Catalog, error) {
+func GetCatalogs(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Catalog, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
@@ -91,12 +92,12 @@ func GetCatalogs(apiClient *client.Client, page, limit int, filter map[string]st
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,7 @@ func GetCatalogs(apiClient *client.Client, page, limit int, filter map[string]st
 }
 
 // CreateCatalog создает новый каталог.
-func CreateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
+func CreateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
@@ -127,7 +128,7 @@ func CreateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(catalogJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(catalogJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +136,7 @@ func CreateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -155,18 +156,18 @@ func CreateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 }
 
 // GetCatalog получает информацию о каталоге по его ID.
-func GetCatalog(apiClient *client.Client, catalogID int) (*Catalog, error) {
+func GetCatalog(ctx context.Context, apiClient *client.Client, catalogID int) (*Catalog, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +187,7 @@ func GetCatalog(apiClient *client.Client, catalogID int) (*Catalog, error) {
 }
 
 // UpdateCatalog обновляет информацию о каталоге по его ID.
-func UpdateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
+func UpdateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
 	if catalog.ID == 0 {
 		return nil, fmt.Errorf("ID каталога не может быть пустым")
 	}
@@ -201,7 +202,7 @@ func UpdateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(catalogJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(catalogJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +210,7 @@ func UpdateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -229,18 +230,18 @@ func UpdateCatalog(apiClient *client.Client, catalog *Catalog) (*Catalog, error)
 }
 
 // DeleteCatalog удаляет каталог по его ID.
-func DeleteCatalog(apiClient *client.Client, catalogID int) error {
+func DeleteCatalog(ctx context.Context, apiClient *client.Client, catalogID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -255,7 +256,7 @@ func DeleteCatalog(apiClient *client.Client, catalogID int) error {
 }
 
 // AddCustomFieldToCatalog добавляет пользовательское поле в каталог
-func AddCustomFieldToCatalog(apiClient *client.Client, catalogID int, customField *CustomField) (*CustomField, error) {
+func AddCustomFieldToCatalog(ctx context.Context, apiClient *client.Client, catalogID int, customField *CustomField) (*CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
@@ -266,7 +267,7 @@ func AddCustomFieldToCatalog(apiClient *client.Client, catalogID int, customFiel
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(fieldJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(fieldJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +275,7 @@ func AddCustomFieldToCatalog(apiClient *client.Client, catalogID int, customFiel
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -294,18 +295,18 @@ func AddCustomFieldToCatalog(apiClient *client.Client, catalogID int, customFiel
 }
 
 // GetCatalogCustomFields получает список пользовательских полей каталога
-func GetCatalogCustomFields(apiClient *client.Client, catalogID int) ([]CustomField, error) {
+func GetCatalogCustomFields(ctx context.Context, apiClient *client.Client, catalogID int) ([]CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -329,18 +330,18 @@ func GetCatalogCustomFields(apiClient *client.Client, catalogID int) ([]CustomFi
 }
 
 // GetCatalogCustomField получает информацию о пользовательском поле каталога по ID
-func GetCatalogCustomField(apiClient *client.Client, catalogID, fieldID int) (*CustomField, error) {
+func GetCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) (*CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +361,7 @@ func GetCatalogCustomField(apiClient *client.Client, catalogID, fieldID int) (*C
 }
 
 // UpdateCatalogCustomField обновляет пользовательское поле каталога
-func UpdateCatalogCustomField(apiClient *client.Client, catalogID int, field *CustomField) (*CustomField, error) {
+func UpdateCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID int, field *CustomField) (*CustomField, error) {
 	if field.ID == 0 {
 		return nil, fmt.Errorf("ID поля не может быть пустым")
 	}
@@ -375,7 +376,7 @@ func UpdateCatalogCustomField(apiClient *client.Client, catalogID int, field *Cu
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(fieldJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(fieldJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -383,7 +384,7 @@ func UpdateCatalogCustomField(apiClient *client.Client, catalogID int, field *Cu
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -403,18 +404,18 @@ func UpdateCatalogCustomField(apiClient *client.Client, catalogID int, field *Cu
 }
 
 // DeleteCatalogCustomField удаляет пользовательское поле каталога
-func DeleteCatalogCustomField(apiClient *client.Client, catalogID, fieldID int) error {
+func DeleteCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}

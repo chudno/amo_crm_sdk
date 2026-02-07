@@ -1,6 +1,7 @@
 package catalog_elements
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -117,7 +118,7 @@ func TestCreateCatalogElements(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdElements, err := CreateCatalogElements(apiClient, catalogID, elements)
+	createdElements, err := CreateCatalogElements(context.Background(), apiClient, catalogID, elements)
 
 	// Проверяем результаты
 	if err != nil {
@@ -248,7 +249,7 @@ func TestUpdateCatalogElements(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedElements, err := UpdateCatalogElements(apiClient, catalogID, elements)
+	updatedElements, err := UpdateCatalogElements(context.Background(), apiClient, catalogID, elements)
 
 	// Проверяем результаты
 	if err != nil {
@@ -308,7 +309,7 @@ func TestBatchDeleteCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := BatchDeleteCatalogElements(apiClient, catalogID, elementIDs)
+	err := BatchDeleteCatalogElements(context.Background(), apiClient, catalogID, elementIDs)
 
 	// Проверяем результаты
 	if err != nil {

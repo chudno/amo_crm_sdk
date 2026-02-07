@@ -1,6 +1,8 @@
+// Package widgets предоставляет методы для работы с виджетами в amoCRM.
 package widgets
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,7 +14,7 @@ import (
 
 // Requester интерфейс для выполнения HTTP-запросов
 type Requester interface {
-	DoRequest(req *http.Request) (*http.Response, error)
+	DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 }
 
 // WidgetType определяет тип виджета
@@ -57,7 +59,7 @@ type Widget struct {
 	CreatedAt      int          `json:"created_at,omitempty"`
 	UpdatedAt      int          `json:"updated_at,omitempty"`
 	AccountID      int          `json:"account_id,omitempty"`
-	Settings       interface{}  `json:"settings,omitempty"`
+	Settings       any  `json:"settings,omitempty"`
 	Rights         *Rights      `json:"rights,omitempty"`
 	Marketplace    *Marketplace `json:"marketplace,omitempty"`
 	IsConfigured   bool         `json:"is_configured,omitempty"`
@@ -133,12 +135,12 @@ func WithWidgetTypes(types []WidgetType) WithOption {
 //	// Фильтрация по типу
 //	types := []widgets.WidgetType{widgets.WidgetTypeIntercom, widgets.WidgetTypeCallback}
 //	widgetsList, err := widgets.GetWidgets(apiClient, 1, 50, widgets.WithWidgetTypes(types))
-func GetWidgets(apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error) {
-	return GetWidgetsWithRequester(apiClient, page, limit, options...)
+func GetWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error) {
+	return GetWidgetsWithRequester(ctx, apiClient, page, limit, options...)
 }
 
 // GetWidgetsWithRequester получает список виджетов с использованием интерфейса Requester
-func GetWidgetsWithRequester(requester Requester, page, limit int, options ...WithOption) ([]Widget, error) {
+func GetWidgetsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Widget, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -161,8 +163,8 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -171,13 +173,13 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -208,19 +210,19 @@ func GetWidgetsWithRequester(requester Requester, page, limit int, options ...Wi
 // Пример использования:
 //
 //	widget, err := widgets.GetWidget(apiClient, 123)
-func GetWidget(apiClient *client.Client, widgetID int) (*Widget, error) {
-	return GetWidgetWithRequester(apiClient, widgetID)
+func GetWidget(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, error) {
+	return GetWidgetWithRequester(ctx, apiClient, widgetID)
 }
 
 // GetWidgetWithRequester получает информацию о конкретном виджете по ID с использованием интерфейса Requester
-func GetWidgetWithRequester(requester Requester, widgetID int) (*Widget, error) {
+func GetWidgetWithRequester(ctx context.Context, requester Requester, widgetID int) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -229,13 +231,13 @@ func GetWidgetWithRequester(requester Requester, widgetID int) (*Widget, error) 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -260,12 +262,12 @@ func GetWidgetWithRequester(requester Requester, widgetID int) (*Widget, error) 
 // Пример использования:
 //
 //	widget, err := widgets.InstallWidget(apiClient, "intercom")
-func InstallWidget(apiClient *client.Client, code string) (*Widget, error) {
-	return InstallWidgetWithRequester(apiClient, code)
+func InstallWidget(ctx context.Context, apiClient *client.Client, code string) (*Widget, error) {
+	return InstallWidgetWithRequester(ctx, apiClient, code)
 }
 
 // InstallWidgetWithRequester устанавливает виджет из маркетплейса по его коду с использованием интерфейса Requester
-func InstallWidgetWithRequester(requester Requester, code string) (*Widget, error) {
+func InstallWidgetWithRequester(ctx context.Context, requester Requester, code string) (*Widget, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
@@ -284,8 +286,8 @@ func InstallWidgetWithRequester(requester Requester, code string) (*Widget, erro
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -294,14 +296,14 @@ func InstallWidgetWithRequester(requester Requester, code string) (*Widget, erro
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -325,23 +327,23 @@ func InstallWidgetWithRequester(requester Requester, code string) (*Widget, erro
 //
 // Пример использования:
 //
-//	 settings := map[string]interface{}{
+//	 settings := map[string]any{
 //			"api_key": "abc123",
 //			"active": true,
 //	 }
 //	 widget, err := widgets.UpdateWidgetSettings(apiClient, 123, settings)
-func UpdateWidgetSettings(apiClient *client.Client, widgetID int, settings interface{}) (*Widget, error) {
-	return UpdateWidgetSettingsWithRequester(apiClient, widgetID, settings)
+func UpdateWidgetSettings(ctx context.Context, apiClient *client.Client, widgetID int, settings any) (*Widget, error) {
+	return UpdateWidgetSettingsWithRequester(ctx, apiClient, widgetID, settings)
 }
 
 // UpdateWidgetSettingsWithRequester обновляет настройки виджета с использованием интерфейса Requester
-func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settings interface{}) (*Widget, error) {
+func UpdateWidgetSettingsWithRequester(ctx context.Context, requester Requester, widgetID int, settings any) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
 	// Создаем тело запроса
 	reqBody := struct {
-		Settings interface{} `json:"settings"`
+		Settings any `json:"settings"`
 	}{
 		Settings: settings,
 	}
@@ -354,8 +356,8 @@ func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settin
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -364,14 +366,14 @@ func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settin
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -396,19 +398,19 @@ func UpdateWidgetSettingsWithRequester(requester Requester, widgetID int, settin
 // Пример использования:
 //
 //	err := widgets.DeleteWidget(apiClient, 123)
-func DeleteWidget(apiClient *client.Client, widgetID int) error {
-	return DeleteWidgetWithRequester(apiClient, widgetID)
+func DeleteWidget(ctx context.Context, apiClient *client.Client, widgetID int) error {
+	return DeleteWidgetWithRequester(ctx, apiClient, widgetID)
 }
 
 // DeleteWidgetWithRequester удаляет виджет с использованием интерфейса Requester
-func DeleteWidgetWithRequester(requester Requester, widgetID int) error {
+func DeleteWidgetWithRequester(ctx context.Context, requester Requester, widgetID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -417,13 +419,13 @@ func DeleteWidgetWithRequester(requester Requester, widgetID int) error {
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -481,12 +483,12 @@ func WithCategory(categoryID int) WithOption {
 //
 //	// Фильтрация по категории
 //	widgetsList, err := widgets.GetMarketplaceWidgets(apiClient, 1, 50, widgets.WithCategory(123))
-func GetMarketplaceWidgets(apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
-	return GetMarketplaceWidgetsWithRequester(apiClient, page, limit, options...)
+func GetMarketplaceWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
+	return GetMarketplaceWidgetsWithRequester(ctx, apiClient, page, limit, options...)
 }
 
 // GetMarketplaceWidgetsWithRequester получает список доступных виджетов из маркетплейса с использованием интерфейса Requester
-func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
+func GetMarketplaceWidgetsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -509,8 +511,8 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -519,13 +521,13 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -536,7 +538,7 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// ��азбираем ответ
+	// Разбираем ответ
 	var marketplaceResponse struct {
 		Page     int `json:"page"`
 		PerPage  int `json:"per_page"`
@@ -557,12 +559,12 @@ func GetMarketplaceWidgetsWithRequester(requester Requester, page, limit int, op
 //
 //	// Деактивация виджета
 //	widget, err := widgets.SetWidgetStatus(apiClient, 123, widgets.WidgetStatusInactive)
-func SetWidgetStatus(apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error) {
-	return SetWidgetStatusWithRequester(apiClient, widgetID, status)
+func SetWidgetStatus(ctx context.Context, apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error) {
+	return SetWidgetStatusWithRequester(ctx, apiClient, widgetID, status)
 }
 
 // SetWidgetStatusWithRequester активирует или деактивирует виджет с использованием интерфейса Requester
-func SetWidgetStatusWithRequester(requester Requester, widgetID int, status WidgetStatus) (*Widget, error) {
+func SetWidgetStatusWithRequester(ctx context.Context, requester Requester, widgetID int, status WidgetStatus) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
@@ -581,8 +583,8 @@ func SetWidgetStatusWithRequester(requester Requester, widgetID int, status Widg
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -591,14 +593,14 @@ func SetWidgetStatusWithRequester(requester Requester, widgetID int, status Widg
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -622,7 +624,7 @@ func SetWidgetStatusWithRequester(requester Requester, widgetID int, status Widg
 type BulkWidgetInput struct {
 	WidgetIDs []int         `json:"widget_ids,omitempty"`
 	Codes     []string      `json:"codes,omitempty"`
-	Settings  []interface{} `json:"settings,omitempty"`
+	Settings  []any `json:"settings,omitempty"`
 }
 
 // BulkWidgetResponse ответ при массовых операциях с виджетами
@@ -636,12 +638,12 @@ type BulkWidgetResponse struct {
 //
 //	codes := []string{"intercom", "callback"}
 //	widgets, err := widgets.BulkInstallWidgets(apiClient, codes)
-func BulkInstallWidgets(apiClient *client.Client, codes []string) ([]Widget, error) {
-	return BulkInstallWidgetsWithRequester(apiClient, codes)
+func BulkInstallWidgets(ctx context.Context, apiClient *client.Client, codes []string) ([]Widget, error) {
+	return BulkInstallWidgetsWithRequester(ctx, apiClient, codes)
 }
 
 // BulkInstallWidgetsWithRequester массово устанавливает виджеты по их кодам с использованием интерфейса Requester
-func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Widget, error) {
+func BulkInstallWidgetsWithRequester(ctx context.Context, requester Requester, codes []string) ([]Widget, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
@@ -658,8 +660,8 @@ func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Wid
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -668,14 +670,14 @@ func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Wid
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -705,12 +707,12 @@ func BulkInstallWidgetsWithRequester(requester Requester, codes []string) ([]Wid
 //
 //	ids := []int{123, 456}
 //	err := widgets.BulkDeleteWidgets(apiClient, ids)
-func BulkDeleteWidgets(apiClient *client.Client, widgetIDs []int) error {
-	return BulkDeleteWidgetsWithRequester(apiClient, widgetIDs)
+func BulkDeleteWidgets(ctx context.Context, apiClient *client.Client, widgetIDs []int) error {
+	return BulkDeleteWidgetsWithRequester(ctx, apiClient, widgetIDs)
 }
 
 // BulkDeleteWidgetsWithRequester массово удаляет виджеты по их ID с использованием интерфейса Requester
-func BulkDeleteWidgetsWithRequester(requester Requester, widgetIDs []int) error {
+func BulkDeleteWidgetsWithRequester(ctx context.Context, requester Requester, widgetIDs []int) error {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
@@ -727,8 +729,8 @@ func BulkDeleteWidgetsWithRequester(requester Requester, widgetIDs []int) error 
 
 	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
-	if client, ok := requester.(*client.Client); ok {
-		baseURL = client.GetBaseURL()
+	if c, ok := requester.(*client.Client); ok {
+		baseURL = c.GetBaseURL()
 	}
 
 	fullURL := url
@@ -737,14 +739,14 @@ func BulkDeleteWidgetsWithRequester(requester Requester, widgetIDs []int) error 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", fullURL, strings.NewReader(string(reqBodyJSON)))
+	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}

@@ -1,6 +1,7 @@
 package pipelines
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -60,7 +61,7 @@ func TestGetPipeline(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	pipeline, err := GetPipeline(apiClient, 123)
+	pipeline, err := GetPipeline(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -141,7 +142,7 @@ func TestCreatePipeline(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdPipeline, err := CreatePipeline(apiClient, pipelineToCreate)
+	createdPipeline, err := CreatePipeline(context.Background(), apiClient, pipelineToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -212,7 +213,7 @@ func TestUpdatePipeline(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedPipeline, err := UpdatePipeline(apiClient, pipelineToUpdate)
+	updatedPipeline, err := UpdatePipeline(context.Background(), apiClient, pipelineToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -276,7 +277,7 @@ func TestListPipelines(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	pipelines, err := ListPipelines(apiClient)
+	pipelines, err := ListPipelines(context.Background(), apiClient)
 
 	// Проверяем результаты
 	if err != nil {
@@ -318,7 +319,7 @@ func TestDeletePipeline(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeletePipeline(apiClient, 123)
+	err := DeletePipeline(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -359,7 +360,7 @@ func TestGetStatus(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	status, err := GetStatus(apiClient, 123, 456)
+	status, err := GetStatus(context.Background(), apiClient, 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -435,7 +436,7 @@ func TestCreateStatus(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdStatus, err := CreateStatus(apiClient, 123, statusToCreate)
+	createdStatus, err := CreateStatus(context.Background(), apiClient, 123, statusToCreate)
 
 	// Проверяем результаты
 	if err != nil {

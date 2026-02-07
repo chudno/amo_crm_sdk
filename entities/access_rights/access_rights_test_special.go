@@ -1,6 +1,7 @@
 package access_rights
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -93,7 +94,7 @@ func TestSetEntityRights(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		updatedRight, err := SetEntityRights(apiClient, accessRightID, entityType, entityRights)
+		updatedRight, err := SetEntityRights(context.Background(), apiClient, accessRightID, entityType, entityRights)
 
 		// Проверяем результаты
 		if err != nil {
@@ -116,7 +117,7 @@ func TestSetEntityRights(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := SetEntityRightsWithRequester(mockClient, accessRightID, entityType, entityRights)
+		_, err := SetEntityRightsWithRequester(context.Background(), mockClient, accessRightID, entityType, entityRights)
 
 		// Проверяем результаты
 		if err == nil {
@@ -176,7 +177,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, updatedRightResponse, nil)
 
 		// Вызываем тестируемый метод
-		updatedRight, err := AddUsersToAccessRightWithRequester(mockClient, accessRightID, newUsers)
+		updatedRight, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, newUsers)
 
 		// Проверяем результаты
 		if err != nil {
@@ -214,7 +215,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := AddUsersToAccessRightWithRequester(mockClient, accessRightID, newUsers)
+		_, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, newUsers)
 
 		// Проверяем результаты
 		if err == nil {
@@ -234,7 +235,7 @@ func TestAddUsersToAccessRight(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := AddUsersToAccessRightWithRequester(mockClient, accessRightID, newUsers)
+		_, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, newUsers)
 
 		// Проверяем результаты
 		if err == nil {
@@ -291,7 +292,7 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, updatedRightResponse, nil)
 
 		// Вызываем тестируемый метод
-		updatedRight, err := RemoveUsersFromAccessRightWithRequester(mockClient, accessRightID, usersToRemove)
+		updatedRight, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, usersToRemove)
 
 		// Проверяем результаты
 		if err != nil {
@@ -328,7 +329,7 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := RemoveUsersFromAccessRightWithRequester(mockClient, accessRightID, usersToRemove)
+		_, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, usersToRemove)
 
 		// Проверяем результаты
 		if err == nil {
@@ -348,7 +349,7 @@ func TestRemoveUsersFromAccessRight(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := RemoveUsersFromAccessRightWithRequester(mockClient, accessRightID, usersToRemove)
+		_, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, usersToRemove)
 
 		// Проверяем результаты
 		if err == nil {

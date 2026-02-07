@@ -1,6 +1,7 @@
 package access_rights
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -52,7 +53,7 @@ func (c *AdvancedMockClient) AddResponse(method, path string, statusCode int, bo
 }
 
 // DoRequest реализует интерфейс Requester
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Ищем подходящий ответ для метода и пути
 	resp, found := c.Responses[MockRequest{Method: req.Method, Path: req.URL.Path}]
 

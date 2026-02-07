@@ -1,8 +1,9 @@
-// Пакет tasks предоставляет методы для взаимодействия с сущностями "Задачи" в API amoCRM.
+// Package tasks предоставляет методы для взаимодействия с сущностями "Задачи" в API amoCRM.
 package tasks
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/chudno/amo_crm_sdk/client"
@@ -40,15 +41,15 @@ const (
 )
 
 // GetTask получает задачу по её ID.
-func GetTask(apiClient *client.Client, taskID int) (*Task, error) {
+func GetTask(ctx context.Context, apiClient *client.Client, taskID int) (*Task, error) {
 	url := fmt.Sprintf("%s/api/v4/tasks/%d", apiClient.GetBaseURL(), taskID)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func GetTask(apiClient *client.Client, taskID int) (*Task, error) {
 }
 
 // CreateTask создает новую задачу в amoCRM.
-func CreateTask(apiClient *client.Client, task *Task) (*Task, error) {
+func CreateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
 	url := fmt.Sprintf("%s/api/v4/tasks", apiClient.GetBaseURL())
 
 	taskData, err := json.Marshal([]*Task{task})
@@ -71,14 +72,14 @@ func CreateTask(apiClient *client.Client, task *Task) (*Task, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(taskData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(taskData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +103,7 @@ func CreateTask(apiClient *client.Client, task *Task) (*Task, error) {
 }
 
 // UpdateTask обновляет существующую задачу в amoCRM.
-func UpdateTask(apiClient *client.Client, task *Task) (*Task, error) {
+func UpdateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
 	if task.ID == 0 {
 		return nil, fmt.Errorf("ID задачи не указан")
 	}
@@ -114,14 +115,14 @@ func UpdateTask(apiClient *client.Client, task *Task) (*Task, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(taskData))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(taskData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -136,18 +137,18 @@ func UpdateTask(apiClient *client.Client, task *Task) (*Task, error) {
 }
 
 // CompleteTask отмечает задачу как выполненную.
-func CompleteTask(apiClient *client.Client, taskID int, result string) (*Task, error) {
+func CompleteTask(ctx context.Context, apiClient *client.Client, taskID int, result string) (*Task, error) {
 	task := &Task{
 		ID:          taskID,
 		IsCompleted: true,
 		Result:      result,
 	}
 
-	return UpdateTask(apiClient, task)
+	return UpdateTask(ctx, apiClient, task)
 }
 
 // ListTasks получает список задач с возможностью фильтрации и пагинации.
-func ListTasks(apiClient *client.Client, limit int, page int, filter map[string]interface{}) ([]*Task, error) {
+func ListTasks(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Task, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/tasks", apiClient.GetBaseURL())
 
 	// Добавляем параметры запроса
@@ -166,12 +167,12 @@ func ListTasks(apiClient *client.Client, limit int, page int, filter map[string]
 
 	url := baseURL + "?" + params.Encode()
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -196,25 +197,29 @@ func ListTasks(apiClient *client.Client, limit int, page int, filter map[string]
 }
 
 // DeleteTask удаляет задачу по её ID.
-func DeleteTask(apiClient *client.Client, taskID int) error {
+func DeleteTask(ctx context.Context, apiClient *client.Client, taskID int) error {
 	url := fmt.Sprintf("%s/api/v4/tasks/%d", apiClient.GetBaseURL(), taskID)
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
+
 	return nil
 }
 
 // CreateTaskForEntity создает новую задачу, привязанную к сущности (лид, контакт, компания).
-func CreateTaskForEntity(apiClient *client.Client, entityType string, entityID int, taskTypeID int, text string, completeTill time.Time, responsibleUserID int) (*Task, error) {
+func CreateTaskForEntity(ctx context.Context, apiClient *client.Client, entityType string, entityID int, taskTypeID int, text string, completeTill time.Time, responsibleUserID int) (*Task, error) {
 	task := &Task{
 		EntityType:        entityType,
 		EntityID:          entityID,
@@ -224,5 +229,5 @@ func CreateTaskForEntity(apiClient *client.Client, entityType string, entityID i
 		ResponsibleUserID: responsibleUserID,
 	}
 
-	return CreateTask(apiClient, task)
+	return CreateTask(ctx, apiClient, task)
 }

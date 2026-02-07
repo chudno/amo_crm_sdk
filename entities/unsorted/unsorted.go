@@ -1,8 +1,9 @@
-// Пакет unsorted предоставляет методы для взаимодействия с API неразобранных заявок в amoCRM.
+// Package unsorted предоставляет методы для взаимодействия с API неразобранных заявок в amoCRM.
 package unsorted
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -87,11 +88,11 @@ type UnsortedCompany struct {
 // UnsortedMetadata представляет метаданные неразобранной заявки
 type UnsortedMetadata struct {
 	IP      string      `json:"ip,omitempty"`
-	Form    interface{} `json:"form,omitempty"`
+	Form    any `json:"form,omitempty"`
 	From    string      `json:"from,omitempty"`
 	To      string      `json:"to,omitempty"`
 	Subject string      `json:"subject,omitempty"`
-	Thread  interface{} `json:"thread,omitempty"`
+	Thread  any `json:"thread,omitempty"`
 	Service string      `json:"service,omitempty"`
 }
 
@@ -180,7 +181,7 @@ type UnsortedItem struct {
 }
 
 // CreateUnsortedLead создает неразобранную заявку с типом "Сделка"
-func CreateUnsortedLead(apiClient *client.Client, lead *UnsortedLeadCreate) (*UnsortedResponse, error) {
+func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *UnsortedLeadCreate) (*UnsortedResponse, error) {
 	// Устанавливаем временную метку создания, если не указана
 	if lead.CreatedAt == 0 {
 		lead.CreatedAt = time.Now().Unix()
@@ -201,7 +202,7 @@ func CreateUnsortedLead(apiClient *client.Client, lead *UnsortedLeadCreate) (*Un
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/api", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(leadJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(leadJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +210,7 @@ func CreateUnsortedLead(apiClient *client.Client, lead *UnsortedLeadCreate) (*Un
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +230,7 @@ func CreateUnsortedLead(apiClient *client.Client, lead *UnsortedLeadCreate) (*Un
 }
 
 // CreateUnsortedContact создает неразобранную заявку с типом "Контакт"
-func CreateUnsortedContact(apiClient *client.Client, contact *UnsortedContactCreate) (*UnsortedResponse, error) {
+func CreateUnsortedContact(ctx context.Context, apiClient *client.Client, contact *UnsortedContactCreate) (*UnsortedResponse, error) {
 	// Устанавливаем временную метку создания, если не указана
 	if contact.CreatedAt == 0 {
 		contact.CreatedAt = time.Now().Unix()
@@ -245,7 +246,7 @@ func CreateUnsortedContact(apiClient *client.Client, contact *UnsortedContactCre
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/api", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(contactJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(contactJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +254,7 @@ func CreateUnsortedContact(apiClient *client.Client, contact *UnsortedContactCre
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +274,7 @@ func CreateUnsortedContact(apiClient *client.Client, contact *UnsortedContactCre
 }
 
 // GetUnsortedLeads получает список неразобранных заявок с типом "Сделка"
-func GetUnsortedLeads(apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
+func GetUnsortedLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/leads/unsorted", apiClient.GetBaseURL())
 
@@ -291,13 +292,13 @@ func GetUnsortedLeads(apiClient *client.Client, page, limit int, filter map[stri
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +322,7 @@ func GetUnsortedLeads(apiClient *client.Client, page, limit int, filter map[stri
 }
 
 // GetUnsortedContacts получает список неразобранных заявок с типом "Контакт"
-func GetUnsortedContacts(apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
+func GetUnsortedContacts(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/unsorted", apiClient.GetBaseURL())
 
@@ -339,13 +340,13 @@ func GetUnsortedContacts(apiClient *client.Client, page, limit int, filter map[s
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -369,18 +370,18 @@ func GetUnsortedContacts(apiClient *client.Client, page, limit int, filter map[s
 }
 
 // GetUnsortedSummary получает сводку по неразобранным заявкам
-func GetUnsortedSummary(apiClient *client.Client) (map[string]interface{}, error) {
+func GetUnsortedSummary(ctx context.Context, apiClient *client.Client) (map[string]any, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/unsorted/summary", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +392,7 @@ func GetUnsortedSummary(apiClient *client.Client) (map[string]interface{}, error
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var response map[string]interface{}
+	var response map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
@@ -400,7 +401,7 @@ func GetUnsortedSummary(apiClient *client.Client) (map[string]interface{}, error
 }
 
 // AcceptUnsortedLead принимает неразобранную заявку сделки
-func AcceptUnsortedLead(apiClient *client.Client, unsortedUID string, statusID, responsibleUserID int) (int, error) {
+func AcceptUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedUID string, statusID, responsibleUserID int) (int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
@@ -420,7 +421,7 @@ func AcceptUnsortedLead(apiClient *client.Client, unsortedUID string, statusID, 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
 	}
@@ -428,7 +429,7 @@ func AcceptUnsortedLead(apiClient *client.Client, unsortedUID string, statusID, 
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return 0, err
 	}
@@ -454,7 +455,7 @@ func AcceptUnsortedLead(apiClient *client.Client, unsortedUID string, statusID, 
 }
 
 // AcceptUnsortedContact принимает неразобранную заявку контакта
-func AcceptUnsortedContact(apiClient *client.Client, unsortedUID string, responsibleUserID int) (int, error) {
+func AcceptUnsortedContact(ctx context.Context, apiClient *client.Client, unsortedUID string, responsibleUserID int) (int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
@@ -472,7 +473,7 @@ func AcceptUnsortedContact(apiClient *client.Client, unsortedUID string, respons
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
 	}
@@ -480,7 +481,7 @@ func AcceptUnsortedContact(apiClient *client.Client, unsortedUID string, respons
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return 0, err
 	}
@@ -506,18 +507,18 @@ func AcceptUnsortedContact(apiClient *client.Client, unsortedUID string, respons
 }
 
 // DeclineUnsortedLead отклоняет неразобранную заявку сделки
-func DeclineUnsortedLead(apiClient *client.Client, unsortedUID string) error {
+func DeclineUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -532,18 +533,18 @@ func DeclineUnsortedLead(apiClient *client.Client, unsortedUID string) error {
 }
 
 // DeclineUnsortedContact отклоняет неразобранную заявку контакта
-func DeclineUnsortedContact(apiClient *client.Client, unsortedUID string) error {
+func DeclineUnsortedContact(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -558,7 +559,7 @@ func DeclineUnsortedContact(apiClient *client.Client, unsortedUID string) error 
 }
 
 // LinkUnsortedLeadWithContact связывает неразобранную заявку сделки с контактом
-func LinkUnsortedLeadWithContact(apiClient *client.Client, unsortedUID string, contactID int) error {
+func LinkUnsortedLeadWithContact(ctx context.Context, apiClient *client.Client, unsortedUID string, contactID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -576,7 +577,7 @@ func LinkUnsortedLeadWithContact(apiClient *client.Client, unsortedUID string, c
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -584,7 +585,7 @@ func LinkUnsortedLeadWithContact(apiClient *client.Client, unsortedUID string, c
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -599,7 +600,7 @@ func LinkUnsortedLeadWithContact(apiClient *client.Client, unsortedUID string, c
 }
 
 // LinkUnsortedLeadWithCompany связывает неразобранную заявку сделки с компанией
-func LinkUnsortedLeadWithCompany(apiClient *client.Client, unsortedUID string, companyID int) error {
+func LinkUnsortedLeadWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -617,7 +618,7 @@ func LinkUnsortedLeadWithCompany(apiClient *client.Client, unsortedUID string, c
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -625,7 +626,7 @@ func LinkUnsortedLeadWithCompany(apiClient *client.Client, unsortedUID string, c
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -640,7 +641,7 @@ func LinkUnsortedLeadWithCompany(apiClient *client.Client, unsortedUID string, c
 }
 
 // LinkUnsortedContactWithCompany связывает неразобранную заявку контакта с компанией
-func LinkUnsortedContactWithCompany(apiClient *client.Client, unsortedUID string, companyID int) error {
+func LinkUnsortedContactWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -658,7 +659,7 @@ func LinkUnsortedContactWithCompany(apiClient *client.Client, unsortedUID string
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -666,7 +667,7 @@ func LinkUnsortedContactWithCompany(apiClient *client.Client, unsortedUID string
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}

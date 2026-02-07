@@ -1,6 +1,8 @@
+// Package events предоставляет методы для работы с событиями в amoCRM.
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -188,7 +190,7 @@ func WithOrder(field, order string) WithOption {
 //		"filter[entity_type]": string(events.EventEntityTypeLead),
 //	}
 //	eventsList, err := events.GetEvents(apiClient, events.WithFilter(filter), events.WithLimit(50), events.WithPage(1))
-func GetEvents(apiClient *client.Client, options ...WithOption) ([]Event, error) {
+func GetEvents(ctx context.Context, apiClient *client.Client, options ...WithOption) ([]Event, error) {
 	params := make(map[string]string)
 
 	// Применяем опции
@@ -210,13 +212,13 @@ func GetEvents(apiClient *client.Client, options ...WithOption) ([]Event, error)
 	fullURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), url)
 
 	// Создаем запрос
-	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -237,7 +239,7 @@ func GetEvents(apiClient *client.Client, options ...WithOption) ([]Event, error)
 // Пример использования:
 //
 //	event, err := events.GetEvent(apiClient, 123, events.WithEntity())
-func GetEvent(apiClient *client.Client, eventID int, options ...WithOption) (*Event, error) {
+func GetEvent(ctx context.Context, apiClient *client.Client, eventID int, options ...WithOption) (*Event, error) {
 	params := make(map[string]string)
 
 	// Применяем опции
@@ -259,13 +261,13 @@ func GetEvent(apiClient *client.Client, eventID int, options ...WithOption) (*Ev
 	fullURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), url)
 
 	// Создаем запрос
-	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}

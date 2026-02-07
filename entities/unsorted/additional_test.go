@@ -1,6 +1,7 @@
 package unsorted
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +45,7 @@ func TestAcceptUnsortedContact(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	contactID, err := AcceptUnsortedContact(apiClient, unsortedUID, responsibleUserID)
+	contactID, err := AcceptUnsortedContact(context.Background(), apiClient, unsortedUID, responsibleUserID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -82,7 +83,7 @@ func TestDeclineUnsortedContact(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeclineUnsortedContact(apiClient, unsortedUID)
+	err := DeclineUnsortedContact(context.Background(), apiClient, unsortedUID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -117,7 +118,7 @@ func TestLinkUnsortedLeadWithContact(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := LinkUnsortedLeadWithContact(apiClient, unsortedUID, contactID)
+	err := LinkUnsortedLeadWithContact(context.Background(), apiClient, unsortedUID, contactID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -152,7 +153,7 @@ func TestLinkUnsortedLeadWithCompany(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := LinkUnsortedLeadWithCompany(apiClient, unsortedUID, companyID)
+	err := LinkUnsortedLeadWithCompany(context.Background(), apiClient, unsortedUID, companyID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -187,7 +188,7 @@ func TestLinkUnsortedContactWithCompany(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := LinkUnsortedContactWithCompany(apiClient, unsortedUID, companyID)
+	err := LinkUnsortedContactWithCompany(context.Background(), apiClient, unsortedUID, companyID)
 
 	// Проверяем результаты
 	if err != nil {

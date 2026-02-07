@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -45,7 +46,7 @@ func TestGetWebhook(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	webhook, err := GetWebhook(apiClient, 123)
+	webhook, err := GetWebhook(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -122,7 +123,7 @@ func TestCreateWebhook(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdWebhook, err := CreateWebhook(apiClient, webhookToCreate)
+	createdWebhook, err := CreateWebhook(context.Background(), apiClient, webhookToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -193,7 +194,7 @@ func TestDeleteWebhook(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			err := DeleteWebhook(apiClient, tt.webhookID)
+			err := DeleteWebhook(context.Background(), apiClient, tt.webhookID)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {
@@ -276,7 +277,7 @@ func TestListWebhooks(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			webhooks, err := ListWebhooks(apiClient, tt.limit, tt.page)
+			webhooks, err := ListWebhooks(context.Background(), apiClient, tt.limit, tt.page)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {
@@ -363,7 +364,7 @@ func TestCreateSimpleWebhook(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	createdWebhook, err := CreateSimpleWebhook(apiClient, expectedDestination, expectedEntities, expectedActions)
+	createdWebhook, err := CreateSimpleWebhook(context.Background(), apiClient, expectedDestination, expectedEntities, expectedActions)
 
 	// Проверяем результаты
 	if err != nil {

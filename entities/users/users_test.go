@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -49,7 +50,7 @@ func TestGetUser(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	user, err := GetUser(apiClient, 123)
+	user, err := GetUser(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -122,7 +123,7 @@ func TestGetCurrentUser(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	user, err := GetCurrentUser(apiClient)
+	user, err := GetCurrentUser(context.Background(), apiClient)
 
 	// Проверяем результаты
 	if err != nil {
@@ -223,7 +224,7 @@ func TestListUsers(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	users, err := ListUsers(apiClient, 50, 1)
+	users, err := ListUsers(context.Background(), apiClient, 50, 1)
 
 	// Проверяем результаты
 	if err != nil {

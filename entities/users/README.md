@@ -22,6 +22,8 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/users"
 )
@@ -29,9 +31,12 @@ import (
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
+// Создаем контекст
+ctx := context.Background()
+
 // Получение пользователя по ID
 userID := 12345
-user, err := users.GetUser(apiClient, userID)
+user, err := users.GetUser(ctx, apiClient, userID)
 if err != nil {
     // Обработка ошибки
 }
@@ -46,7 +51,7 @@ fmt.Printf("Роль: %s\n", user.Rights)
 
 ```go
 // Получение всех пользователей
-usersList, err := users.GetUsers(apiClient)
+usersList, err := users.GetUsers(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -61,7 +66,7 @@ filter := map[string]string{
     "with": "role,group",  // Получить информацию о ролях и группах
     "page_size": "50",     // Количество пользователей на страницу
 }
-filteredUsers, err := users.GetUsers(apiClient, filter)
+filteredUsers, err := users.GetUsers(ctx, apiClient, filter)
 ```
 
 ## Поиск пользователей
@@ -72,7 +77,7 @@ query := "Иван"
 filter := map[string]string{
     "query": query,
 }
-foundUsers, err := users.GetUsers(apiClient, filter)
+foundUsers, err := users.GetUsers(ctx, apiClient, filter)
 if err != nil {
     // Обработка ошибки
 }
@@ -118,7 +123,7 @@ task := &tasks.Task{
 
 ```go
 // Получение сущности
-contact, err := contacts.GetContact(apiClient, contactID)
+contact, err := contacts.GetContact(ctx, apiClient, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -127,7 +132,7 @@ if err != nil {
 contact.ResponsibleUserID = 67890 // ID нового ответственного
 
 // Сохранение изменений
-updatedContact, err := contacts.UpdateContact(apiClient, contact)
+updatedContact, err := contacts.UpdateContact(ctx, apiClient, contact)
 if err != nil {
     // Обработка ошибки
 }

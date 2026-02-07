@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -121,7 +122,7 @@ func TestDoRequest(t *testing.T) {
 	}
 
 	// Выполняем запрос
-	resp, err := client.DoRequest(req)
+	resp, err := client.DoRequest(context.Background(), req)
 
 	// Проверяем результаты
 	if err != nil {

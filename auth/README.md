@@ -29,12 +29,13 @@ func GetAuthURL(redirectURI, clientID string) string
 ### GetAccessToken
 
 ```go
-func GetAccessToken(baseURL, redirectURI, clientID, clientSecret, code string) (*TokenResponse, error)
+func GetAccessToken(ctx context.Context, baseURL, redirectURI, clientID, clientSecret, code string) (*TokenResponse, error)
 ```
 
 Получает токен доступа по коду авторизации.
 
 **Параметры:**
+- `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `baseURL` - Базовый URL amoCRM (например, https://example.amocrm.ru)
 - `redirectURI` - URL перенаправления
 - `clientID` - ID приложения
@@ -48,12 +49,13 @@ func GetAccessToken(baseURL, redirectURI, clientID, clientSecret, code string) (
 ### RefreshAccessToken
 
 ```go
-func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*TokenResponse, error)
+func RefreshAccessToken(ctx context.Context, baseURL, clientID, clientSecret, refreshToken string) (*TokenResponse, error)
 ```
 
 Обновляет истекший токен доступа с помощью refresh-токена.
 
 **Параметры:**
+- `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `baseURL` - Базовый URL amoCRM
 - `clientID` - ID приложения
 - `clientSecret` - Секретный ключ приложения
@@ -66,12 +68,13 @@ func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*
 ### GetLongLivedToken
 
 ```go
-func GetLongLivedToken(baseURL, redirectURI, clientID, clientSecret string) (*TokenResponse, error)
+func GetLongLivedToken(ctx context.Context, baseURL, redirectURI, clientID, clientSecret string) (*TokenResponse, error)
 ```
 
 Получает долгоживущий токен доступа для серверных приложений.
 
 **Параметры:**
+- `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `baseURL` - Базовый URL amoCRM
 - `redirectURI` - URL перенаправления
 - `clientID` - ID приложения
@@ -86,13 +89,16 @@ func GetLongLivedToken(baseURL, redirectURI, clientID, clientSecret string) (*To
 ### Получение токена доступа по коду авторизации
 
 ```go
+import "context"
+
+ctx := context.Background()
 baseURL := "https://example.amocrm.ru"
 redirectURI := "https://example.com/oauth2/callback"
 clientID := "your-client-id"
 clientSecret := "your-client-secret"
 code := "auth-code-from-redirect"
 
-tokenResponse, err := auth.GetAccessToken(baseURL, redirectURI, clientID, clientSecret, code)
+tokenResponse, err := auth.GetAccessToken(ctx, baseURL, redirectURI, clientID, clientSecret, code)
 if err != nil {
     log.Fatalf("Ошибка получения токена: %v", err)
 }
@@ -103,12 +109,15 @@ if err != nil {
 ### Обновление токена доступа
 
 ```go
+import "context"
+
+ctx := context.Background()
 baseURL := "https://example.amocrm.ru"
 clientID := "your-client-id"
 clientSecret := "your-client-secret"
 refreshToken := "your-refresh-token"
 
-newTokens, err := auth.RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken)
+newTokens, err := auth.RefreshAccessToken(ctx, baseURL, clientID, clientSecret, refreshToken)
 if err != nil {
     log.Fatalf("Ошибка обновления токена: %v", err)
 }

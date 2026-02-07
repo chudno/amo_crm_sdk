@@ -1,11 +1,13 @@
-// Пакет users предоставляет методы для взаимодействия с сущностями "Пользователи" в API amoCRM.
+// Package users предоставляет методы для взаимодействия с сущностями "Пользователи" в API amoCRM.
 package users
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/chudno/amo_crm_sdk/client"
 	"net/http"
+
+	"github.com/chudno/amo_crm_sdk/client"
 )
 
 // User представляет собой структуру пользователя в amoCRM.
@@ -31,14 +33,14 @@ type Rights struct {
 }
 
 // GetUser получает пользователя по его ID.
-func GetUser(apiClient *client.Client, userID int) (*User, error) {
+func GetUser(ctx context.Context, apiClient *client.Client, userID int) (*User, error) {
 	url := fmt.Sprintf("%s/api/v4/users/%d", apiClient.GetBaseURL(), userID)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +60,14 @@ func GetUser(apiClient *client.Client, userID int) (*User, error) {
 }
 
 // GetCurrentUser получает информацию о текущем пользователе (владельце API-ключа).
-func GetCurrentUser(apiClient *client.Client) (*User, error) {
+func GetCurrentUser(ctx context.Context, apiClient *client.Client) (*User, error) {
 	url := fmt.Sprintf("%s/api/v4/users/self", apiClient.GetBaseURL())
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +87,14 @@ func GetCurrentUser(apiClient *client.Client) (*User, error) {
 }
 
 // ListUsers получает список пользователей с возможностью фильтрации и пагинации.
-func ListUsers(apiClient *client.Client, limit int, page int) ([]User, error) {
+func ListUsers(ctx context.Context, apiClient *client.Client, limit int, page int) ([]User, error) {
 	url := fmt.Sprintf("%s/api/v4/users?limit=%d&page=%d", apiClient.GetBaseURL(), limit, page)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

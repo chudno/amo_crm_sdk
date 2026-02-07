@@ -123,6 +123,7 @@ const (
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -134,6 +135,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // Создаем новый звонок
     call := &calls.Call{
@@ -148,7 +152,7 @@ func main() {
     }
 
     // Отправляем запрос на создание звонка
-    createdCall, err := calls.AddCall(apiClient, call)
+    createdCall, err := calls.AddCall(ctx, apiClient, call)
     if err != nil {
         log.Fatalf("Ошибка при добавлении звонка: %v", err)
     }
@@ -168,6 +172,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -180,17 +185,20 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     page := 1
     limit := 50
-    
+
     // Фильтр для получения входящих звонков
     filter := map[string]string{
         "filter[direction]": string(calls.CallDirectionIncoming),
     }
 
     // Получаем список звонков с фильтрацией и с включением тегов
-    callsList, err := calls.GetCalls(apiClient, page, limit, filter, calls.WithTags)
+    callsList, err := calls.GetCalls(ctx, apiClient, page, limit, filter, calls.WithTags)
     if err != nil {
         log.Fatalf("Ошибка при получении списка звонков: %v", err)
     }
@@ -223,6 +231,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -235,11 +244,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID звонка
     callID := 123
 
     // Получаем информацию о звонке с тегами
-    call, err := calls.GetCall(apiClient, callID, calls.WithTags)
+    call, err := calls.GetCall(ctx, apiClient, callID, calls.WithTags)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о звонке: %v", err)
     }
@@ -270,6 +282,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -280,6 +293,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // ID звонка для обновления
     callID := 123
@@ -293,7 +309,7 @@ func main() {
     }
 
     // Отправляем запрос на обновление звонка
-    updatedCall, err := calls.UpdateCall(apiClient, call)
+    updatedCall, err := calls.UpdateCall(ctx, apiClient, call)
     if err != nil {
         log.Fatalf("Ошибка при обновлении звонка: %v", err)
     }
@@ -312,6 +328,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -323,11 +340,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID звонка для удаления
     callID := 123
 
     // Удаляем звонок
-    err := calls.DeleteCall(apiClient, callID)
+    err := calls.DeleteCall(ctx, apiClient, callID)
     if err != nil {
         log.Fatalf("Ошибка при удалении звонка: %v", err)
     }
@@ -342,6 +362,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -353,15 +374,18 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID звонка
     callID := 123
-    
+
     // Тип сущности и ID для связывания
     entityType := calls.EntityTypeLead // Сделка
     entityID := 456                   // ID сделки
 
     // Связываем звонок с сделкой
-    err := calls.LinkCallWithEntity(apiClient, callID, entityType, entityID)
+    err := calls.LinkCallWithEntity(ctx, apiClient, callID, entityType, entityID)
     if err != nil {
         log.Fatalf("Ошибка при связывании звонка с сущностью: %v", err)
     }
@@ -376,6 +400,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -387,15 +412,18 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID звонка
     callID := 123
-    
+
     // Тип сущности и ID для отвязывания
     entityType := calls.EntityTypeLead // Сделка
     entityID := 456                   // ID сделки
 
     // Отвязываем звонок от сделки
-    err := calls.UnlinkCallFromEntity(apiClient, callID, entityType, entityID)
+    err := calls.UnlinkCallFromEntity(ctx, apiClient, callID, entityType, entityID)
     if err != nil {
         log.Fatalf("Ошибка при отвязывании звонка от сущности: %v", err)
     }

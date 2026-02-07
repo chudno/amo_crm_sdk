@@ -1,4 +1,4 @@
-// Пакет custom_fields предоставляет структуры и методы для работы с пользовательскими полями в amoCRM.
+// Package custom_fields предоставляет структуры и методы для работы с пользовательскими полями в amoCRM.
 package custom_fields
 
 // CustomFieldValue представляет значение пользовательского поля
@@ -10,7 +10,7 @@ type CustomFieldValue struct {
 
 // FieldValue представляет конкретное значение поля
 type FieldValue struct {
-	Value     interface{} `json:"value"`
+	Value     any `json:"value"`
 	EnumID    int         `json:"enum_id,omitempty"`
 	EnumCode  string      `json:"enum_code,omitempty"`
 	EnumValue string      `json:"enum_value,omitempty"`

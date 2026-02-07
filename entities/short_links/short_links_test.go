@@ -1,6 +1,7 @@
 package short_links
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -163,7 +164,7 @@ func TestGetShortLinks(t *testing.T) {
 		mockClient := createGetShortLinksSuccessMockClient()
 
 		// Вызываем тестируемый метод
-		links, err := GetShortLinksWithRequester(mockClient, 1, 50)
+		links, err := GetShortLinksWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -185,7 +186,7 @@ func TestGetShortLinks(t *testing.T) {
 		mockClient := createGetShortLinksEmptyMockClient()
 
 		// Вызываем тестируемый метод
-		links, err := GetShortLinksWithRequester(mockClient, 1, 50)
+		links, err := GetShortLinksWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -203,7 +204,7 @@ func TestGetShortLinks(t *testing.T) {
 		mockClient := createGetShortLinksErrorMockClient()
 
 		// Вызываем тестируемый метод
-		_, err := GetShortLinksWithRequester(mockClient, 1, 50)
+		_, err := GetShortLinksWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверка наличия ошибки
 		if err == nil {
@@ -221,7 +222,7 @@ func TestGetShortLinks(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод с фильтром
-		links, err := GetShortLinksWithRequester(mockClient, 1, 50, WithFilter(filter))
+		links, err := GetShortLinksWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -274,7 +275,7 @@ func TestGetShortLink(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		link, err := GetShortLinkWithRequester(mockClient, linkID)
+		link, err := GetShortLinkWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -309,7 +310,7 @@ func TestGetShortLink(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := GetShortLinkWithRequester(mockClient, linkID)
+		_, err := GetShortLinkWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err == nil {
@@ -362,7 +363,7 @@ func TestCreateShortLink(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		createdLink, err := CreateShortLinkWithRequester(mockClient, newLink)
+		createdLink, err := CreateShortLinkWithRequester(context.Background(), mockClient, newLink)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -401,7 +402,7 @@ func TestCreateShortLink(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := CreateShortLinkWithRequester(mockClient, newLink)
+		_, err := CreateShortLinkWithRequester(context.Background(), mockClient, newLink)
 
 		// Проверка наличия ошибки
 		if err == nil {
@@ -495,7 +496,7 @@ func TestUpdateShortLink(t *testing.T) {
 		updateLink := createUpdateShortLinkData(linkID)
 
 		// Вызываем тестируемый метод
-		updatedLink, err := UpdateShortLinkWithRequester(mockClient, updateLink)
+		updatedLink, err := UpdateShortLinkWithRequester(context.Background(), mockClient, updateLink)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -514,7 +515,7 @@ func TestUpdateShortLink(t *testing.T) {
 		updateLink := createInvalidUpdateShortLinkData()
 
 		// Вызываем тестируемый метод
-		_, err := UpdateShortLinkWithRequester(mockClient, updateLink)
+		_, err := UpdateShortLinkWithRequester(context.Background(), mockClient, updateLink)
 
 		// Проверка наличия ошибки
 		if err == nil {
@@ -559,7 +560,7 @@ func TestDeleteShortLink(t *testing.T) {
 		mockClient := createDeleteShortLinkSuccessMockClient()
 
 		// Вызываем тестируемый метод
-		err := DeleteShortLinkWithRequester(mockClient, linkID)
+		err := DeleteShortLinkWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -575,7 +576,7 @@ func TestDeleteShortLink(t *testing.T) {
 		mockClient := createDeleteShortLinkErrorMockClient()
 
 		// Вызываем тестируемый метод
-		err := DeleteShortLinkWithRequester(mockClient, linkID)
+		err := DeleteShortLinkWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err == nil {
@@ -642,7 +643,7 @@ func TestGetShortLinkStats(t *testing.T) {
 		mockClient := createGetShortLinkStatsSuccessMockClient()
 
 		// Вызываем тестируемый метод
-		stats, err := GetShortLinkStatsWithRequester(mockClient, linkID)
+		stats, err := GetShortLinkStatsWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err != nil {
@@ -661,7 +662,7 @@ func TestGetShortLinkStats(t *testing.T) {
 		mockClient := createGetShortLinkStatsErrorMockClient()
 
 		// Вызываем тестируемый метод
-		_, err := GetShortLinkStatsWithRequester(mockClient, linkID)
+		_, err := GetShortLinkStatsWithRequester(context.Background(), mockClient, linkID)
 
 		// Проверка наличия ошибки
 		if err == nil {

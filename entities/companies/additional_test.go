@@ -1,6 +1,7 @@
 package companies
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -47,7 +48,7 @@ func TestUpdateCompany(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedCompany, err := UpdateCompany(apiClient, companyToUpdate)
+	updatedCompany, err := UpdateCompany(context.Background(), apiClient, companyToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -121,7 +122,7 @@ func TestGetCompanies(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		companies, err := GetCompanies(apiClient, 1, 50)
+		companies, err := GetCompanies(context.Background(), apiClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -204,7 +205,7 @@ func TestGetCompanies(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод с опцией WithContacts
-		companies, err := GetCompanies(apiClient, 1, 50, WithContacts)
+		companies, err := GetCompanies(context.Background(), apiClient, 1, 50, WithContacts)
 
 		// Проверяем результаты
 		if err != nil {
@@ -259,7 +260,7 @@ func TestGetCompanies(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		companies, err := GetCompanies(apiClient, 1, 50)
+		companies, err := GetCompanies(context.Background(), apiClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -288,7 +289,7 @@ func TestGetCompanies(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetCompanies(apiClient, 1, 50)
+		_, err := GetCompanies(context.Background(), apiClient, 1, 50)
 
 		// Проверяем результаты
 		if err == nil {
@@ -344,7 +345,7 @@ func TestGetCompanyWithOptions(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод с опцией WithContacts
-	company, err := GetCompany(apiClient, 123, WithContacts)
+	company, err := GetCompany(context.Background(), apiClient, 123, WithContacts)
 
 	// Проверяем результаты
 	if err != nil {

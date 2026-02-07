@@ -26,12 +26,17 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/utils/webhooks"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+
+// Создаем контекст
+ctx := context.Background()
 
 // Создание нового вебхука для получения уведомлений о создании контактов
 newWebhook := &webhooks.Webhook{
@@ -43,7 +48,7 @@ newWebhook := &webhooks.Webhook{
 }
 
 // Сохранение вебхука
-createdWebhook, err := webhooks.CreateWebhook(apiClient, newWebhook)
+createdWebhook, err := webhooks.CreateWebhook(ctx, apiClient, newWebhook)
 if err != nil {
     // Обработка ошибки
 }
@@ -54,7 +59,7 @@ if err != nil {
 ```go
 // Получение вебхука по ID
 webhookID := 12345
-webhook, err := webhooks.GetWebhook(apiClient, webhookID)
+webhook, err := webhooks.GetWebhook(ctx, apiClient, webhookID)
 if err != nil {
     // Обработка ошибки
 }
@@ -69,7 +74,7 @@ fmt.Printf("События: %v\n", webhook.Settings.EventType)
 
 ```go
 // Получение всех вебхуков
-webhooksList, err := webhooks.GetWebhooks(apiClient)
+webhooksList, err := webhooks.GetWebhooks(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -87,7 +92,7 @@ for _, webhook := range webhooksList {
 ```go
 // Удаление вебхука по ID
 webhookID := 12345
-err := webhooks.DeleteWebhook(apiClient, webhookID)
+err := webhooks.DeleteWebhook(ctx, apiClient, webhookID)
 if err != nil {
     // Обработка ошибки
 }

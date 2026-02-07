@@ -1,6 +1,7 @@
 package pipelines
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +16,7 @@ func TestGetPipelineError(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetPipeline(apiClient, 999)
+		_, err := GetPipeline(context.Background(), apiClient, 999)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -37,7 +38,7 @@ func TestGetPipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetPipeline(apiClient, 123)
+		_, err := GetPipeline(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -53,7 +54,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := ListPipelines(apiClient)
+		_, err := ListPipelines(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -75,7 +76,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		pipelines, err := ListPipelines(apiClient)
+		pipelines, err := ListPipelines(context.Background(), apiClient)
 
 		// Проверяем результаты
 		if err != nil {
@@ -101,7 +102,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := ListPipelines(apiClient)
+		_, err := ListPipelines(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -123,7 +124,7 @@ func TestUpdatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdatePipeline(apiClient, pipelineWithoutID)
+		_, err := UpdatePipeline(context.Background(), apiClient, pipelineWithoutID)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -143,7 +144,7 @@ func TestUpdatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdatePipeline(apiClient, pipelineToUpdate)
+		_, err := UpdatePipeline(context.Background(), apiClient, pipelineToUpdate)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -168,7 +169,7 @@ func TestDeletePipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeletePipeline(apiClient, 123)
+		err := DeletePipeline(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -190,7 +191,7 @@ func TestDeletePipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeletePipeline(apiClient, 123)
+		err := DeletePipeline(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -206,7 +207,7 @@ func TestGetStatusError(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetStatus(apiClient, 123, 999)
+		_, err := GetStatus(context.Background(), apiClient, 123, 999)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -227,7 +228,7 @@ func TestCreatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := CreatePipeline(apiClient, invalidPipeline)
+		_, err := CreatePipeline(context.Background(), apiClient, invalidPipeline)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -249,7 +250,7 @@ func TestCreateStatusError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := CreateStatus(apiClient, 123, testStatus)
+		_, err := CreateStatus(context.Background(), apiClient, 123, testStatus)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {

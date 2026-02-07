@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -45,7 +46,7 @@ func TestGetTask(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	task, err := GetTask(apiClient, 123)
+	task, err := GetTask(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -120,7 +121,7 @@ func TestCreateTask(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdTask, err := CreateTask(apiClient, taskToCreate)
+	createdTask, err := CreateTask(context.Background(), apiClient, taskToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -209,7 +210,7 @@ func TestListTasks(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			tasks, err := ListTasks(apiClient, tt.limit, tt.page, nil)
+			tasks, err := ListTasks(context.Background(), apiClient, tt.limit, tt.page, nil)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {
@@ -298,7 +299,7 @@ func TestCreateTaskForEntity(t *testing.T) {
 	responsibleUserID := 789
 
 	// Вызываем тестируемый метод
-	createdTask, err := CreateTaskForEntity(apiClient, entityType, entityID, taskTypeID, text, completeTill, responsibleUserID)
+	createdTask, err := CreateTaskForEntity(context.Background(), apiClient, entityType, entityID, taskTypeID, text, completeTill, responsibleUserID)
 
 	// Проверяем результаты
 	if err != nil {

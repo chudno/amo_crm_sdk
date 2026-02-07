@@ -1,8 +1,9 @@
-// Пакет contacts предоставляет методы для взаимодействия с сущностями "Контакты" в API amoCRM.
+// Package contacts предоставляет методы для взаимодействия с сущностями "Контакты" в API amoCRM.
 package contacts
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -60,7 +61,7 @@ const (
 
 // GetContact получает контакт по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактом.
-func GetContact(apiClient *client.Client, contactID int, withOptions ...WithOption) (*Contact, error) {
+func GetContact(ctx context.Context, apiClient *client.Client, contactID int, withOptions ...WithOption) (*Contact, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/%d", apiClient.GetBaseURL(), contactID)
 
@@ -76,12 +77,12 @@ func GetContact(apiClient *client.Client, contactID int, withOptions ...WithOpti
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -96,21 +97,21 @@ func GetContact(apiClient *client.Client, contactID int, withOptions ...WithOpti
 }
 
 // CreateContact создает новый контакт в amoCRM.
-func CreateContact(apiClient *client.Client, contact *Contact) (*Contact, error) {
+func CreateContact(ctx context.Context, apiClient *client.Client, contact *Contact) (*Contact, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/contacts"
 	contactJSON, err := json.Marshal(contact)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(contactJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(contactJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +144,7 @@ type ContactsResponse struct {
 
 // GetContacts получает список контактов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактами.
-func GetContacts(apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Contact, error) {
+func GetContacts(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Contact, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts", apiClient.GetBaseURL())
 
@@ -165,12 +166,12 @@ func GetContacts(apiClient *client.Client, page, limit int, withOptions ...WithO
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +191,7 @@ func GetContacts(apiClient *client.Client, page, limit int, withOptions ...WithO
 }
 
 // LinkContactWithCompany связывает контакт с компанией
-func LinkContactWithCompany(apiClient *client.Client, contactID, companyID int) error {
+func LinkContactWithCompany(ctx context.Context, apiClient *client.Client, contactID, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/%d/link", apiClient.GetBaseURL(), contactID)
 
@@ -221,7 +222,7 @@ func LinkContactWithCompany(apiClient *client.Client, contactID, companyID int) 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqJSON))
 	if err != nil {
 		return err
 	}
@@ -229,7 +230,7 @@ func LinkContactWithCompany(apiClient *client.Client, contactID, companyID int) 
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}

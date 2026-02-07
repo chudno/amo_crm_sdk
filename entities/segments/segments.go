@@ -1,7 +1,9 @@
+// Package segments предоставляет методы для работы с сегментами покупателей в amoCRM.
 package segments
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -147,8 +149,8 @@ func WithFilter(filter map[string]string) WithOption {
 //			},
 //		},
 //	}
-//	createdSegment, err := segments.AddSegment(apiClient, segment)
-func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
+//	createdSegment, err := segments.AddSegment(ctx, apiClient, segment)
+func AddSegment(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments", apiClient.GetBaseURL())
 
@@ -159,7 +161,7 @@ func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(segmentJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(segmentJSON))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
@@ -167,7 +169,7 @@ func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -203,8 +205,8 @@ func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
 //	filter := map[string]string{
 //		"filter[name]": "Активные клиенты",
 //	}
-//	segments, err := segments.GetSegments(apiClient, 1, 50, segments.WithFilter(filter))
-func GetSegments(apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
+//	segments, err := segments.GetSegments(ctx, apiClient, 1, 50, segments.WithFilter(filter))
+func GetSegments(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -226,13 +228,13 @@ func GetSegments(apiClient *client.Client, page, limit int, options ...WithOptio
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -256,8 +258,8 @@ func GetSegments(apiClient *client.Client, page, limit int, options ...WithOptio
 //
 // Пример использования:
 //
-//	segment, err := segments.GetSegment(apiClient, 123, segments.WithContacts())
-func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
+//	segment, err := segments.GetSegment(ctx, apiClient, 123, segments.WithContacts())
+func GetSegment(ctx context.Context, apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 
@@ -277,13 +279,13 @@ func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -312,8 +314,8 @@ func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) 
 //		Name: "Обновленный сегмент",
 //		Color: "#FF5555",
 //	}
-//	updatedSegment, err := segments.UpdateSegment(apiClient, segment)
-func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
+//	updatedSegment, err := segments.UpdateSegment(ctx, apiClient, segment)
+func UpdateSegment(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	if segment.ID == 0 {
 		return nil, fmt.Errorf("ID сегмента не указан")
 	}
@@ -328,7 +330,7 @@ func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error)
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(segmentJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(segmentJSON))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
@@ -336,7 +338,7 @@ func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -360,19 +362,19 @@ func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error)
 //
 // Пример использования:
 //
-//	err := segments.DeleteSegment(apiClient, 123)
-func DeleteSegment(apiClient *client.Client, segmentID int) error {
+//	err := segments.DeleteSegment(ctx, apiClient, 123)
+func DeleteSegment(ctx context.Context, apiClient *client.Client, segmentID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d", apiClient.GetBaseURL(), segmentID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -391,8 +393,8 @@ func DeleteSegment(apiClient *client.Client, segmentID int) error {
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.AddContactsToSegment(apiClient, 42, contactIDs)
-func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []int) error {
+//	err := segments.AddContactsToSegment(ctx, apiClient, 42, contactIDs)
+func AddContactsToSegment(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts", apiClient.GetBaseURL(), segmentID)
 
@@ -410,7 +412,7 @@ func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
@@ -418,7 +420,7 @@ func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -437,8 +439,8 @@ func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.RemoveContactsFromSegment(apiClient, 42, contactIDs)
-func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactIDs []int) error {
+//	err := segments.RemoveContactsFromSegment(ctx, apiClient, 42, contactIDs)
+func RemoveContactsFromSegment(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts/delete", apiClient.GetBaseURL(), segmentID)
 
@@ -456,7 +458,7 @@ func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactI
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
@@ -464,7 +466,7 @@ func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactI
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
@@ -482,20 +484,20 @@ func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactI
 //
 // Пример использования:
 //
-//	contactIDs, err := segments.GetSegmentContacts(apiClient, 42, 1, 50)
-func GetSegmentContacts(apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
+//	contactIDs, err := segments.GetSegmentContacts(ctx, apiClient, 42, 1, 50)
+func GetSegmentContacts(ctx context.Context, apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts?page=%d&limit=%d",
 		apiClient.GetBaseURL(), segmentID, page, limit)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}

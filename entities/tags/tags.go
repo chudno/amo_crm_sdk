@@ -1,8 +1,9 @@
-// Пакет tags предоставляет методы для взаимодействия с сущностями "Теги" в API amoCRM.
+// Package tags предоставляет методы для взаимодействия с сущностями "Теги" в API amoCRM.
 package tags
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -48,7 +49,7 @@ const (
 )
 
 // GetTags получает список тегов с возможностью пагинации по указанному типу сущности.
-func GetTags(apiClient *client.Client, entityType EntityType, page, limit int) ([]Tag, error) {
+func GetTags(ctx context.Context, apiClient *client.Client, entityType EntityType, page, limit int) ([]Tag, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
@@ -61,12 +62,12 @@ func GetTags(apiClient *client.Client, entityType EntityType, page, limit int) (
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func GetTags(apiClient *client.Client, entityType EntityType, page, limit int) (
 }
 
 // CreateTag создает новый тег для указанного типа сущности.
-func CreateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
+func CreateTag(ctx context.Context, apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
@@ -97,7 +98,7 @@ func CreateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(tagJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func CreateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +126,7 @@ func CreateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 }
 
 // CreateTags создает несколько тегов для указанного типа сущности.
-func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]Tag, error) {
+func CreateTags(ctx context.Context, apiClient *client.Client, entityType EntityType, tags []Tag) ([]Tag, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
@@ -136,7 +137,7 @@ func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagsJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -168,18 +169,18 @@ func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]
 }
 
 // GetTag получает информацию о теге по его ID для указанного типа сущности.
-func GetTag(apiClient *client.Client, entityType EntityType, tagID int) (*Tag, error) {
+func GetTag(ctx context.Context, apiClient *client.Client, entityType EntityType, tagID int) (*Tag, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/tags/%d", apiClient.GetBaseURL(), entityType, tagID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func GetTag(apiClient *client.Client, entityType EntityType, tagID int) (*Tag, e
 }
 
 // UpdateTag обновляет информацию о теге по его ID для указанного типа сущности.
-func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
+func UpdateTag(ctx context.Context, apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
 	if tag.ID == 0 {
 		return nil, fmt.Errorf("ID тега не может быть пустым")
 	}
@@ -214,7 +215,7 @@ func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(tagJSON))
+	req, err := http.NewRequestWithContext(ctx,"PATCH", url, bytes.NewBuffer(tagJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -242,18 +243,18 @@ func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 }
 
 // DeleteTag удаляет тег по его ID для указанного типа сущности.
-func DeleteTag(apiClient *client.Client, entityType EntityType, tagID int) error {
+func DeleteTag(ctx context.Context, apiClient *client.Client, entityType EntityType, tagID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/tags/%d", apiClient.GetBaseURL(), entityType, tagID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -268,7 +269,7 @@ func DeleteTag(apiClient *client.Client, entityType EntityType, tagID int) error
 }
 
 // LinkEntityWithTags связывает сущность с тегами
-func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityID int, tags []Tag) error {
+func LinkEntityWithTags(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, tags []Tag) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/%d/tags", apiClient.GetBaseURL(), entityType, entityID)
 
@@ -279,7 +280,7 @@ func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityI
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagsJSON))
+	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return err
 	}
@@ -287,7 +288,7 @@ func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityI
 	req.Header.Set("Content-Type", "application/json")
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -302,18 +303,18 @@ func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityI
 }
 
 // GetEntityTags получает список тегов для указанной сущности
-func GetEntityTags(apiClient *client.Client, entityType EntityType, entityID int) ([]Tag, error) {
+func GetEntityTags(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int) ([]Tag, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/%d/tags", apiClient.GetBaseURL(), entityType, entityID)
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

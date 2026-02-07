@@ -31,6 +31,8 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/tags"
 )
@@ -38,8 +40,11 @@ import (
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
+// Создаем контекст
+ctx := context.Background()
+
 // Получение всех тегов контактов (1-я страница, 50 элементов)
-contactTags, err := tags.GetTags(apiClient, tags.EntityTypeContact, 1, 50)
+contactTags, err := tags.GetTags(ctx, apiClient, tags.EntityTypeContact, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -50,7 +55,7 @@ for _, tag := range contactTags {
 }
 
 // Получение тегов лидов
-leadTags, err := tags.GetTags(apiClient, tags.EntityTypeLead, 1, 50)
+leadTags, err := tags.GetTags(ctx, apiClient, tags.EntityTypeLead, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -65,7 +70,7 @@ newTag := &tags.Tag{
     Color: "#FF0000", // Красный цвет
 }
 
-createdTag, err := tags.CreateTag(apiClient, tags.EntityTypeContact, newTag)
+createdTag, err := tags.CreateTag(ctx, apiClient, tags.EntityTypeContact, newTag)
 if err != nil {
     // Обработка ошибки
 }
@@ -84,7 +89,7 @@ newTags := []tags.Tag{
     },
 }
 
-createdTags, err := tags.CreateTags(apiClient, tags.EntityTypeContact, newTags)
+createdTags, err := tags.CreateTags(ctx, apiClient, tags.EntityTypeContact, newTags)
 if err != nil {
     // Обработка ошибки
 }
@@ -97,7 +102,7 @@ fmt.Printf("Создано %d новых тегов\n", len(createdTags))
 ```go
 // Получение тега по ID
 tagID := 12345
-tag, err := tags.GetTag(apiClient, tags.EntityTypeContact, tagID)
+tag, err := tags.GetTag(ctx, apiClient, tags.EntityTypeContact, tagID)
 if err != nil {
     // Обработка ошибки
 }
@@ -112,7 +117,7 @@ fmt.Printf("Тег: %s (Цвет: %s)\n", tag.Name, tag.Color)
 tag.Name = "Очень важный клиент"
 tag.Color = "#990000" // Темно-красный цвет
 
-updatedTag, err := tags.UpdateTag(apiClient, tags.EntityTypeContact, tag)
+updatedTag, err := tags.UpdateTag(ctx, apiClient, tags.EntityTypeContact, tag)
 if err != nil {
     // Обработка ошибки
 }
@@ -125,7 +130,7 @@ fmt.Printf("Тег обновлен: %s\n", updatedTag.Name)
 ```go
 // Удаление тега
 tagID := 12345
-err := tags.DeleteTag(apiClient, tags.EntityTypeContact, tagID)
+err := tags.DeleteTag(ctx, apiClient, tags.EntityTypeContact, tagID)
 if err != nil {
     // Обработка ошибки
 }
@@ -148,14 +153,14 @@ tagsToLink := []tags.Tag{
     },
 }
 
-err := tags.LinkEntityWithTags(apiClient, tags.EntityTypeContact, contactID, tagsToLink)
+err := tags.LinkEntityWithTags(ctx, apiClient, tags.EntityTypeContact, contactID, tagsToLink)
 if err != nil {
     // Обработка ошибки
 }
 
 // Связывание лида с тегами
 leadID := 54321
-err = tags.LinkEntityWithTags(apiClient, tags.EntityTypeLead, leadID, tagsToLink)
+err = tags.LinkEntityWithTags(ctx, apiClient, tags.EntityTypeLead, leadID, tagsToLink)
 if err != nil {
     // Обработка ошибки
 }
@@ -166,7 +171,7 @@ if err != nil {
 ```go
 // Получение тегов контакта
 contactID := 67890
-contactTags, err := tags.GetEntityTags(apiClient, tags.EntityTypeContact, contactID)
+contactTags, err := tags.GetEntityTags(ctx, apiClient, tags.EntityTypeContact, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -178,7 +183,7 @@ for _, tag := range contactTags {
 
 // Получение тегов лида
 leadID := 54321
-leadTags, err := tags.GetEntityTags(apiClient, tags.EntityTypeLead, leadID)
+leadTags, err := tags.GetEntityTags(ctx, apiClient, tags.EntityTypeLead, leadID)
 if err != nil {
     // Обработка ошибки
 }

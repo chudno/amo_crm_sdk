@@ -1,6 +1,7 @@
 package segments
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 
 // Requester интерфейс для выполнения HTTP-запросов
 type Requester interface {
-	DoRequest(req *http.Request) (*http.Response, error)
+	DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 }
 
 // MockResponse описывает мок-ответ для тестирования
@@ -60,7 +61,7 @@ func (c *AdvancedMockClient) AddResponse(method, path string, statusCode int, bo
 }
 
 // DoRequest реализует интерфейс Requester
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Ищем подходящий ответ для метода и пути
 	resp, found := c.Responses[MockRequest{Method: req.Method, Path: req.URL.Path}]
 
@@ -117,7 +118,8 @@ func GetSegmentsWithRequester(requester Requester, page, limit int, options ...W
 	req.URL.RawQuery = q.Encode()
 
 	// Отправляем запрос
-	resp, err := requester.DoRequest(req)
+	ctx := context.Background()
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

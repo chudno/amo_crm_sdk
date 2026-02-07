@@ -1,6 +1,7 @@
 package unsorted
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -64,7 +65,7 @@ func TestCreateUnsortedLead(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	response, err := CreateUnsortedLead(apiClient, lead)
+	response, err := CreateUnsortedLead(context.Background(), apiClient, lead)
 
 	// Проверяем результаты
 	if err != nil {
@@ -130,7 +131,7 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	response, err := CreateUnsortedContact(apiClient, contact)
+	response, err := CreateUnsortedContact(context.Background(), apiClient, contact)
 
 	// Проверяем результаты
 	if err != nil {
@@ -330,7 +331,7 @@ func TestGetUnsortedLeads(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	items, err := GetUnsortedLeads(apiClient, 1, 50, nil)
+	items, err := GetUnsortedLeads(context.Background(), apiClient, 1, 50, nil)
 
 	// Проверяем результаты
 	if err != nil {
@@ -385,7 +386,7 @@ func TestAcceptUnsortedLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	leadID, err := AcceptUnsortedLead(apiClient, unsortedUID, 123, 456)
+	leadID, err := AcceptUnsortedLead(context.Background(), apiClient, unsortedUID, 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -423,7 +424,7 @@ func TestDeclineUnsortedLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeclineUnsortedLead(apiClient, unsortedUID)
+	err := DeclineUnsortedLead(context.Background(), apiClient, unsortedUID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -469,7 +470,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	summary, err := GetUnsortedSummary(apiClient)
+	summary, err := GetUnsortedSummary(context.Background(), apiClient)
 
 	// Проверяем результаты
 	if err != nil {
@@ -477,7 +478,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 	}
 
 	// Проверяем содержимое сводки
-	total, ok := summary["total"].(map[string]interface{})
+	total, ok := summary["total"].(map[string]any)
 	if !ok {
 		t.Fatalf("Не удалось получить поле total из сводки")
 	}
@@ -490,7 +491,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 	}
 
 	// Проверяем количество обработанных заявок
-	accepted, ok := summary["accepted"].(map[string]interface{})
+	accepted, ok := summary["accepted"].(map[string]any)
 	if !ok {
 		t.Fatalf("Не удалось получить поле accepted из сводки")
 	}
@@ -605,7 +606,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 	// Базовый тест без фильтров
 	t.Run("Базовый запрос", func(t *testing.T) {
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, nil)
+		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, nil)
 
 		// Проверяем результаты
 		if err != nil {
@@ -634,7 +635,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, filter)
 
 		// Проверяем результаты
 		if err != nil {
@@ -655,7 +656,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, filter)
 
 		// Проверяем результаты
 		if err != nil {

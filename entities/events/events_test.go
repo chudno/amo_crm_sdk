@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"testing"
 
 	"github.com/chudno/amo_crm_sdk/client"
@@ -22,7 +23,7 @@ func TestGetEvents(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		events, err := GetEvents(apiClient,
+		events, err := GetEvents(context.Background(), apiClient,
 			WithFilter(filter),
 			WithPage(2),
 			WithLimit(30),
@@ -47,7 +48,7 @@ func TestGetEvents(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод с базовыми параметрами
-		events, err := GetEvents(apiClient, WithPage(1), WithLimit(10))
+		events, err := GetEvents(context.Background(), apiClient, WithPage(1), WithLimit(10))
 
 		// Проверяем результаты
 		if err != nil {
@@ -72,7 +73,7 @@ func TestGetEvent(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод с параметром WithEntity
-		event, err := GetEvent(apiClient, eventID, WithEntity())
+		event, err := GetEvent(context.Background(), apiClient, eventID, WithEntity())
 
 		// Проверяем результаты
 		if err != nil {
@@ -95,7 +96,7 @@ func TestGetEvent(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод без параметра WithEntity
-		event, err := GetEvent(apiClient, eventID)
+		event, err := GetEvent(context.Background(), apiClient, eventID)
 
 		// Проверяем результаты
 		if err != nil {

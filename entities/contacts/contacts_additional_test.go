@@ -1,6 +1,7 @@
 package contacts
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -57,7 +58,7 @@ func TestGetContactWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contact, err := GetContact(apiClient, 123, WithCompanies)
+		contact, err := GetContact(context.Background(), apiClient, 123, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -118,7 +119,7 @@ func TestGetContactWithOptions(t *testing.T) {
 
 		// Вызываем тестируемый метод с несколькими параметрами
 		// (В этом примере только WithCompanies, но демонстрирует принцип)
-		contact, err := GetContact(apiClient, 123, WithCompanies)
+		contact, err := GetContact(context.Background(), apiClient, 123, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -144,7 +145,7 @@ func TestGetContactWithOptions(t *testing.T) {
 		apiClient := client.NewClient("http://non-existing-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetContact(apiClient, 999, WithCompanies)
+		_, err := GetContact(context.Background(), apiClient, 999, WithCompanies)
 
 		// Проверяем результаты
 		if err == nil {
@@ -227,7 +228,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contacts, err := GetContacts(apiClient, 1, 50, WithCompanies)
+		contacts, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -288,7 +289,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contacts, err := GetContacts(apiClient, 1, 50, WithCompanies)
+		contacts, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -312,7 +313,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetContacts(apiClient, 1, 50, WithCompanies)
+		_, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err == nil {
@@ -350,13 +351,13 @@ func TestLinkContactWithCompany(t *testing.T) {
 			}
 
 			// Проверяем JSON-структуру
-			var data map[string]interface{}
+			var data map[string]any
 			if err := json.Unmarshal(body, &data); err != nil {
 				t.Fatalf("Ошибка при разборе JSON: %v", err)
 			}
 
 			// Проверяем наличие поля "to"
-			to, ok := data["to"].([]interface{})
+			to, ok := data["to"].([]any)
 			if !ok {
 				t.Fatalf("Ожидалось поле 'to' типа array, получено %T", data["to"])
 			}
@@ -366,7 +367,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 				t.Errorf("Ожидался 1 элемент в массиве 'to', получено %d", len(to))
 			}
 
-			toItem, ok := to[0].(map[string]interface{})
+			toItem, ok := to[0].(map[string]any)
 			if !ok {
 				t.Fatalf("Ожидался элемент типа object, получено %T", to[0])
 			}
@@ -391,7 +392,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(apiClient, 123, 456)
+		err := LinkContactWithCompany(context.Background(), apiClient, 123, 456)
 
 		// Проверяем результаты
 		if err != nil {
@@ -411,7 +412,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(apiClient, 999, 456)
+		err := LinkContactWithCompany(context.Background(), apiClient, 999, 456)
 
 		// Проверяем результаты
 		if err == nil {
@@ -431,7 +432,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(apiClient, 123, -1)
+		err := LinkContactWithCompany(context.Background(), apiClient, 123, -1)
 
 		// Проверяем результаты
 		if err == nil {

@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -60,7 +61,7 @@ func (c *AdvancedMockClient) AddResponse(method, path string, statusCode int, bo
 }
 
 // DoRequest реализует интерфейс Requester
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Ищем подходящий ответ для метода и пути
 	resp, found := c.Responses[MockRequest{Method: req.Method, Path: req.URL.Path}]
 
@@ -142,7 +143,7 @@ func TestGetWidgets(t *testing.T) {
 		types := []WidgetType{WidgetTypeIntercom, WidgetTypeCallback}
 
 		// Вызываем тестируемый метод
-		widgets, err := GetWidgetsWithRequester(mockClient, 1, 50, WithWidgetTypes(types))
+		widgets, err := GetWidgetsWithRequester(context.Background(), mockClient, 1, 50, WithWidgetTypes(types))
 
 		// Проверяем результаты
 		if err != nil {
@@ -174,7 +175,7 @@ func TestGetWidgets(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/widgets", http.StatusOK, emptyResponse, nil)
 
 		// Вызываем тестируемый метод
-		widgets, err := GetWidgetsWithRequester(mockClient, 1, 50)
+		widgets, err := GetWidgetsWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -194,7 +195,7 @@ func TestGetWidgets(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/widgets", http.StatusInternalServerError, `{"error": "Internal Server Error"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := GetWidgetsWithRequester(mockClient, 1, 50)
+		_, err := GetWidgetsWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -234,7 +235,7 @@ func TestGetWidget(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusOK, successResponse, nil)
 
 		// Вызываем тестируемый метод
-		widget, err := GetWidgetWithRequester(mockClient, widgetID)
+		widget, err := GetWidgetWithRequester(context.Background(), mockClient, widgetID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -265,7 +266,7 @@ func TestGetWidget(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusNotFound, `{"error": "Widget not found"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := GetWidgetWithRequester(mockClient, widgetID)
+		_, err := GetWidgetWithRequester(context.Background(), mockClient, widgetID)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -332,7 +333,7 @@ func TestInstallWidget(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		widget, err := InstallWidget(apiClient, widgetCode)
+		widget, err := InstallWidget(context.Background(), apiClient, widgetCode)
 
 		// Проверяем результаты
 		if err != nil {
@@ -359,7 +360,7 @@ func TestInstallWidget(t *testing.T) {
 		mockClient.AddResponse("POST", "/api/v4/widgets", http.StatusBadRequest, `{"error": "Invalid widget code"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := InstallWidgetWithRequester(mockClient, "invalid_code")
+		_, err := InstallWidgetWithRequester(context.Background(), mockClient, "invalid_code")
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -374,7 +375,7 @@ func TestUpdateWidgetSettings(t *testing.T) {
 	widgetID := 123
 
 	// Настройки для обновления
-	settings := map[string]interface{}{
+	settings := map[string]any{
 		"api_key": "new_key",
 		"active":  true,
 	}
@@ -415,7 +416,7 @@ func TestUpdateWidgetSettings(t *testing.T) {
 
 			// Проверяем тело запроса
 			var requestBody struct {
-				Settings map[string]interface{} `json:"settings"`
+				Settings map[string]any `json:"settings"`
 			}
 			decoder := json.NewDecoder(r.Body)
 			if err := decoder.Decode(&requestBody); err != nil {
@@ -437,7 +438,7 @@ func TestUpdateWidgetSettings(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		widget, err := UpdateWidgetSettings(apiClient, widgetID, settings)
+		widget, err := UpdateWidgetSettings(context.Background(), apiClient, widgetID, settings)
 
 		// Проверяем результаты
 		if err != nil {
@@ -460,7 +461,7 @@ func TestUpdateWidgetSettings(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusBadRequest, `{"error": "Invalid settings"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := UpdateWidgetSettingsWithRequester(mockClient, widgetID, settings)
+		_, err := UpdateWidgetSettingsWithRequester(context.Background(), mockClient, widgetID, settings)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -481,7 +482,7 @@ func TestDeleteWidget(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusNoContent, "", nil)
 
 		// Вызываем тестируемый метод
-		err := DeleteWidgetWithRequester(mockClient, widgetID)
+		err := DeleteWidgetWithRequester(context.Background(), mockClient, widgetID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -496,7 +497,7 @@ func TestDeleteWidget(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusForbidden, `{"error": "Insufficient permissions"}`, nil)
 
 		// Вызываем тестируемый метод
-		err := DeleteWidgetWithRequester(mockClient, widgetID)
+		err := DeleteWidgetWithRequester(context.Background(), mockClient, widgetID)
 
 		// Проверяем, что есть ошибка
 		if err == nil {

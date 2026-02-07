@@ -1,6 +1,7 @@
 package catalog_elements
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -100,7 +101,7 @@ func TestGetCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	elements, err := GetCatalogElements(apiClient, catalogID, 1, 50, nil)
+	elements, err := GetCatalogElements(context.Background(), apiClient, catalogID, 1, 50, nil)
 
 	// Проверяем результаты
 	if err != nil {
@@ -209,7 +210,7 @@ func TestCreateCatalogElement(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdElement, err := CreateCatalogElement(apiClient, catalogID, newElement)
+	createdElement, err := CreateCatalogElement(context.Background(), apiClient, catalogID, newElement)
 
 	// Проверяем результаты
 	if err != nil {
@@ -293,7 +294,7 @@ func TestGetCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	element, err := GetCatalogElement(apiClient, catalogID, elementID)
+	element, err := GetCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -394,7 +395,7 @@ func TestUpdateCatalogElement(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedElement, err := UpdateCatalogElement(apiClient, catalogID, elementToUpdate)
+	updatedElement, err := UpdateCatalogElement(context.Background(), apiClient, catalogID, elementToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -455,7 +456,7 @@ func TestDeleteCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteCatalogElement(apiClient, catalogID, elementID)
+	err := DeleteCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -518,7 +519,7 @@ func TestLinkCatalogElementWithTags(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	err := LinkCatalogElementWithTags(apiClient, catalogID, elementID, tags)
+	err := LinkCatalogElementWithTags(context.Background(), apiClient, catalogID, elementID, tags)
 
 	// Проверяем результаты
 	if err != nil {
@@ -569,7 +570,7 @@ func TestGetCatalogElementTags(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	tags, err := GetCatalogElementTags(apiClient, catalogID, elementID)
+	tags, err := GetCatalogElementTags(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {

@@ -117,6 +117,7 @@ const (
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -129,8 +130,11 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Получаем список событий с лимитом 50 записей
-    eventsList, err := events.GetEvents(apiClient, events.WithLimit(50))
+    eventsList, err := events.GetEvents(ctx, apiClient, events.WithLimit(50))
     if err != nil {
         log.Fatalf("Ошибка при получении списка событий: %v", err)
     }
@@ -157,6 +161,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -168,6 +173,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // Создаем фильтр по типу события и типу сущности
     filter := map[string]string{
@@ -188,7 +196,7 @@ func main() {
     // filter["filter[created_at][to]"] = fmt.Sprintf("%d", endTime)
 
     // Получаем список отфильтрованных событий
-    eventsList, err := events.GetEvents(apiClient, 
+    eventsList, err := events.GetEvents(ctx, apiClient,
         events.WithFilter(filter),
         events.WithLimit(30),
     )
@@ -215,6 +223,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -227,11 +236,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID события
     eventID := 12345
 
     // Получаем информацию о событии с информацией о связанной сущности
-    event, err := events.GetEvent(apiClient, eventID, events.WithEntity())
+    event, err := events.GetEvent(ctx, apiClient, eventID, events.WithEntity())
     if err != nil {
         log.Fatalf("Ошибка при получении информации о событии: %v", err)
     }
@@ -262,6 +274,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -274,12 +287,15 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Получаем список событий с пагинацией и сортировкой
     page := 1
     limit := 20
-    
+
     // Указываем страницу, лимит и сортировку по дате создания в обратном порядке (сначала новые)
-    eventsList, err := events.GetEvents(apiClient, 
+    eventsList, err := events.GetEvents(ctx, apiClient,
         events.WithPage(page),
         events.WithLimit(limit),
         events.WithOrder("created_at", "desc"),
@@ -300,7 +316,7 @@ func main() {
     
     // Для получения следующей страницы просто увеличиваем номер страницы
     // nextPage := page + 1
-    // eventsNextPage, err := events.GetEvents(apiClient, 
+    // eventsNextPage, err := events.GetEvents(ctx, apiClient,
     //     events.WithPage(nextPage),
     //     events.WithLimit(limit),
     //     events.WithOrder("created_at", "desc"),

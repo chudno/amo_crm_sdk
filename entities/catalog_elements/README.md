@@ -57,6 +57,7 @@ type CatalogElement struct {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -68,6 +69,9 @@ func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+	// Создаем контекст
+	ctx := context.Background()
+
 	// Получаем список элементов каталога
 	catalogID := 123 // ID каталога
 	page := 1
@@ -77,7 +81,7 @@ func main() {
 	}
 
 	// Получаем элементы каталога с фильтрацией и с включением тегов
-	elements, err := catalog_elements.GetCatalogElements(apiClient, catalogID, page, limit, filter, catalog_elements.WithTags)
+	elements, err := catalog_elements.GetCatalogElements(ctx, apiClient, catalogID, page, limit, filter, catalog_elements.WithTags)
 	if err != nil {
 		log.Fatalf("Ошибка при получении элементов каталога: %v", err)
 	}
@@ -118,6 +122,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -128,6 +133,9 @@ import (
 func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+	// Создаем контекст
+	ctx := context.Background()
 
 	// ID каталога, в который добавляем элемент
 	catalogID := 123
@@ -156,7 +164,7 @@ func main() {
 	}
 
 	// Отправляем запрос на создание элемента
-	createdElement, err := catalog_elements.CreateCatalogElement(apiClient, catalogID, newElement)
+	createdElement, err := catalog_elements.CreateCatalogElement(ctx, apiClient, catalogID, newElement)
 	if err != nil {
 		log.Fatalf("Ошибка при создании элемента каталога: %v", err)
 	}
@@ -172,6 +180,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -182,6 +191,9 @@ import (
 func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+	// Создаем контекст
+	ctx := context.Background()
 
 	// ID каталога, в который добавляем элементы
 	catalogID := 123
@@ -217,7 +229,7 @@ func main() {
 	}
 
 	// Отправляем запрос на создание элементов
-	createdElements, err := catalog_elements.CreateCatalogElements(apiClient, catalogID, elements)
+	createdElements, err := catalog_elements.CreateCatalogElements(ctx, apiClient, catalogID, elements)
 	if err != nil {
 		log.Fatalf("Ошибка при создании элементов каталога: %v", err)
 	}
@@ -238,6 +250,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -249,12 +262,15 @@ func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+	// Создаем контекст
+	ctx := context.Background()
+
 	// ID каталога и элемента каталога
 	catalogID := 123
 	elementID := 456
 
 	// Получаем элемент каталога с тегами
-	element, err := catalog_elements.GetCatalogElement(apiClient, catalogID, elementID, catalog_elements.WithTags)
+	element, err := catalog_elements.GetCatalogElement(ctx, apiClient, catalogID, elementID, catalog_elements.WithTags)
 	if err != nil {
 		log.Fatalf("Ошибка при получении элемента каталога: %v", err)
 	}
@@ -293,6 +309,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -303,6 +320,9 @@ import (
 func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+	// Создаем контекст
+	ctx := context.Background()
 
 	// ID каталога и элемента каталога
 	catalogID := 123
@@ -333,7 +353,7 @@ func main() {
 	}
 
 	// Отправляем запрос на обновление элемента
-	updatedElement, err := catalog_elements.UpdateCatalogElement(apiClient, catalogID, elementToUpdate)
+	updatedElement, err := catalog_elements.UpdateCatalogElement(ctx, apiClient, catalogID, elementToUpdate)
 	if err != nil {
 		log.Fatalf("Ошибка при обновлении элемента каталога: %v", err)
 	}
@@ -349,6 +369,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -359,6 +380,9 @@ import (
 func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+	// Создаем контекст
+	ctx := context.Background()
 
 	// ID каталога
 	catalogID := 123
@@ -396,7 +420,7 @@ func main() {
 	}
 
 	// Отправляем запрос на массовое обновление элементов
-	updatedElements, err := catalog_elements.UpdateCatalogElements(apiClient, catalogID, elementsToUpdate)
+	updatedElements, err := catalog_elements.UpdateCatalogElements(ctx, apiClient, catalogID, elementsToUpdate)
 	if err != nil {
 		log.Fatalf("Ошибка при массовом обновлении элементов каталога: %v", err)
 	}
@@ -417,6 +441,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -428,12 +453,15 @@ func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+	// Создаем контекст
+	ctx := context.Background()
+
 	// ID каталога и элемента каталога
 	catalogID := 123
 	elementID := 456
 
 	// Удаляем элемент каталога
-	err := catalog_elements.DeleteCatalogElement(apiClient, catalogID, elementID)
+	err := catalog_elements.DeleteCatalogElement(ctx, apiClient, catalogID, elementID)
 	if err != nil {
 		log.Fatalf("Ошибка при удалении элемента каталога: %v", err)
 	}
@@ -448,6 +476,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -459,6 +488,9 @@ func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+	// Создаем контекст
+	ctx := context.Background()
+
 	// ID каталога
 	catalogID := 123
 
@@ -466,7 +498,7 @@ func main() {
 	elementIDs := []int{456, 789, 1234}
 
 	// Удаляем несколько элементов каталога
-	err := catalog_elements.BatchDeleteCatalogElements(apiClient, catalogID, elementIDs)
+	err := catalog_elements.BatchDeleteCatalogElements(ctx, apiClient, catalogID, elementIDs)
 	if err != nil {
 		log.Fatalf("Ошибка при массовом удалении элементов каталога: %v", err)
 	}
@@ -483,6 +515,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -493,6 +526,9 @@ import (
 func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+	// Создаем контекст
+	ctx := context.Background()
 
 	// ID каталога и элемента каталога
 	catalogID := 123
@@ -511,7 +547,7 @@ func main() {
 	}
 
 	// Связываем элемент с тегами
-	err := catalog_elements.LinkCatalogElementWithTags(apiClient, catalogID, elementID, tags)
+	err := catalog_elements.LinkCatalogElementWithTags(ctx, apiClient, catalogID, elementID, tags)
 	if err != nil {
 		log.Fatalf("Ошибка при связывании элемента каталога с тегами: %v", err)
 	}
@@ -526,6 +562,7 @@ func main() {
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -537,12 +574,15 @@ func main() {
 	// Создаем клиент API
 	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+	// Создаем контекст
+	ctx := context.Background()
+
 	// ID каталога и элемента каталога
 	catalogID := 123
 	elementID := 456
 
 	// Получаем теги элемента каталога
-	tags, err := catalog_elements.GetCatalogElementTags(apiClient, catalogID, elementID)
+	tags, err := catalog_elements.GetCatalogElementTags(ctx, apiClient, catalogID, elementID)
 	if err != nil {
 		log.Fatalf("Ошибка при получении тегов элемента каталога: %v", err)
 	}

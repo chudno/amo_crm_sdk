@@ -1,7 +1,8 @@
-// Пакет client предоставляет функциональность для взаимодействия с API amoCRM.
+// Package client предоставляет функциональность для взаимодействия с API amoCRM.
 package client
 
 import (
+	"context"
 	"net/http"
 	"time"
 )
@@ -24,8 +25,9 @@ func NewClient(baseURL, apiKey string) *Client {
 	}
 }
 
-// doRequest выполняет HTTP-запрос к API amoCRM.
-func (c *Client) DoRequest(req *http.Request) (*http.Response, error) {
+// DoRequest выполняет HTTP-запрос к API amoCRM.
+func (c *Client) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
+	req = req.WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	return c.httpClient.Do(req)
 }

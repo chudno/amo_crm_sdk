@@ -48,7 +48,7 @@ type ShortLink struct {
 ### Получение списка коротких ссылок
 
 ```go
-func GetShortLinks(apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error)
+func GetShortLinks(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error)
 ```
 
 Возвращает список коротких ссылок с поддержкой пагинации и фильтрации.
@@ -68,13 +68,13 @@ filter := map[string]string{
     "filter[entity_type]": "leads",
     "filter[entity_id]": "123",
 }
-shortLinks, err := short_links.GetShortLinks(apiClient, 1, 50, short_links.WithFilter(filter))
+shortLinks, err := short_links.GetShortLinks(ctx, apiClient, 1, 50, short_links.WithFilter(filter))
 ```
 
 ### Получение информации о конкретной ссылке
 
 ```go
-func GetShortLink(apiClient *client.Client, id int) (*ShortLink, error)
+func GetShortLink(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error)
 ```
 
 Возвращает информацию о конкретной короткой ссылке по её ID.
@@ -86,7 +86,7 @@ func GetShortLink(apiClient *client.Client, id int) (*ShortLink, error)
 ### Создание короткой ссылки
 
 ```go
-func CreateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
+func CreateShortLink(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
 ```
 
 Создаёт новую короткую ссылку и возвращает информацию о созданной ссылке.
@@ -98,7 +98,7 @@ func CreateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink
 ### Обновление короткой ссылки
 
 ```go
-func UpdateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
+func UpdateShortLink(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
 ```
 
 Обновляет существующую короткую ссылку и возвращает обновлённую информацию.
@@ -110,7 +110,7 @@ func UpdateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink
 ### Удаление короткой ссылки
 
 ```go
-func DeleteShortLink(apiClient *client.Client, id int) error
+func DeleteShortLink(ctx context.Context, apiClient *client.Client, id int) error
 ```
 
 Удаляет короткую ссылку по ID.
@@ -122,7 +122,7 @@ func DeleteShortLink(apiClient *client.Client, id int) error
 ### Получение статистики использования ссылки
 
 ```go
-func GetShortLinkStats(apiClient *client.Client, id int) (*ShortLink, error)
+func GetShortLinkStats(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error)
 ```
 
 Возвращает статистику использования короткой ссылки.
@@ -139,6 +139,7 @@ func GetShortLinkStats(apiClient *client.Client, id int) (*ShortLink, error)
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -160,8 +161,11 @@ func main() {
         log.Fatalf("Ошибка аутентификации: %v", err)
     }
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Получаем список ссылок
-    links, err := short_links.GetShortLinks(apiClient, 1, 10)
+    links, err := short_links.GetShortLinks(ctx, apiClient, 1, 10)
     if err != nil {
         log.Fatalf("Ошибка при получении списка ссылок: %v", err)
     }
@@ -179,6 +183,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -200,6 +205,9 @@ func main() {
         log.Fatalf("Ошибка аутентификации: %v", err)
     }
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Создаем новую короткую ссылку
     newLink := &short_links.ShortLink{
         URL:          "https://example.com/product/123",
@@ -212,7 +220,7 @@ func main() {
     }
 
     // Отправляем запрос на создание
-    createdLink, err := short_links.CreateShortLink(apiClient, newLink)
+    createdLink, err := short_links.CreateShortLink(ctx, apiClient, newLink)
     if err != nil {
         log.Fatalf("Ошибка при создании короткой ссылки: %v", err)
     }
@@ -229,6 +237,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -251,11 +260,14 @@ func main() {
         log.Fatalf("Ошибка аутентификации: %v", err)
     }
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID короткой ссылки
     linkID := 123
 
     // Получаем статистику использования
-    stats, err := short_links.GetShortLinkStats(apiClient, linkID)
+    stats, err := short_links.GetShortLinkStats(ctx, apiClient, linkID)
     if err != nil {
         log.Fatalf("Ошибка при получении статистики: %v", err)
     }

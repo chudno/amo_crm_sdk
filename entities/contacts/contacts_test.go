@@ -1,6 +1,7 @@
 package contacts
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +41,7 @@ func TestGetContact(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	contact, err := GetContact(apiClient, 123)
+	contact, err := GetContact(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -97,7 +98,7 @@ func TestCreateContact(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdContact, err := CreateContact(apiClient, contactToCreate)
+	createdContact, err := CreateContact(context.Background(), apiClient, contactToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -182,7 +183,7 @@ func TestListContacts(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			contacts, err := GetContacts(apiClient, tt.page, tt.limit)
+			contacts, err := GetContacts(context.Background(), apiClient, tt.page, tt.limit)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {

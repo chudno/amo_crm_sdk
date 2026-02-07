@@ -99,6 +99,7 @@ const (
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -110,6 +111,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // Создаем неразобранную заявку
     lead := &unsorted.UnsortedLeadCreate{
@@ -143,7 +147,7 @@ func main() {
     }
 
     // Отправляем запрос на создание неразобранной заявки
-    response, err := unsorted.CreateUnsortedLead(apiClient, lead)
+    response, err := unsorted.CreateUnsortedLead(ctx, apiClient, lead)
     if err != nil {
         log.Fatalf("Ошибка при создании неразобранной заявки: %v", err)
     }
@@ -159,6 +163,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -170,6 +175,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // Создаем неразобранную заявку контакта
     contact := &unsorted.UnsortedContactCreate{
@@ -192,7 +200,7 @@ func main() {
     }
 
     // Отправляем запрос на создание неразобранной заявки
-    response, err := unsorted.CreateUnsortedContact(apiClient, contact)
+    response, err := unsorted.CreateUnsortedContact(ctx, apiClient, contact)
     if err != nil {
         log.Fatalf("Ошибка при создании неразобранного контакта: %v", err)
     }
@@ -210,6 +218,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -222,17 +231,20 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     page := 1
     limit := 50
-    
+
     // Фильтр для получения заявок с определенной категорией
     filter := map[string]string{
         "filter[category]": string(unsorted.CategoryTypeSite),
     }
 
     // Получаем список неразобранных заявок для сделок
-    items, err := unsorted.GetUnsortedLeads(apiClient, page, limit, filter)
+    items, err := unsorted.GetUnsortedLeads(ctx, apiClient, page, limit, filter)
     if err != nil {
         log.Fatalf("Ошибка при получении неразобранных заявок: %v", err)
     }
@@ -273,6 +285,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -284,8 +297,11 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Получаем сводку по неразобранным заявкам
-    summary, err := unsorted.GetUnsortedSummary(apiClient)
+    summary, err := unsorted.GetUnsortedSummary(ctx, apiClient)
     if err != nil {
         log.Fatalf("Ошибка при получении сводки по неразобранным заявкам: %v", err)
     }
@@ -325,6 +341,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -336,17 +353,20 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // UID неразобранной заявки
     unsortedUID := "unsorted-uid-123"
-    
+
     // ID статуса, в который нужно поместить сделку
     statusID := 12345
-    
+
     // ID ответственного пользователя
     responsibleUserID := 456
 
     // Принимаем неразобранную заявку и преобразуем ее в сделку
-    leadID, err := unsorted.AcceptUnsortedLead(apiClient, unsortedUID, statusID, responsibleUserID)
+    leadID, err := unsorted.AcceptUnsortedLead(ctx, apiClient, unsortedUID, statusID, responsibleUserID)
     if err != nil {
         log.Fatalf("Ошибка при принятии неразобранной заявки: %v", err)
     }
@@ -362,6 +382,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -373,14 +394,17 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // UID неразобранной заявки
     unsortedUID := "unsorted-contact-uid-123"
-    
+
     // ID ответственного пользователя
     responsibleUserID := 456
 
     // Принимаем неразобранную заявку и преобразуем ее в контакт
-    contactID, err := unsorted.AcceptUnsortedContact(apiClient, unsortedUID, responsibleUserID)
+    contactID, err := unsorted.AcceptUnsortedContact(ctx, apiClient, unsortedUID, responsibleUserID)
     if err != nil {
         log.Fatalf("Ошибка при принятии неразобранного контакта: %v", err)
     }
@@ -396,6 +420,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -407,11 +432,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // UID неразобранной заявки сделки
     unsortedLeadUID := "unsorted-lead-uid-123"
 
     // Отклоняем неразобранную заявку сделки
-    err := unsorted.DeclineUnsortedLead(apiClient, unsortedLeadUID)
+    err := unsorted.DeclineUnsortedLead(ctx, apiClient, unsortedLeadUID)
     if err != nil {
         log.Fatalf("Ошибка при отклонении неразобранной заявки сделки: %v", err)
     }
@@ -422,7 +450,7 @@ func main() {
     unsortedContactUID := "unsorted-contact-uid-123"
 
     // Отклоняем неразобранную заявку контакта
-    err = unsorted.DeclineUnsortedContact(apiClient, unsortedContactUID)
+    err = unsorted.DeclineUnsortedContact(ctx, apiClient, unsortedContactUID)
     if err != nil {
         log.Fatalf("Ошибка при отклонении неразобранной заявки контакта: %v", err)
     }
@@ -439,6 +467,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -450,14 +479,17 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // UID неразобранной заявки сделки
     unsortedLeadUID := "unsorted-lead-uid-123"
-    
+
     // ID существующего контакта
     contactID := 789
 
     // Связываем неразобранную заявку с контактом
-    err := unsorted.LinkUnsortedLeadWithContact(apiClient, unsortedLeadUID, contactID)
+    err := unsorted.LinkUnsortedLeadWithContact(ctx, apiClient, unsortedLeadUID, contactID)
     if err != nil {
         log.Fatalf("Ошибка при связывании неразобранной заявки с контактом: %v", err)
     }
@@ -472,6 +504,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -483,14 +516,17 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // UID неразобранной заявки сделки
     unsortedLeadUID := "unsorted-lead-uid-123"
-    
+
     // ID существующей компании
     companyID := 456
 
     // Связываем неразобранную заявку с компанией
-    err := unsorted.LinkUnsortedLeadWithCompany(apiClient, unsortedLeadUID, companyID)
+    err := unsorted.LinkUnsortedLeadWithCompany(ctx, apiClient, unsortedLeadUID, companyID)
     if err != nil {
         log.Fatalf("Ошибка при связывании неразобранной заявки с компанией: %v", err)
     }

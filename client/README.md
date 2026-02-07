@@ -37,12 +37,13 @@ func NewClient(baseURL, apiKey string) *Client
 ### Метод DoRequest
 
 ```go
-func (c *Client) DoRequest(req *http.Request) (*http.Response, error)
+func (c *Client) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 ```
 
 Выполняет HTTP-запрос к API amoCRM, автоматически добавляя заголовок авторизации.
 
 **Параметры:**
+- `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `req` - HTTP-запрос для выполнения
 
 **Возвращает:**
@@ -64,10 +65,15 @@ func (c *Client) GetBaseURL() string
 ### Создание клиента и выполнение запроса
 
 ```go
+import "context"
+
 // Создание клиента с базовым URL и токеном доступа
 baseURL := "https://example.amocrm.ru"
 accessToken := "your-access-token"
 apiClient := client.NewClient(baseURL, accessToken)
+
+// Создание контекста
+ctx := context.Background()
 
 // Создание HTTP-запроса
 req, err := http.NewRequest("GET", apiClient.GetBaseURL()+"/api/v4/leads", nil)
@@ -81,7 +87,7 @@ q.Add("limit", "50")
 req.URL.RawQuery = q.Encode()
 
 // Выполнение запроса через клиент
-resp, err := apiClient.DoRequest(req)
+resp, err := apiClient.DoRequest(ctx, req)
 if err != nil {
     log.Fatalf("Ошибка выполнения запроса: %v", err)
 }

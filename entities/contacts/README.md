@@ -26,12 +26,14 @@
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/contacts"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание нового контакта
 newContact := &contacts.Contact{
@@ -62,7 +64,7 @@ newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
 })
 
 // Сохранение контакта
-createdContact, err := contacts.CreateContact(apiClient, newContact)
+createdContact, err := contacts.CreateContact(ctx, apiClient, newContact)
 if err != nil {
     // Обработка ошибки
 }
@@ -73,7 +75,7 @@ if err != nil {
 ```go
 // Получение контакта по ID
 contactID := 12345
-contact, err := contacts.GetContact(apiClient, contactID)
+contact, err := contacts.GetContact(ctx, apiClient, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -83,7 +85,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 контактов
-contactsList, err := contacts.GetContacts(apiClient, 1, 50)
+contactsList, err := contacts.GetContacts(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -93,7 +95,7 @@ filter := map[string]string{
     "query": "Иван", // Поиск по имени
     "created_at": "1609459200", // Контакты, созданные после указанной даты (timestamp)
 }
-filteredContacts, err := contacts.GetContacts(apiClient, 1, 50, filter)
+filteredContacts, err := contacts.GetContacts(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление контакта
@@ -113,7 +115,7 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
     },
 })
 
-updatedContact, err := contacts.UpdateContact(apiClient, contact)
+updatedContact, err := contacts.UpdateContact(ctx, apiClient, contact)
 if err != nil {
     // Обработка ошибки
 }
@@ -143,13 +145,13 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 // Связывание контакта со сделкой
 import "github.com/chudno/amo_crm_sdk/entities/leads"
 
-err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
+err := leads.LinkLeadWithContact(ctx, apiClient, leadID, contactID)
 
 // Связывание контакта с компанией
 import "github.com/chudno/amo_crm_sdk/entities/companies"
-err := companies.LinkCompanyWithContact(apiClient, companyID, contactID)
+err := companies.LinkCompanyWithContact(ctx, apiClient, companyID, contactID)
 
 // Связывание контакта с лидом
 import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
+err := leads.LinkLeadWithContact(ctx, apiClient, leadID, contactID)
 ```

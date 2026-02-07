@@ -1,6 +1,7 @@
 package notes
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +45,7 @@ func TestGetNote(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	note, err := GetNote(apiClient, "leads", 123, 456)
+	note, err := GetNote(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -126,7 +127,7 @@ func TestCreateNote(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdNote, err := CreateNote(apiClient, "contacts", 789, noteToCreate)
+	createdNote, err := CreateNote(context.Background(), apiClient, "contacts", 789, noteToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -201,7 +202,7 @@ func TestUpdateNote(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedNote, err := UpdateNote(apiClient, "leads", 456, noteToUpdate)
+	updatedNote, err := UpdateNote(context.Background(), apiClient, "leads", 456, noteToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -276,7 +277,7 @@ func TestListNotes(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	notes, err := ListNotes(apiClient, "companies", 123, 10, 1)
+	notes, err := ListNotes(context.Background(), apiClient, "companies", 123, 10, 1)
 
 	// Проверяем результаты
 	if err != nil {
@@ -319,7 +320,7 @@ func TestDeleteNote(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteNote(apiClient, "leads", 123, 456)
+	err := DeleteNote(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -340,7 +341,7 @@ func TestDeleteNoteError(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteNote(apiClient, "leads", 123, 456)
+	err := DeleteNote(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты - должна быть ошибка
 	if err == nil {

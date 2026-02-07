@@ -1,8 +1,9 @@
-// Пакет leads предоставляет методы для взаимодействия с сущностями "Лиды" в API amoCRM.
+// Package leads предоставляет методы для взаимодействия с сущностями "Лиды" в API amoCRM.
 package leads
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/chudno/amo_crm_sdk/client"
@@ -62,7 +63,7 @@ const (
 
 // GetLead получает лид по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидом.
-func GetLead(apiClient *client.Client, leadID int, withOptions ...WithOption) (*Lead, error) {
+func GetLead(ctx context.Context, apiClient *client.Client, leadID int, withOptions ...WithOption) (*Lead, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
@@ -78,12 +79,12 @@ func GetLead(apiClient *client.Client, leadID int, withOptions ...WithOption) (*
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,7 @@ func GetLead(apiClient *client.Client, leadID int, withOptions ...WithOption) (*
 }
 
 // CreateLead создает новый лид в amoCRM.
-func CreateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
+func CreateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
 	url := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
 	leadData, err := json.Marshal([]*Lead{lead})
@@ -106,14 +107,14 @@ func CreateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(leadData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(leadData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,7 @@ func CreateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
 }
 
 // UpdateLead обновляет существующий лид в amoCRM.
-func UpdateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
+func UpdateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
 	if lead.ID == 0 {
 		return nil, fmt.Errorf("ID лида не указан")
 	}
@@ -149,14 +150,14 @@ func UpdateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(leadData))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(leadData))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +172,7 @@ func UpdateLead(apiClient *client.Client, lead *Lead) (*Lead, error) {
 }
 
 // ListLeads получает список лидов с возможностью фильтрации и пагинации.
-func ListLeads(apiClient *client.Client, limit int, page int, filter map[string]interface{}) ([]*Lead, error) {
+func ListLeads(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Lead, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
 	// Добавляем параметры запроса
@@ -190,12 +191,12 @@ func ListLeads(apiClient *client.Client, limit int, page int, filter map[string]
 
 	url := baseURL + "?" + params.Encode()
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -220,19 +221,23 @@ func ListLeads(apiClient *client.Client, limit int, page int, filter map[string]
 }
 
 // DeleteLead удаляет лид по его ID.
-func DeleteLead(apiClient *client.Client, leadID int) error {
+func DeleteLead(ctx context.Context, apiClient *client.Client, leadID int) error {
 	url := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
 
 	return nil
 }
@@ -249,7 +254,7 @@ type LeadsResponse struct {
 
 // GetLeads получает список лидов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидами.
-func GetLeads(apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
+func GetLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
@@ -275,12 +280,12 @@ func GetLeads(apiClient *client.Client, page, limit int, filter map[string]strin
 	}
 
 	url := baseURL + "?" + params.Encode()
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

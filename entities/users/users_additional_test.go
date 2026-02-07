@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,7 +26,7 @@ func TestGetUserErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 999) // несуществующий ID
+		_, err := GetUser(context.Background(), apiClient, 999) // несуществующий ID
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -48,7 +49,7 @@ func TestGetUserErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := GetUser(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -61,7 +62,7 @@ func TestGetUserErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := GetUser(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -84,7 +85,7 @@ func TestGetUserErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := GetUser(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -110,7 +111,7 @@ func TestGetCurrentUserErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
+		_, err := GetCurrentUser(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -123,7 +124,7 @@ func TestGetCurrentUserErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
+		_, err := GetCurrentUser(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -146,7 +147,7 @@ func TestGetCurrentUserErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "invalid_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
+		_, err := GetCurrentUser(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -172,7 +173,7 @@ func TestListUsersErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		users, err := ListUsers(apiClient, 50, 1)
+		users, err := ListUsers(context.Background(), apiClient, 50, 1)
 
 		// Проверяем результаты
 		if err != nil {
@@ -199,7 +200,7 @@ func TestListUsersErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := ListUsers(apiClient, 50, 1)
+		_, err := ListUsers(context.Background(), apiClient, 50, 1)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -212,7 +213,7 @@ func TestListUsersErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := ListUsers(apiClient, 50, 1)
+		_, err := ListUsers(context.Background(), apiClient, 50, 1)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -248,7 +249,7 @@ func TestListUsersErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию с некорректными параметрами
-		_, err := ListUsers(apiClient, 50, 0) // page=0 - некорректный параметр
+		_, err := ListUsers(context.Background(), apiClient, 50, 0) // page=0 - некорректный параметр
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {

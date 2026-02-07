@@ -28,6 +28,7 @@
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/tasks"
     "time"
@@ -35,6 +36,7 @@ import (
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание новой задачи
 completionTime := time.Now().Add(24 * time.Hour) // задача на завтра
@@ -48,7 +50,7 @@ newTask := &tasks.Task{
 }
 
 // Сохранение задачи
-createdTask, err := tasks.CreateTask(apiClient, newTask)
+createdTask, err := tasks.CreateTask(ctx, apiClient, newTask)
 if err != nil {
     // Обработка ошибки
 }
@@ -59,7 +61,7 @@ if err != nil {
 ```go
 // Получение задачи по ID
 taskID := 12345
-task, err := tasks.GetTask(apiClient, taskID)
+task, err := tasks.GetTask(ctx, apiClient, taskID)
 if err != nil {
     // Обработка ошибки
 }
@@ -69,7 +71,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 задач
-tasksList, err := tasks.GetTasks(apiClient, 1, 50)
+tasksList, err := tasks.GetTasks(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -80,7 +82,7 @@ filter := map[string]string{
     "filter[is_completed]": "0", // Только незавершенные задачи
     "filter[responsible_user_id]": "12345", // Задачи конкретного менеджера
 }
-filteredTasks, err := tasks.GetTasks(apiClient, 1, 50, filter)
+filteredTasks, err := tasks.GetTasks(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление задачи
@@ -93,7 +95,7 @@ task.Text = "Срочно перезвонить клиенту"
 newCompletionTime := time.Now().Add(12 * time.Hour)
 task.CompleteTill = newCompletionTime.Unix()
 
-updatedTask, err := tasks.UpdateTask(apiClient, task)
+updatedTask, err := tasks.UpdateTask(ctx, apiClient, task)
 if err != nil {
     // Обработка ошибки
 }
@@ -104,7 +106,7 @@ if err != nil {
 ```go
 // Завершение задачи
 result := "Клиент согласился на встречу" // Результат выполнения задачи
-completedTask, err := tasks.CompleteTask(apiClient, taskID, result)
+completedTask, err := tasks.CompleteTask(ctx, apiClient, taskID, result)
 if err != nil {
     // Обработка ошибки
 }

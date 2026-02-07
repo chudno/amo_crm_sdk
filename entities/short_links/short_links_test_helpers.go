@@ -2,6 +2,7 @@ package short_links
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,13 +29,13 @@ type AdvancedMockClient struct {
 	BaseURL        string
 	ExpectedMethod string
 	ExpectedURL    string
-	ExpectedBody   interface{}
+	ExpectedBody   any
 	MockResponse   *MockResponse
 	LastRequest    *MockRequest
 }
 
 // DoRequest выполняет запрос и возвращает ответ.
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	// Создаем информацию о запросе
 	mockReq := &MockRequest{
 		Method: req.Method,

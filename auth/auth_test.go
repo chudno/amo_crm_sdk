@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -95,7 +96,7 @@ func TestGetAccessToken(t *testing.T) {
 			defer server.Close()
 
 			// Вызываем тестируемую функцию
-			response, err := GetAccessToken(server.URL, "test_client_id", "test_client_secret", "test_code", "https://test-redirect.com")
+			response, err := GetAccessToken(context.Background(), server.URL, "test_client_id", "test_client_secret", "test_code", "https://test-redirect.com")
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {
@@ -174,7 +175,7 @@ func TestRefreshAccessToken(t *testing.T) {
 			defer server.Close()
 
 			// Вызываем тестируемую функцию
-			response, err := RefreshAccessToken(server.URL, "test_client_id", "test_client_secret", "test_refresh_token")
+			response, err := RefreshAccessToken(context.Background(), server.URL, "test_client_id", "test_client_secret", "test_refresh_token")
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {
@@ -250,7 +251,7 @@ func TestGetLongLivedToken(t *testing.T) {
 			defer server.Close()
 
 			// Вызываем тестируемую функцию
-			response, err := GetLongLivedToken(server.URL, "test_client_id", "test_client_secret")
+			response, err := GetLongLivedToken(context.Background(), server.URL, "test_client_id", "test_client_secret")
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {

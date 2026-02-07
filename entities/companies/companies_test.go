@@ -1,6 +1,7 @@
 package companies
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -39,7 +40,7 @@ func TestGetCompany(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	company, err := GetCompany(apiClient, 123)
+	company, err := GetCompany(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -96,7 +97,7 @@ func TestCreateCompany(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdCompany, err := CreateCompany(apiClient, companyToCreate)
+	createdCompany, err := CreateCompany(context.Background(), apiClient, companyToCreate)
 
 	// Проверяем результаты
 	if err != nil {

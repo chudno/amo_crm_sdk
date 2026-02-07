@@ -1,8 +1,9 @@
-// Пакет companies предоставляет методы для взаимодействия с сущностями "Компании" в API amoCRM.
+// Package companies предоставляет методы для взаимодействия с сущностями "Компании" в API amoCRM.
 package companies
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -58,7 +59,7 @@ const (
 
 // GetCompany получает компанию по её ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компанией.
-func GetCompany(apiClient *client.Client, companyID int, withOptions ...WithOption) (*Company, error) {
+func GetCompany(ctx context.Context, apiClient *client.Client, companyID int, withOptions ...WithOption) (*Company, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies/%d", apiClient.GetBaseURL(), companyID)
 
@@ -74,12 +75,12 @@ func GetCompany(apiClient *client.Client, companyID int, withOptions ...WithOpti
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -94,21 +95,21 @@ func GetCompany(apiClient *client.Client, companyID int, withOptions ...WithOpti
 }
 
 // CreateCompany создает новую компанию в amoCRM.
-func CreateCompany(apiClient *client.Client, company *Company) (*Company, error) {
+func CreateCompany(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/companies"
 	companyJSON, err := json.Marshal(company)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(companyJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(companyJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -123,21 +124,21 @@ func CreateCompany(apiClient *client.Client, company *Company) (*Company, error)
 }
 
 // UpdateCompany обновляет существующую компанию в amoCRM.
-func UpdateCompany(apiClient *client.Client, company *Company) (*Company, error) {
+func UpdateCompany(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/companies/" + fmt.Sprintf("%d", company.ID)
 	companyJSON, err := json.Marshal(company)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(companyJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(companyJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ type CompaniesResponse struct {
 
 // GetCompanies получает список компаний с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компаниями.
-func GetCompanies(apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Company, error) {
+func GetCompanies(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Company, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies", apiClient.GetBaseURL())
 
@@ -185,12 +186,12 @@ func GetCompanies(apiClient *client.Client, page, limit int, withOptions ...With
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

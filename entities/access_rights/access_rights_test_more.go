@@ -1,6 +1,7 @@
 package access_rights
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -101,7 +102,7 @@ func TestCreateAccessRight(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		createdRight, err := CreateAccessRight(apiClient, newAccessRight)
+		createdRight, err := CreateAccessRight(context.Background(), apiClient, newAccessRight)
 
 		// Проверяем результаты
 		if err != nil {
@@ -128,7 +129,7 @@ func TestCreateAccessRight(t *testing.T) {
 		mockClient.AddResponse("POST", "/api/v4/access_rights", http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := CreateAccessRightWithRequester(mockClient, newAccessRight)
+		_, err := CreateAccessRightWithRequester(context.Background(), mockClient, newAccessRight)
 
 		// Проверяем результаты
 		if err == nil {
@@ -217,7 +218,7 @@ func TestUpdateAccessRight(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		updatedRight, err := UpdateAccessRight(apiClient, updateAccessRight)
+		updatedRight, err := UpdateAccessRight(context.Background(), apiClient, updateAccessRight)
 
 		// Проверяем результаты
 		if err != nil {
@@ -248,7 +249,7 @@ func TestUpdateAccessRight(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := UpdateAccessRightWithRequester(mockClient, updateAccessRight)
+		_, err := UpdateAccessRightWithRequester(context.Background(), mockClient, updateAccessRight)
 
 		// Проверяем результаты
 		if err == nil {
@@ -272,7 +273,7 @@ func TestUpdateAccessRight(t *testing.T) {
 		mockClient := NewAdvancedMockClient()
 
 		// Вызываем тестируемый метод
-		_, err := UpdateAccessRightWithRequester(mockClient, emptyIDRight)
+		_, err := UpdateAccessRightWithRequester(context.Background(), mockClient, emptyIDRight)
 
 		// Проверяем результаты
 		if err == nil {
@@ -293,7 +294,7 @@ func TestDeleteAccessRight(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNoContent, "", nil)
 
 		// Вызываем тестируемый метод
-		err := DeleteAccessRightWithRequester(mockClient, accessRightID)
+		err := DeleteAccessRightWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -308,7 +309,7 @@ func TestDeleteAccessRight(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusForbidden, `{"error": "Insufficient permissions"}`, nil)
 
 		// Вызываем тестируемый метод
-		err := DeleteAccessRightWithRequester(mockClient, accessRightID)
+		err := DeleteAccessRightWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err == nil {

@@ -26,12 +26,14 @@
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/companies"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание новой компании
 newCompany := &companies.Company{
@@ -62,7 +64,7 @@ newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
 })
 
 // Сохранение компании
-createdCompany, err := companies.CreateCompany(apiClient, newCompany)
+createdCompany, err := companies.CreateCompany(ctx, apiClient, newCompany)
 if err != nil {
     // Обработка ошибки
 }
@@ -73,7 +75,7 @@ if err != nil {
 ```go
 // Получение компании по ID
 companyID := 12345
-company, err := companies.GetCompany(apiClient, companyID)
+company, err := companies.GetCompany(ctx, apiClient, companyID)
 if err != nil {
     // Обработка ошибки
 }
@@ -83,7 +85,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 компаний
-companiesList, err := companies.GetCompanies(apiClient, 1, 50)
+companiesList, err := companies.GetCompanies(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -93,7 +95,7 @@ filter := map[string]string{
     "query": "Ромашка", // Поиск по названию
     "created_at": "1609459200", // Компании, созданные после указанной даты (timestamp)
 }
-filteredCompanies, err := companies.GetCompanies(apiClient, 1, 50, filter)
+filteredCompanies, err := companies.GetCompanies(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление компании
@@ -113,7 +115,7 @@ company.CustomFields = append(company.CustomFields, companies.CustomField{
     },
 })
 
-updatedCompany, err := companies.UpdateCompany(apiClient, company)
+updatedCompany, err := companies.UpdateCompany(ctx, apiClient, company)
 if err != nil {
     // Обработка ошибки
 }
@@ -142,13 +144,13 @@ company.CustomFields = append(company.CustomFields, companies.CustomField{
 ```go
 // Связывание компании со сделкой
 import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(apiClient, leadID, companyID)
+err := leads.LinkLeadWithCompany(ctx, apiClient, leadID, companyID)
 
 // Связывание компании с контактом
 import "github.com/chudno/amo_crm_sdk/entities/contacts"
-err := companies.LinkCompanyWithContact(apiClient, companyID, contactID)
+err := companies.LinkCompanyWithContact(ctx, apiClient, companyID, contactID)
 
 // Связывание компании с лидом
 import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(apiClient, leadID, companyID)
+err := leads.LinkLeadWithCompany(ctx, apiClient, leadID, companyID)
 ```

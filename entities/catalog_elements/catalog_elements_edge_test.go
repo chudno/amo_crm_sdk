@@ -1,6 +1,7 @@
 package catalog_elements
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +21,7 @@ func TestGetCatalogElementsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElements(apiClient, catalogID, 1, 50, nil)
+		_, err := GetCatalogElements(context.Background(), apiClient, catalogID, 1, 50, nil)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -37,7 +38,7 @@ func TestGetCatalogElementsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElements(apiClient, catalogID, 1, 50, nil)
+		_, err := GetCatalogElements(context.Background(), apiClient, catalogID, 1, 50, nil)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -61,7 +62,7 @@ func TestGetCatalogElementsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		elements, err := GetCatalogElements(apiClient, catalogID, 1, 50, nil)
+		elements, err := GetCatalogElements(context.Background(), apiClient, catalogID, 1, 50, nil)
 
 		if err != nil {
 			t.Fatalf("Неожиданная ошибка: %v", err)
@@ -88,7 +89,7 @@ func TestCreateCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := CreateCatalogElement(apiClient, catalogID, element)
+		_, err := CreateCatalogElement(context.Background(), apiClient, catalogID, element)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -105,7 +106,7 @@ func TestCreateCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := CreateCatalogElement(apiClient, catalogID, element)
+		_, err := CreateCatalogElement(context.Background(), apiClient, catalogID, element)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -126,7 +127,7 @@ func TestCreateCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := CreateCatalogElement(apiClient, catalogID, element)
+		_, err := CreateCatalogElement(context.Background(), apiClient, catalogID, element)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка пустого ответа, но получен nil")
@@ -147,7 +148,7 @@ func TestGetCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElement(apiClient, catalogID, elementID)
+		_, err := GetCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -164,7 +165,7 @@ func TestGetCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElement(apiClient, catalogID, elementID)
+		_, err := GetCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -179,7 +180,7 @@ func TestGetCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElement(apiClient, catalogID, elementID)
+		_, err := GetCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -204,7 +205,7 @@ func TestUpdateCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateCatalogElement(apiClient, catalogID, element)
+		_, err := UpdateCatalogElement(context.Background(), apiClient, catalogID, element)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -221,7 +222,7 @@ func TestUpdateCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateCatalogElement(apiClient, catalogID, element)
+		_, err := UpdateCatalogElement(context.Background(), apiClient, catalogID, element)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -231,7 +232,7 @@ func TestUpdateCatalogElementErrors(t *testing.T) {
 	// Тест на отсутствие ID
 	t.Run("MissingID", func(t *testing.T) {
 		apiClient := client.NewClient("http://example.com", "test_api_key")
-		_, err := UpdateCatalogElement(apiClient, catalogID, &CatalogElement{
+		_, err := UpdateCatalogElement(context.Background(), apiClient, catalogID, &CatalogElement{
 			Name:      "Тестовый элемент",
 			CatalogID: catalogID,
 		})
@@ -255,7 +256,7 @@ func TestDeleteCatalogElementErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := DeleteCatalogElement(apiClient, catalogID, elementID)
+		err := DeleteCatalogElement(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -276,7 +277,7 @@ func TestBatchDeleteCatalogElementsExtraTests(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := BatchDeleteCatalogElements(apiClient, catalogID, elementIDs)
+		err := BatchDeleteCatalogElements(context.Background(), apiClient, catalogID, elementIDs)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -303,7 +304,7 @@ func TestLinkCatalogElementWithTagsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := LinkCatalogElementWithTags(apiClient, catalogID, elementID, tags)
+		err := LinkCatalogElementWithTags(context.Background(), apiClient, catalogID, elementID, tags)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -324,7 +325,7 @@ func TestGetCatalogElementTagsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElementTags(apiClient, catalogID, elementID)
+		_, err := GetCatalogElementTags(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -341,7 +342,7 @@ func TestGetCatalogElementTagsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetCatalogElementTags(apiClient, catalogID, elementID)
+		_, err := GetCatalogElementTags(context.Background(), apiClient, catalogID, elementID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")

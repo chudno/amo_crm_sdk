@@ -32,6 +32,8 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/catalogs"
 )
@@ -39,8 +41,11 @@ import (
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
+// Создаем контекст
+ctx := context.Background()
+
 // Получение каталогов (первая страница, 50 элементов)
-catalogsList, err := catalogs.GetCatalogs(apiClient, 1, 50, nil)
+catalogsList, err := catalogs.GetCatalogs(ctx, apiClient, 1, 50, nil)
 if err != nil {
     // Обработка ошибки
 }
@@ -55,7 +60,7 @@ filter := map[string]string{
     "filter[type]": string(catalogs.CatalogTypeRegular), // Только обычные каталоги
     "filter[name]": "Товары", // Фильтр по названию
 }
-filteredCatalogs, err := catalogs.GetCatalogs(apiClient, 1, 50, filter)
+filteredCatalogs, err := catalogs.GetCatalogs(ctx, apiClient, 1, 50, filter)
 if err != nil {
     // Обработка ошибки
 }
@@ -71,7 +76,7 @@ newCatalog := &catalogs.Catalog{
     Sort: 100,
 }
 
-createdCatalog, err := catalogs.CreateCatalog(apiClient, newCatalog)
+createdCatalog, err := catalogs.CreateCatalog(ctx, apiClient, newCatalog)
 if err != nil {
     // Обработка ошибки
 }
@@ -84,7 +89,7 @@ fmt.Printf("Создан каталог с ID: %d\n", createdCatalog.ID)
 ```go
 // Получение каталога по ID
 catalogID := 12345
-catalog, err := catalogs.GetCatalog(apiClient, catalogID)
+catalog, err := catalogs.GetCatalog(ctx, apiClient, catalogID)
 if err != nil {
     // Обработка ошибки
 }
@@ -101,7 +106,7 @@ fmt.Printf("Тип: %s\n", catalog.Type)
 catalog.Name = "Обновленный каталог товаров"
 catalog.Sort = 50
 
-updatedCatalog, err := catalogs.UpdateCatalog(apiClient, catalog)
+updatedCatalog, err := catalogs.UpdateCatalog(ctx, apiClient, catalog)
 if err != nil {
     // Обработка ошибки
 }
@@ -114,7 +119,7 @@ fmt.Printf("Каталог обновлен: %s\n", updatedCatalog.Name)
 ```go
 // Удаление каталога
 catalogID := 12345
-err := catalogs.DeleteCatalog(apiClient, catalogID)
+err := catalogs.DeleteCatalog(ctx, apiClient, catalogID)
 if err != nil {
     // Обработка ошибки
 }
@@ -137,7 +142,7 @@ newField := &catalogs.CustomField{
     Code:       "SKU",
 }
 
-createdField, err := catalogs.AddCustomFieldToCatalog(apiClient, catalogID, newField)
+createdField, err := catalogs.AddCustomFieldToCatalog(ctx, apiClient, catalogID, newField)
 if err != nil {
     // Обработка ошибки
 }
@@ -153,7 +158,7 @@ selectField := &catalogs.CustomField{
     Code:       "CATEGORY",
 }
 
-createdSelectField, err := catalogs.AddCustomFieldToCatalog(apiClient, catalogID, selectField)
+createdSelectField, err := catalogs.AddCustomFieldToCatalog(ctx, apiClient, catalogID, selectField)
 if err != nil {
     // Обработка ошибки
 }
@@ -164,7 +169,7 @@ if err != nil {
 ```go
 // Получение всех полей каталога
 catalogID := 12345
-fields, err := catalogs.GetCatalogCustomFields(apiClient, catalogID)
+fields, err := catalogs.GetCatalogCustomFields(ctx, apiClient, catalogID)
 if err != nil {
     // Обработка ошибки
 }
@@ -176,7 +181,7 @@ for _, field := range fields {
 
 // Получение конкретного поля
 fieldID := 67890
-field, err := catalogs.GetCatalogCustomField(apiClient, catalogID, fieldID)
+field, err := catalogs.GetCatalogCustomField(ctx, apiClient, catalogID, fieldID)
 if err != nil {
     // Обработка ошибки
 }
@@ -191,7 +196,7 @@ fmt.Printf("Поле: %s (Тип: %s)\n", field.Name, field.Type)
 field.Name = "Обновленное название поля"
 field.IsRequired = true
 
-updatedField, err := catalogs.UpdateCatalogCustomField(apiClient, catalogID, field)
+updatedField, err := catalogs.UpdateCatalogCustomField(ctx, apiClient, catalogID, field)
 if err != nil {
     // Обработка ошибки
 }
@@ -204,7 +209,7 @@ fmt.Printf("Поле обновлено: %s\n", updatedField.Name)
 ```go
 // Удаление пользовательского поля
 fieldID := 67890
-err := catalogs.DeleteCatalogCustomField(apiClient, catalogID, fieldID)
+err := catalogs.DeleteCatalogCustomField(ctx, apiClient, catalogID, fieldID)
 if err != nil {
     // Обработка ошибки
 }

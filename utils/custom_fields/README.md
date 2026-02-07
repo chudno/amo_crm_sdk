@@ -25,6 +25,8 @@
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/utils/custom_fields"
 )
@@ -32,9 +34,12 @@ import (
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
+// Создаем контекст
+ctx := context.Background()
+
 // Получение всех пользовательских полей для контактов
 entityType := "contacts"
-fieldsList, err := custom_fields.GetCustomFields(apiClient, entityType)
+fieldsList, err := custom_fields.GetCustomFields(ctx, apiClient, entityType)
 if err != nil {
     // Обработка ошибки
 }
@@ -54,7 +59,7 @@ for _, field := range fieldsList {
 
 // Получение пользовательского поля по ID
 fieldID := 12345
-field, err := custom_fields.GetCustomField(apiClient, entityType, fieldID)
+field, err := custom_fields.GetCustomField(ctx, apiClient, entityType, fieldID)
 if err != nil {
     // Обработка ошибки
 }
@@ -71,7 +76,7 @@ newTextField := &custom_fields.CustomField{
     Sort: 100, // Порядок сортировки
 }
 
-createdField, err := custom_fields.CreateCustomField(apiClient, newTextField)
+createdField, err := custom_fields.CreateCustomField(ctx, apiClient, newTextField)
 if err != nil {
     // Обработка ошибки
 }
@@ -91,7 +96,7 @@ newSelectField := &custom_fields.CustomField{
     },
 }
 
-createdSelectField, err := custom_fields.CreateCustomField(apiClient, newSelectField)
+createdSelectField, err := custom_fields.CreateCustomField(ctx, apiClient, newSelectField)
 if err != nil {
     // Обработка ошибки
 }
@@ -111,7 +116,7 @@ newPhoneField := &custom_fields.CustomField{
     },
 }
 
-createdPhoneField, err := custom_fields.CreateCustomField(apiClient, newPhoneField)
+createdPhoneField, err := custom_fields.CreateCustomField(ctx, apiClient, newPhoneField)
 ```
 
 ## Обновление пользовательского поля
@@ -128,7 +133,7 @@ if field.FieldType == custom_fields.TypeSelect {
 }
 
 // Сохранение изменений
-updatedField, err := custom_fields.UpdateCustomField(apiClient, field)
+updatedField, err := custom_fields.UpdateCustomField(ctx, apiClient, field)
 if err != nil {
     // Обработка ошибки
 }
@@ -157,9 +162,14 @@ if err != nil {
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/entities/contacts"
     "github.com/chudno/amo_crm_sdk/entities/leads"
 )
+
+// Создаем контекст
+ctx := context.Background()
 
 // Добавление значения пользовательского поля для контакта
 contact := &contacts.Contact{
@@ -199,7 +209,7 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 })
 
 // Сохранение контакта с пользовательскими полями
-createdContact, err := contacts.CreateContact(apiClient, contact)
+createdContact, err := contacts.CreateContact(ctx, apiClient, contact)
 ```
 
 Работа с пользовательскими полями в лидах аналогична:
@@ -231,5 +241,5 @@ lead.CustomFields = append(lead.CustomFields, leads.CustomField{
 })
 
 // Сохранение лида с пользовательскими полями
-createdLead, err := leads.CreateLead(apiClient, lead)
+createdLead, err := leads.CreateLead(ctx, apiClient, lead)
 ```
