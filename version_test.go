@@ -7,8 +7,8 @@ import (
 func TestVersion(t *testing.T) {
 	got := Version()
 
-	expectedWithoutSuffix := "1.0.0"
-	expectedWithSuffix := "1.0.0-"
+	expectedWithoutSuffix := "0.2.0"
+	expectedWithSuffix := "0.2.0-"
 
 	if VersionSuffix == "" {
 		if got != expectedWithoutSuffix {
