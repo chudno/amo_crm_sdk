@@ -30,8 +30,8 @@ func TestIntegration_LeadsCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetLead(%d): %v", created.ID, err)
 	}
-	if got.Name != created.Name {
-		t.Errorf("Ожидалось имя %q, получено %q", created.Name, got.Name)
+	if got.Name != newLead.Name {
+		t.Errorf("Ожидалось имя %q, получено %q", newLead.Name, got.Name)
 	}
 
 	// UPDATE

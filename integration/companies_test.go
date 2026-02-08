@@ -30,8 +30,8 @@ func TestIntegration_CompaniesCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetCompany(%d): %v", created.ID, err)
 	}
-	if got.Name != created.Name {
-		t.Errorf("Ожидалось имя %q, получено %q", created.Name, got.Name)
+	if got.Name != newCompany.Name {
+		t.Errorf("Ожидалось имя %q, получено %q", newCompany.Name, got.Name)
 	}
 
 	// UPDATE

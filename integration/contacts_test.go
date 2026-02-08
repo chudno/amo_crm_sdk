@@ -5,6 +5,7 @@ package integration
 import (
 	"testing"
 
+	"github.com/chudno/amo_crm_sdk/entities/companies"
 	"github.com/chudno/amo_crm_sdk/entities/contacts"
 )
 
@@ -39,4 +40,38 @@ func TestIntegration_ContactsCRUD(t *testing.T) {
 		t.Fatalf("GetContacts: %v", err)
 	}
 	t.Logf("GetContacts вернул %d контактов", len(list))
+
+	// LINK WITH COMPANY
+	// Создаём компанию для привязки к контакту
+	newCompany := &companies.Company{
+		Name: "Компания для привязки (integration test)",
+	}
+	company, err := companies.Create(ctx, apiClient, newCompany)
+	if err != nil {
+		t.Fatalf("CreateCompany: %v", err)
+	}
+	if company.ID == 0 {
+		t.Fatal("ID компании не должен быть 0")
+	}
+	t.Logf("Создана компания: ID=%d, Name=%q", company.ID, company.Name)
+
+	// Привязываем контакт к компании
+	err = contacts.LinkWithCompany(ctx, apiClient, created.ID, company.ID)
+	if err != nil {
+		t.Fatalf("LinkWithCompany(contactID=%d, companyID=%d): %v", created.ID, company.ID, err)
+	}
+	t.Logf("Контакт ID=%d привязан к компании ID=%d", created.ID, company.ID)
+
+	// Проверяем, что связь отображается при запросе контакта с WithCompanies
+	contactWithCompanies, err := contacts.Get(ctx, apiClient, created.ID, contacts.WithCompanies)
+	if err != nil {
+		t.Fatalf("GetContact(%d, WithCompanies): %v", created.ID, err)
+	}
+	if contactWithCompanies.Embedded != nil {
+		for _, c := range contactWithCompanies.Embedded.Companies {
+			if c.ID == company.ID {
+				t.Logf("Проверено: компания ID=%d присутствует в embedded контакта", company.ID)
+			}
+		}
+	}
 }

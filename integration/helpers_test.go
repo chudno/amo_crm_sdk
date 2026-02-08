@@ -11,8 +11,8 @@ import (
 	"github.com/chudno/amo_crm_sdk/client"
 )
 
-// testTimeout — таймаут для каждого запроса к API.
-const testTimeout = 15 * time.Second
+// testTimeout — таймаут на весь тест (включая все API-запросы).
+const testTimeout = 60 * time.Second
 
 // setupClient создаёт клиент amoCRM из переменных окружения.
 // Пропускает тест, если переменные не заданы.

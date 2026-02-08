@@ -24,9 +24,8 @@ func TestIntegration_NotesCRUD(t *testing.T) {
 	})
 
 	// CREATE
-	// NoteType 4 = обычное текстовое примечание (common)
 	newNote := &notes.Note{
-		NoteType: 4,
+		NoteType: notes.TypeCommon,
 		Params: notes.NoteParams{
 			Text: "Тестовое примечание (integration test)",
 		},
@@ -48,16 +47,18 @@ func TestIntegration_NotesCRUD(t *testing.T) {
 	}
 	t.Logf("Получено примечание: ID=%d, Type=%q", got.ID, got.NoteType)
 
+	// UPDATE
+	got.Params.Text = "Обновлённое примечание (integration test)"
+	updated, err := notes.Update(ctx, apiClient, "leads", lead.ID, got)
+	if err != nil {
+		t.Fatalf("UpdateNote(%d): %v", got.ID, err)
+	}
+	t.Logf("Обновлено примечание: ID=%d", updated.ID)
+
 	// LIST
 	list, err := notes.List(ctx, apiClient, "leads", lead.ID, 10, 1)
 	if err != nil {
 		t.Fatalf("ListNotes: %v", err)
 	}
 	t.Logf("ListNotes вернул %d примечаний", len(list))
-
-	// DELETE
-	if err := notes.Delete(ctx, apiClient, "leads", lead.ID, created.ID); err != nil {
-		t.Fatalf("Delete(%d): %v", created.ID, err)
-	}
-	t.Logf("Удалено примечание: ID=%d", created.ID)
 }

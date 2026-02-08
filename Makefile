@@ -1,4 +1,4 @@
-.PHONY: test lint fmt cyclo all coverage coverage-html
+.PHONY: test lint fmt cyclo all integration coverage coverage-html
 
 test:
 	docker-compose run --rm test
@@ -11,6 +11,9 @@ cyclo:
 
 fmt:
 	docker-compose run --rm fmt
+
+integration:
+	docker-compose run --rm integration
 
 all:
 	docker-compose run --rm test && docker-compose run --rm lint && docker-compose run --rm fmt && docker-compose run --rm cyclo
@@ -42,6 +45,7 @@ help:
 	@echo "  make lint         - Проверка кода с помощью go vet"
 	@echo "  make fmt          - Форматирование кода"
 	@echo "  make cyclo        - Проверка цикломатической сложности"
+	@echo "  make integration  - Запуск интеграционных тестов (требуются AMO_BASE_URL и AMO_ACCESS_TOKEN)"
 	@echo "  make all          - Запуск всех проверок"
 	@echo "  make coverage     - Сформировать отчет о покрытии кода тестами"
 	@echo "  make coverage-html - Сформировать HTML-отчет о покрытии кода тестами"

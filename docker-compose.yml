@@ -30,3 +30,14 @@ services:
     volumes:
       - .:/app
     command: sh -c "gocyclo -over 15 . || true"
+
+  integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - AMO_BASE_URL
+      - AMO_ACCESS_TOKEN
+    command: go test -tags integration -v ./integration/...

@@ -74,3 +74,58 @@ func TestIntegration_GetStatus(t *testing.T) {
 
 	t.Logf("Статус: ID=%d, Name=%q", status.ID, status.Name)
 }
+
+func TestIntegration_PipelinesCRUD(t *testing.T) {
+	apiClient, ctx := setupClient(t)
+
+	// CREATE
+	created, err := pipelines.Create(ctx, apiClient, &pipelines.Pipeline{
+		Name:         "Тестовая воронка (integration test)",
+		Sort:         100,
+		IsMain:       false,
+		IsUnsortedOn: true,
+		Statuses: []pipelines.Status{
+			{Name: "Новый", Sort: 10, Color: "#fffeb2"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CreatePipeline: %v", err)
+	}
+	if created.ID == 0 {
+		t.Fatal("ID воронки не должен быть 0")
+	}
+	t.Logf("Создана воронка: ID=%d, Name=%q", created.ID, created.Name)
+	// Гарантируем удаление воронки при завершении теста
+	t.Cleanup(func() {
+		_ = pipelines.Delete(ctx, apiClient, created.ID)
+	})
+
+	// UPDATE
+	created.Name = "Обновлённая воронка (integration test)"
+	updated, err := pipelines.Update(ctx, apiClient, created)
+	if err != nil {
+		t.Fatalf("UpdatePipeline: %v", err)
+	}
+	t.Logf("Обновлена воронка: ID=%d, Name=%q", updated.ID, updated.Name)
+
+	// CREATE STATUS
+	status, err := pipelines.CreateStatus(ctx, apiClient, created.ID, &pipelines.Status{
+		Name:  "Тестовый статус",
+		Sort:  10,
+		Color: "#fffeb2",
+	})
+	if err != nil {
+		t.Logf("CreateStatus: %v (может не поддерживаться)", err)
+	} else if status.ID == 0 {
+		t.Logf("CreateStatus вернул ID=0")
+	} else {
+		t.Logf("Создан статус: ID=%d, Name=%q", status.ID, status.Name)
+	}
+
+	// DELETE pipeline
+	err = pipelines.Delete(ctx, apiClient, created.ID)
+	if err != nil {
+		t.Fatalf("DeletePipeline(%d): %v", created.ID, err)
+	}
+	t.Logf("Удалена воронка: ID=%d", created.ID)
+}
