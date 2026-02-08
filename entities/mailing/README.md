@@ -12,6 +12,7 @@
   - [Обновление рассылки](#обновление-рассылки)
   - [Удаление рассылки](#удаление-рассылки)
   - [Изменение статуса рассылки](#изменение-статуса-рассылки)
+  - [Получение статистики рассылки](#получение-статистики-рассылки)
   - [Получение шаблонов рассылок](#получение-шаблонов-рассылок)
   - [Управление получателями рассылки](#управление-получателями-рассылки)
 - [Примеры использования](#примеры-использования)
@@ -235,6 +236,18 @@ func GetTemplate(ctx context.Context, apiClient *client.Client, id int) (*Templa
 - `apiClient` - клиент API amoCRM
 - `id` - ID шаблона рассылки
 
+### Получение статистики рассылки
+
+```go
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*Stats, error)
+```
+
+Возвращает статистику рассылки.
+
+**Параметры:**
+- `apiClient` - клиент API amoCRM
+- `id` - ID рассылки
+
 ### Управление получателями рассылки
 
 ```go
@@ -271,44 +284,28 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Создаем новую рассылку
     newMailing := &mailing.Mailing{
         Name:       "Новогодняя акция",
         Subject:    "Скидки к Новому году",
         Frequency:  mailing.MailingFrequencyOnce,
         FromName:   "Компания",
         FromEmail:  "marketing@example.com",
-        SegmentIDs: []int{101, 102}, // ID сегментов контактов для рассылки
+        SegmentIDs: []int{101, 102},
     }
 
-    // Отправляем запрос на создание
     createdMailing, err := mailing.Create(ctx, apiClient, newMailing)
     if err != nil {
         log.Fatalf("Ошибка при создании рассылки: %v", err)
     }
 
-    // Выводим информацию о созданной рассылке
     fmt.Printf("Создана рассылка: %s (ID: %d)\n", createdMailing.Name, createdMailing.ID)
     fmt.Printf("Статус: %s\n", createdMailing.Status)
 }
@@ -324,31 +321,16 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // ID рассылки
     mailingID := 1001
 
-    // Запускаем рассылку
     updatedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusActive)
     if err != nil {
         log.Fatalf("Ошибка при изменении статуса рассылки: %v", err)
@@ -356,7 +338,6 @@ func main() {
 
     fmt.Printf("Статус рассылки изменен на: %s\n", updatedMailing.Status)
 
-    // Позже приостанавливаем рассылку
     pausedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusPaused)
     if err != nil {
         log.Fatalf("Ошибка при приостановке рассылки: %v", err)
@@ -375,46 +356,29 @@ import (
     "context"
     "fmt"
     "log"
-    "time"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Получаем список активных рассылок
     mailings, err := mailing.List(ctx, apiClient, 1, 10, mailing.WithStatus(mailing.MailingStatusActive))
     if err != nil {
         log.Fatalf("Ошибка при получении списка рассылок: %v", err)
     }
 
-    // Выводим информацию о рассылках и их статистике
     for _, m := range mailings {
         fmt.Printf("Рассылка: %s (ID: %d)\n", m.Name, m.ID)
-        
-        // Получаем детальную статистику для каждой рассылки
+
         stats, err := mailing.GetStats(ctx, apiClient, m.ID)
         if err != nil {
             log.Printf("Ошибка при получении статистики для рассылки %d: %v", m.ID, err)
             continue
         }
-        
+
         fmt.Printf("  Всего получателей: %d\n", stats.TotalRecipients)
         fmt.Printf("  Доставлено: %d\n", stats.Delivered)
         fmt.Printf("  Открыто: %d\n", stats.Opened)
@@ -422,7 +386,6 @@ func main() {
         fmt.Printf("  Отказы доставки: %d\n", stats.Bounced)
         fmt.Printf("  Отписки: %d\n", stats.Unsubscribed)
         fmt.Printf("  Жалобы: %d\n", stats.Complaints)
-        
         fmt.Println()
     }
 }

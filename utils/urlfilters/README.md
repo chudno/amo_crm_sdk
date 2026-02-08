@@ -25,38 +25,37 @@ go get github.com/chudno/amo_crm_sdk/utils/urlfilters
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	
+
 	"github.com/chudno/amo_crm_sdk/client"
 	"github.com/chudno/amo_crm_sdk/entities/leads"
 	"github.com/chudno/amo_crm_sdk/utils/urlfilters"
 )
 
 func main() {
-	// URL из веб-интерфейса amoCRM с фильтрами
 	amoURL := "https://example.amocrm.ru/leads/list/?filter[name]=Тестовый+лид&filter[status][]=10073462&page=1&limit=50"
-	
-	// Парсим URL и получаем фильтры для лидов
+
 	filter, err := urlfilters.NewLeadFilterFromURL(amoURL)
 	if err != nil {
 		log.Fatalf("Ошибка при парсинге URL: %v", err)
 	}
-	
-	// Создаем клиент API
-	apiClient := client.NewClient("https://example.amocrm.ru", "your_access_token")
-	
-	// Получаем лиды с фильтрами из URL
+
+	apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+	ctx := context.Background()
+
 	leadsList, err := leads.List(
-		apiClient, 
-		filter.PageInt, 
-		filter.LimitInt, 
+		ctx,
+		apiClient,
+		filter.PageInt,
+		filter.LimitInt,
 		filter.GetSDKFilterMap(),
 	)
 	if err != nil {
 		log.Fatalf("Ошибка при получении лидов: %v", err)
 	}
-	
+
 	fmt.Printf("Получено %d лидов\n", len(leadsList))
 	for _, lead := range leadsList {
 		fmt.Printf("Лид: %s (ID: %d)\n", lead.Name, lead.ID)

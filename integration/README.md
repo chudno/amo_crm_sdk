@@ -50,7 +50,10 @@ go test -tags integration -v -run TestLeads ./integration/...
 | `notes_test.go` | Примечания |
 | `tags_test.go` | Теги |
 | `catalogs_test.go` | Каталоги |
+| `catalog_elements_test.go` | Элементы каталогов |
+| `calls_test.go` | Звонки |
 | `events_test.go` | События |
+| `helpers_test.go` | Вспомогательные функции |
 
 ## Важно
 

@@ -143,34 +143,19 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Получаем список ссылок
     links, err := short_links.List(ctx, apiClient, 1, 10)
     if err != nil {
         log.Fatalf("Ошибка при получении списка ссылок: %v", err)
     }
 
-    // Выводим информацию о полученных ссылках
     for i, link := range links {
         fmt.Printf("Ссылка %d: %s (ID: %d)\n", i+1, link.ShortURL, link.ID)
     }
@@ -187,45 +172,29 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Создаем новую короткую ссылку
     newLink := &short_links.ShortLink{
-        URL:          "https://example.com/product/123",
-        EntityType:   "leads",
-        EntityID:     456,
-        UTMSource:    "newsletter",
-        UTMMedium:    "email",
-        UTMCampaign:  "spring_promo",
+        URL:           "https://example.com/product/123",
+        EntityType:    "leads",
+        EntityID:      456,
+        UTMSource:     "newsletter",
+        UTMMedium:     "email",
+        UTMCampaign:   "spring_promo",
         UseInEmbedded: true,
     }
 
-    // Отправляем запрос на создание
     createdLink, err := short_links.Create(ctx, apiClient, newLink)
     if err != nil {
         log.Fatalf("Ошибка при создании короткой ссылки: %v", err)
     }
 
-    // Выводим информацию о созданной ссылке
     fmt.Printf("Создана короткая ссылка: %s\n", createdLink.ShortURL)
     fmt.Printf("ID: %d\nКлюч: %s\n", createdLink.ID, createdLink.Key)
 }
@@ -242,40 +211,24 @@ import (
     "log"
     "time"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // ID короткой ссылки
     linkID := 123
 
-    // Получаем статистику использования
     stats, err := short_links.GetStats(ctx, apiClient, linkID)
     if err != nil {
         log.Fatalf("Ошибка при получении статистики: %v", err)
     }
 
-    // Выводим информацию о статистике
     fmt.Printf("Статистика для ссылки %s:\n", stats.ShortURL)
     fmt.Printf("Количество переходов: %d\n", stats.VisitCount)
-    
+
     if stats.LastVisitAt > 0 {
         lastVisit := time.Unix(stats.LastVisitAt, 0)
         fmt.Printf("Последний переход: %s\n", lastVisit.Format("02.01.2006 15:04:05"))

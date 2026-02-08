@@ -9,7 +9,6 @@
 - [Получение лида](#получение-лида)
 - [Получение списка лидов](#получение-списка-лидов)
 - [Обновление лида](#обновление-лида)
-- [Работа со связанными сущностями](#работа-со-связанными-сущностями)
 - [Пользовательские поля](#пользовательские-поля)
 - [Перемещение по воронке](#перемещение-по-воронке)
 
@@ -84,7 +83,7 @@ if leadWithRelations.Embedded != nil {
 
 ```go
 // Получение первых 50 лидов
-leadsList, err := leads.List(ctx, apiClient, 1, 50)
+leadsList, err := leads.List(ctx, apiClient, 1, 50, nil)
 if err != nil {
     // Обработка ошибки
 }
@@ -115,38 +114,17 @@ if err != nil {
 }
 ```
 
-## Работа со связанными сущностями
-
-```go
-// Связывание лида с контактом
-import "github.com/chudno/amo_crm_sdk/entities/contacts"
-contactID := 67890
-err := leads.LinkLeadWithContact(ctx, apiClient, leadID, contactID)
-if err != nil {
-    // Обработка ошибки
-}
-
-// Связывание лида с компанией
-import "github.com/chudno/amo_crm_sdk/entities/companies"
-companyID := 54321
-err = leads.LinkLeadWithCompany(ctx, apiClient, leadID, companyID)
-if err != nil {
-    // Обработка ошибки
-}
-```
-
 ## Пользовательские поля
 
-Для работы с пользовательскими полями лидов используйте структуры `Field` и `Value`:
+Для работы с пользовательскими полями лидов используйте структуры из пакета `custom_fields`:
 
 ```go
-// Добавление пользовательского поля
-lead.CustomFields = append(lead.CustomFields, leads.Field{
-    FieldID: 9876, // ID пользовательского поля
-    Values: []leads.Value{
-        {
-            Value: "Значение поля",
-        },
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
+
+lead.CustomFieldsValues = append(lead.CustomFieldsValues, custom_fields.Value{
+    FieldID: 9876,
+    Values: []custom_fields.FieldValue{
+        {Value: "Значение поля"},
     },
 })
 ```

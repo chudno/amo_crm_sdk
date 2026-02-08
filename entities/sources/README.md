@@ -207,51 +207,36 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/sources"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Получаем список источников
     sourcesList, err := sources.List(ctx, apiClient, 1, 100)
     if err != nil {
         log.Fatalf("Ошибка при получении списка источников: %v", err)
     }
 
-    // Выводим информацию о полученных источниках
     for i, source := range sourcesList {
         fmt.Printf("Источник %d: %s (ID: %d, Тип: %s)\n", i+1, source.Name, source.ID, source.Type)
         if source.Default {
             fmt.Println("  Используется по умолчанию")
         }
-        
+
         if source.Pipeline != nil {
             fmt.Printf("  Связан с воронкой ID: %d\n", source.Pipeline.ID)
         }
-        
+
         if len(source.Services) > 0 {
             fmt.Println("  Сервисы:")
             for _, service := range source.Services {
                 fmt.Printf("    - %s (ID: %d)\n", service.Name, service.ID)
             }
         }
-        
+
         fmt.Println()
     }
 }
@@ -267,28 +252,14 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/sources"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Создаем новый источник
     newSource := &sources.Source{
         Name: "Сайт компании",
         Type: "form",
@@ -301,21 +272,19 @@ func main() {
 
     fmt.Printf("Создан новый источник: %s (ID: %d)\n", createdSource.Name, createdSource.ID)
 
-    // Связываем источник с воронкой
-    pipelineID := 12345 // ID вашей воронки
+    pipelineID := 12345
     linkedSource, err := sources.LinkToPipeline(ctx, apiClient, createdSource.ID, pipelineID)
     if err != nil {
         log.Fatalf("Ошибка при связывании источника с воронкой: %v", err)
     }
 
     fmt.Printf("Источник %s связан с воронкой ID: %d\n", linkedSource.Name, linkedSource.Pipeline.ID)
-    
-    // Устанавливаем источник по умолчанию
+
     defaultSource, err := sources.SetDefault(ctx, apiClient, createdSource.ID)
     if err != nil {
         log.Fatalf("Ошибка при установке источника по умолчанию: %v", err)
     }
-    
+
     fmt.Printf("Источник %s установлен как используемый по умолчанию\n", defaultSource.Name)
 }
 ```
@@ -330,28 +299,14 @@ import (
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/sources"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
-
-    // Создаем контекст
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
     ctx := context.Background()
 
-    // Получаем список доступных сервисов
     servicesList, err := sources.ListServices(ctx, apiClient)
     if err != nil {
         log.Fatalf("Ошибка при получении списка сервисов: %v", err)
@@ -361,12 +316,8 @@ func main() {
     for i, service := range servicesList {
         fmt.Printf("%d. %s (ID: %d)\n", i+1, service.Name, service.ID)
     }
-    
-    // Выбираем сервис для примера
+
     if len(servicesList) > 0 {
-        fmt.Println("\nПример создания источника с выбранным сервисом:")
-        
-        // Создаем новый источник с выбранным сервисом
         newSource := &sources.Source{
             Name: "Интеграция с CRM",
             Type: "integration",
@@ -374,14 +325,14 @@ func main() {
                 {ID: servicesList[0].ID},
             },
         }
-        
+
         createdSource, err := sources.Create(ctx, apiClient, newSource)
         if err != nil {
             log.Fatalf("Ошибка при создании источника: %v", err)
         }
-        
-        fmt.Printf("Создан новый источник: %s (ID: %d) с сервисом %s\n", 
-            createdSource.Name, 
+
+        fmt.Printf("Создан новый источник: %s (ID: %d) с сервисом %s\n",
+            createdSource.Name,
             createdSource.ID,
             servicesList[0].Name)
     }

@@ -10,7 +10,6 @@
 - [Получение списка компаний](#получение-списка-компаний)
 - [Обновление компании](#обновление-компании)
 - [Пользовательские поля](#пользовательские-поля)
-- [Связывание компаний с другими сущностями](#связывание-компаний-с-другими-сущностями)
 
 ## Основные функции
 
@@ -18,9 +17,8 @@
 |---------|----------|
 | `Create` | Создание новой компании |
 | `Get` | Получение компании по ID |
-| `List` | Получение списка компаний с фильтрацией |
+| `List` | Получение списка компаний с пагинацией |
 | `Update` | Обновление существующей компании |
-| `Delete` | Удаление компании |
 
 ## Создание компании
 
@@ -40,28 +38,6 @@ newCompany := &companies.Company{
     Name: "ООО Ромашка",
     ResponsibleUserID: 12345, // ID ответственного менеджера
 }
-
-// Добавление номера телефона
-newCompany.CustomFields = append(newCompany.CustomFields, companies.Field{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.Value{
-        {
-            Value: "+79001234567",
-            Enum: "WORK", // Тип телефона (рабочий)
-        },
-    },
-})
-
-// Добавление email
-newCompany.CustomFields = append(newCompany.CustomFields, companies.Field{
-    FieldID: 5678, // ID поля "Email"
-    Values: []companies.Value{
-        {
-            Value: "info@romashka.ru",
-            Enum: "WORK", // Тип email (рабочий)
-        },
-    },
-})
 
 // Сохранение компании
 createdCompany, err := companies.Create(ctx, apiClient, newCompany)
@@ -90,12 +66,8 @@ if err != nil {
     // Обработка ошибки
 }
 
-// Получение компаний с фильтрацией
-filter := map[string]string{
-    "query": "Ромашка", // Поиск по названию
-    "created_at": "1609459200", // Компании, созданные после указанной даты (timestamp)
-}
-filteredCompanies, err := companies.List(ctx, apiClient, 1, 50, filter)
+// Получение компаний со связанными контактами
+companiesWithContacts, err := companies.List(ctx, apiClient, 1, 50, companies.WithContacts)
 ```
 
 ## Обновление компании
@@ -103,17 +75,6 @@ filteredCompanies, err := companies.List(ctx, apiClient, 1, 50, filter)
 ```go
 // Обновление существующей компании
 company.Name = "ООО Ромашка Технологии"
-
-// Добавление нового номера телефона
-company.CustomFields = append(company.CustomFields, companies.Field{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.Value{
-        {
-            Value: "+79009876543",
-            Enum: "WORK2", // Тип телефона (второй рабочий)
-        },
-    },
-})
 
 updatedCompany, err := companies.Update(ctx, apiClient, company)
 if err != nil {
@@ -123,34 +84,15 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями компаний используйте структуры `Field` и `Value`:
+Для работы с пользовательскими полями компаний используйте структуры из пакета `custom_fields`:
 
 ```go
-// Добавление пользовательского поля
-company.CustomFields = append(company.CustomFields, companies.Field{
-    FieldID: 9876, // ID пользовательского поля
-    Values: []companies.Value{
-        {
-            Value: "Значение поля",
-        },
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
+
+company.CustomFieldsValues = append(company.CustomFieldsValues, custom_fields.Value{
+    FieldID: 9876,
+    Values: []custom_fields.FieldValue{
+        {Value: "Значение поля"},
     },
 })
-```
-
-## Связывание компаний с другими сущностями
-
-Для связывания компаний с другими сущностями используйте соответствующие методы из модулей leads и contacts:
-
-```go
-// Связывание компании со сделкой
-import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(ctx, apiClient, leadID, companyID)
-
-// Связывание компании с контактом
-import "github.com/chudno/amo_crm_sdk/entities/contacts"
-err := companies.LinkCompanyWithContact(ctx, apiClient, companyID, contactID)
-
-// Связывание компании с лидом
-import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(ctx, apiClient, leadID, companyID)
 ```

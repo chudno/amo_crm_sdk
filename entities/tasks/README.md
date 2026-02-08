@@ -11,7 +11,7 @@
 - [Обновление задачи](#обновление-задачи)
 - [Завершение задачи](#завершение-задачи)
 - [Связь с другими сущностями](#связь-с-другими-сущностями)
-- [Типы задач](#типы-задач)
+- [Константы типов сущностей](#константы-типов-сущностей)
 
 ## Основные функции
 
@@ -22,7 +22,7 @@
 | `List` | Получение списка задач с фильтрацией |
 | `Update` | Обновление существующей задачи |
 | `Complete` | Завершение задачи |
-| `Delete` | Удаление задачи |
+| `CreateForEntity` | Создание задачи, привязанной к сущности |
 
 ## Создание задачи
 
@@ -39,14 +39,14 @@ apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_toke
 ctx := context.Background()
 
 // Создание новой задачи
-completionTime := time.Now().Add(24 * time.Hour) // задача на завтра
+completionTime := time.Now().Add(24 * time.Hour)
 newTask := &tasks.Task{
-    TaskType: tasks.TypeCall, // Тип задачи - звонок
-    Text: "Перезвонить клиенту",
-    CompleteTill: completionTime.Unix(), // Unix timestamp
-    ResponsibleUserID: 12345, // ID ответственного менеджера
-    EntityID: 67890, // ID связанной сущности (например, контакта)
-    EntityType: tasks.EntityTypeContact, // Тип связанной сущности
+    TaskTypeID:        1,
+    Text:              "Перезвонить клиенту",
+    CompleteTill:      completionTime.Unix(),
+    ResponsibleUserID: 12345,
+    EntityID:          67890,
+    EntityType:        tasks.EntityTypeContact,
 }
 
 // Сохранение задачи
@@ -71,18 +71,17 @@ if err != nil {
 
 ```go
 // Получение первых 50 задач
-tasksList, err := tasks.List(ctx, apiClient, 1, 50)
+tasksList, err := tasks.List(ctx, apiClient, 50, 1, nil)
 if err != nil {
     // Обработка ошибки
 }
 
 // Получение задач с фильтрацией
-filter := map[string]string{
-    "filter[task_type]": "1", // Фильтр по типу задачи (1 - звонок)
-    "filter[is_completed]": "0", // Только незавершенные задачи
-    "filter[responsible_user_id]": "12345", // Задачи конкретного менеджера
+filter := map[string]any{
+    "filter[is_completed]":        0,
+    "filter[responsible_user_id]": 12345,
 }
-filteredTasks, err := tasks.List(ctx, apiClient, 1, 50, filter)
+filteredTasks, err := tasks.List(ctx, apiClient, 50, 1, filter)
 ```
 
 ## Обновление задачи
@@ -117,39 +116,32 @@ if err != nil {
 Задачи в amoCRM всегда связаны с определенной сущностью (контактом, сделкой, компанией и т.д.). При создании задачи необходимо указать тип сущности и её ID:
 
 ```go
-// Создание задачи, связанной с контактом
-task := &tasks.Task{
-    Text: "Позвонить контакту",
-    TaskType: tasks.TypeCall,
-    CompleteTill: time.Now().Add(24 * time.Hour).Unix(),
-    EntityID: 67890, // ID контакта
-    EntityType: tasks.EntityTypeContact, // Тип сущности - контакт
-}
+// Создание задачи для контакта через CreateForEntity
+createdTask, err := tasks.CreateForEntity(
+    ctx, apiClient,
+    tasks.EntityTypeContact, 67890,
+    1,
+    "Позвонить контакту",
+    time.Now().Add(24*time.Hour),
+    12345,
+)
 
-// Создание задачи, связанной со сделкой
-task := &tasks.Task{
-    Text: "Подготовить коммерческое предложение",
-    TaskType: tasks.TypeTask,
-    CompleteTill: time.Now().Add(24 * time.Hour).Unix(),
-    EntityID: 12345, // ID сделки
-    EntityType: tasks.EntityTypeLead, // Тип сущности - сделка
-}
+// Создание задачи для сделки
+leadTask, err := tasks.CreateForEntity(
+    ctx, apiClient,
+    tasks.EntityTypeLead, 12345,
+    1,
+    "Подготовить коммерческое предложение",
+    time.Now().Add(24*time.Hour),
+    12345,
+)
 ```
 
-## Типы задач
-
-Модуль `tasks` предоставляет константы для типов задач:
+## Константы типов сущностей
 
 | Константа | Значение | Описание |
 |-----------|----------|----------|
-| `tasks.TypeCall` | 1 | Звонок |
-| `tasks.TypeMeeting` | 2 | Встреча |
-| `tasks.TypeTask` | 3 | Задача |
-
-Также доступны константы для типов сущностей:
-
-| Константа | Значение | Описание |
-|-----------|----------|----------|
-| `tasks.EntityTypeContact` | "contacts" | Контакт |
 | `tasks.EntityTypeLead` | "leads" | Сделка |
+| `tasks.EntityTypeContact` | "contacts" | Контакт |
 | `tasks.EntityTypeCompany` | "companies" | Компания |
+| `tasks.EntityTypeCustomer` | "customers" | Покупатель |

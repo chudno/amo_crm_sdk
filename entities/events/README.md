@@ -26,7 +26,7 @@
 ```go
 // Event структура события в amoCRM.
 type Event struct {
-    ID                 int             `json:"id,omitempty"`
+    ID                 string          `json:"id,omitempty"`
     Type               EventType       `json:"type"`
     EntityID           int             `json:"entity_id"`
     EntityType         EventEntityType `json:"entity_type"`
@@ -142,11 +142,11 @@ func main() {
     // Выводим информацию о полученных событиях
     fmt.Printf("Получено %d событий\n", len(eventsList))
     for i, event := range eventsList {
-        fmt.Printf("%d. ID: %d, Тип: %s, Связанная сущность: %s (ID: %d)\n", 
+        fmt.Printf("%d. ID: %s, Тип: %s, Связанная сущность: %s (ID: %d)\n",
             i+1, event.ID, event.Type, event.EntityType, event.EntityID)
-        fmt.Printf("   Создано: %s\n", 
+        fmt.Printf("   Создано: %s\n",
             time.Unix(event.CreatedAt, 0).Format("2006-01-02 15:04:05"))
-        
+
         if event.ValueAfterPretty != "" {
             fmt.Printf("   Содержание: %s\n", event.ValueAfterPretty)
         }
@@ -207,7 +207,7 @@ func main() {
     // Выводим информацию о полученных событиях
     fmt.Printf("Получено %d примечаний для сделок\n", len(eventsList))
     for i, event := range eventsList {
-        fmt.Printf("%d. ID: %d, Сделка ID: %d\n", 
+        fmt.Printf("%d. ID: %s, Сделка ID: %d\n",
             i+1, event.ID, event.EntityID)
         fmt.Printf("   Создано: %s\n", 
             time.Unix(event.CreatedAt, 0).Format("2006-01-02 15:04:05"))
@@ -240,7 +240,7 @@ func main() {
     ctx := context.Background()
 
     // ID события
-    eventID := 12345
+    eventID := "01kgxd71ymp8r7vtc5wmyz0tsv"
 
     // Получаем информацию о событии с информацией о связанной сущности
     event, err := events.Get(ctx, apiClient, eventID, events.WithEntity())
@@ -249,7 +249,7 @@ func main() {
     }
 
     // Выводим информацию о событии
-    fmt.Printf("Информация о событии (ID: %d):\n", event.ID)
+    fmt.Printf("Информация о событии (ID: %s):\n", event.ID)
     fmt.Printf("Тип: %s\n", event.Type)
     fmt.Printf("Связанная сущность: %s (ID: %d)\n", event.EntityType, event.EntityID)
     fmt.Printf("Создано: %s\n", time.Unix(event.CreatedAt, 0).Format("2006-01-02 15:04:05"))
@@ -307,9 +307,9 @@ func main() {
     // Выводим информацию о полученных событиях
     fmt.Printf("Страница %d. Получено %d событий\n", page, len(eventsList))
     for i, event := range eventsList {
-        fmt.Printf("%d. ID: %d, Тип: %s, Связанная сущность: %s (ID: %d)\n", 
+        fmt.Printf("%d. ID: %s, Тип: %s, Связанная сущность: %s (ID: %d)\n",
             i+1, event.ID, event.Type, event.EntityType, event.EntityID)
-        fmt.Printf("   Создано: %s\n", 
+        fmt.Printf("   Создано: %s\n",
             time.Unix(event.CreatedAt, 0).Format("2006-01-02 15:04:05"))
         fmt.Println("---")
     }

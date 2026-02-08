@@ -21,9 +21,8 @@
 | `Create` | Создание новой воронки |
 | `Update` | Обновление существующей воронки |
 | `Delete` | Удаление воронки |
+| `GetStatus` | Получение статуса воронки по ID |
 | `CreateStatus` | Создание нового статуса в воронке |
-| `UpdateStatus` | Обновление существующего статуса |
-| `DeleteStatus` | Удаление статуса |
 
 ## Получение воронки
 
@@ -115,7 +114,6 @@ newPipeline.Statuses = []pipelines.Status{
         Name: "Успешно реализовано",
         Sort: 50,
         Color: "#00cc00",
-        IsSuccess: true, // Статус успешного завершения сделки
     },
 }
 
@@ -150,41 +148,20 @@ if err != nil {
 
 ```go
 // Получение статуса по ID
-var targetStatus *pipelines.Status
-for _, status := range pipeline.Statuses {
-    if status.ID == 12345 {
-        targetStatus = &status
-        break
-    }
+status, err := pipelines.GetStatus(ctx, apiClient, pipeline.ID, 12345)
+if err != nil {
+    // Обработка ошибки
 }
-
-// Обновление статуса
-if targetStatus != nil {
-    targetStatus.Name = "Новое название статуса"
-    targetStatus.Color = "#ff9900"
-    
-    // Обновление статуса в воронке
-    updatedStatus, err := pipelines.UpdateStatus(ctx, apiClient, pipeline.ID, targetStatus)
-    if err != nil {
-        // Обработка ошибки
-    }
-}
+fmt.Printf("Статус: %s (ID: %d)\n", status.Name, status.ID)
 
 // Создание нового статуса в существующей воронке
 newStatus := &pipelines.Status{
     Name: "Новый статус",
-    Sort: 45, // Позиция в воронке
+    Sort: 45,
     Color: "#9966ff",
 }
 
 createdStatus, err := pipelines.CreateStatus(ctx, apiClient, pipeline.ID, newStatus)
-if err != nil {
-    // Обработка ошибки
-}
-
-// Удаление статуса
-statusID := 67890
-err = pipelines.DeleteStatus(ctx, apiClient, pipeline.ID, statusID)
 if err != nil {
     // Обработка ошибки
 }

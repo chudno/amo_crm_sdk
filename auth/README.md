@@ -14,14 +14,17 @@
 ### GetAuthURL
 
 ```go
-func GetAuthURL(redirectURI, clientID string) string
+func GetAuthURL(baseURL, clientID, redirectURI, state, mode string) string
 ```
 
 Формирует URL для авторизации пользователя в amoCRM.
 
 **Параметры:**
-- `redirectURI` - URL, на который произойдет перенаправление после авторизации
+- `baseURL` - Базовый URL вашего аккаунта amoCRM (например, https://example.amocrm.ru)
 - `clientID` - ID вашего приложения в amoCRM
+- `redirectURI` - URL, на который произойдет перенаправление после авторизации
+- `state` - Произвольная строка для проверки подлинности перенаправления
+- `mode` - Режим отображения ("popup" или "post_message")
 
 **Возвращает:**
 - Строку URL для перенаправления пользователя на страницу авторизации amoCRM
@@ -29,7 +32,7 @@ func GetAuthURL(redirectURI, clientID string) string
 ### GetAccessToken
 
 ```go
-func GetAccessToken(ctx context.Context, baseURL, redirectURI, clientID, clientSecret, code string) (*TokenResponse, error)
+func GetAccessToken(ctx context.Context, baseURL, clientID, clientSecret, code, redirectURI string) (*AuthResponse, error)
 ```
 
 Получает токен доступа по коду авторизации.
@@ -37,19 +40,19 @@ func GetAccessToken(ctx context.Context, baseURL, redirectURI, clientID, clientS
 **Параметры:**
 - `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `baseURL` - Базовый URL amoCRM (например, https://example.amocrm.ru)
-- `redirectURI` - URL перенаправления
 - `clientID` - ID приложения
 - `clientSecret` - Секретный ключ приложения
 - `code` - Код авторизации, полученный после успешной авторизации
+- `redirectURI` - URL перенаправления, указанный при регистрации интеграции
 
 **Возвращает:**
-- Структуру `TokenResponse` с токенами доступа и обновления
+- Структуру `AuthResponse` с токенами доступа и обновления
 - Ошибку, если что-то пошло не так
 
 ### RefreshAccessToken
 
 ```go
-func RefreshAccessToken(ctx context.Context, baseURL, clientID, clientSecret, refreshToken string) (*TokenResponse, error)
+func RefreshAccessToken(ctx context.Context, baseURL, clientID, clientSecret, refreshToken string) (*AuthResponse, error)
 ```
 
 Обновляет истекший токен доступа с помощью refresh-токена.
@@ -62,26 +65,25 @@ func RefreshAccessToken(ctx context.Context, baseURL, clientID, clientSecret, re
 - `refreshToken` - Токен обновления (из предыдущего ответа)
 
 **Возвращает:**
-- Обновленные токены доступа и обновления
+- Структуру `AuthResponse` с обновленными токенами доступа и обновления
 - Ошибку, если что-то пошло не так
 
 ### GetLongLivedToken
 
 ```go
-func GetLongLivedToken(ctx context.Context, baseURL, redirectURI, clientID, clientSecret string) (*TokenResponse, error)
+func GetLongLivedToken(ctx context.Context, baseURL, clientID, clientSecret string) (*AuthResponse, error)
 ```
 
-Получает долгоживущий токен доступа для серверных приложений.
+Получает долгоживущий токен доступа для серверных интеграций.
 
 **Параметры:**
 - `ctx` - Контекст для управления временем выполнения и отменой запроса
 - `baseURL` - Базовый URL amoCRM
-- `redirectURI` - URL перенаправления
-- `clientID` - ID приложения
-- `clientSecret` - Секретный ключ приложения
+- `clientID` - ID интеграции
+- `clientSecret` - Секретный ключ интеграции
 
 **Возвращает:**
-- Долгосрочные токены доступа и обновления
+- Структуру `AuthResponse` с долгоживущим токеном доступа
 - Ошибку, если что-то пошло не так
 
 ## Примеры использования
@@ -93,17 +95,17 @@ import "context"
 
 ctx := context.Background()
 baseURL := "https://example.amocrm.ru"
-redirectURI := "https://example.com/oauth2/callback"
 clientID := "your-client-id"
 clientSecret := "your-client-secret"
 code := "auth-code-from-redirect"
+redirectURI := "https://example.com/oauth2/callback"
 
-tokenResponse, err := auth.GetAccessToken(ctx, baseURL, redirectURI, clientID, clientSecret, code)
+authResponse, err := auth.GetAccessToken(ctx, baseURL, clientID, clientSecret, code, redirectURI)
 if err != nil {
     log.Fatalf("Ошибка получения токена: %v", err)
 }
 
-// Теперь можно использовать tokenResponse.AccessToken для запросов к API
+// authResponse.AccessToken содержит токен для запросов к API
 ```
 
 ### Обновление токена доступа
@@ -117,10 +119,28 @@ clientID := "your-client-id"
 clientSecret := "your-client-secret"
 refreshToken := "your-refresh-token"
 
-newTokens, err := auth.RefreshAccessToken(ctx, baseURL, clientID, clientSecret, refreshToken)
+authResponse, err := auth.RefreshAccessToken(ctx, baseURL, clientID, clientSecret, refreshToken)
 if err != nil {
     log.Fatalf("Ошибка обновления токена: %v", err)
 }
 
-// Сохраните новые токены для дальнейшего использования
+// authResponse.AccessToken и authResponse.RefreshToken содержат новые токены
+```
+
+### Получение долгоживущего токена
+
+```go
+import "context"
+
+ctx := context.Background()
+baseURL := "https://example.amocrm.ru"
+clientID := "your-client-id"
+clientSecret := "your-client-secret"
+
+authResponse, err := auth.GetLongLivedToken(ctx, baseURL, clientID, clientSecret)
+if err != nil {
+    log.Fatalf("Ошибка получения долгоживущего токена: %v", err)
+}
+
+// authResponse.AccessToken содержит долгоживущий токен
 ```
