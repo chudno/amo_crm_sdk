@@ -19,13 +19,11 @@ type LeadFilter struct {
 
 // NewLeadFilterFromURL создает объект LeadFilter из URL amoCRM
 func NewLeadFilterFromURL(rawURL string) (*LeadFilter, error) {
-	// Парсим URL с использованием основного парсера
 	parsedFilter, err := ParseLeadURL(rawURL)
 	if err != nil {
 		return nil, err
 	}
 
-	// Конвертируем строковые значения page и limit в целые числа
 	pageInt, err := strconv.Atoi(parsedFilter.Page)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при конвертации page в число: %w", err)

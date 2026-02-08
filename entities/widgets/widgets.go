@@ -141,17 +141,14 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, option
 
 // ListWithRequester получает список виджетов с использованием интерфейса Requester
 func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Widget, error) {
-	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
 	params["limit"] = strconv.Itoa(limit)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 	if len(params) > 0 {
 		var queryParams []string
@@ -161,7 +158,6 @@ func ListWithRequester(ctx context.Context, requester Requester, page, limit int
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -172,25 +168,21 @@ func ListWithRequester(ctx context.Context, requester Requester, page, limit int
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var widgetsResponse struct {
 		Page     int `json:"page"`
 		PerPage  int `json:"per_page"`
@@ -216,10 +208,8 @@ func Get(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, 
 
 // GetWithRequester получает информацию о конкретном виджете по ID с использованием интерфейса Requester
 func GetWithRequester(ctx context.Context, requester Requester, widgetID int) (*Widget, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -230,25 +220,21 @@ func GetWithRequester(ctx context.Context, requester Requester, widgetID int) (*
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var widget Widget
 	if err := json.NewDecoder(resp.Body).Decode(&widget); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -268,23 +254,19 @@ func Install(ctx context.Context, apiClient *client.Client, code string) (*Widge
 
 // InstallWithRequester устанавливает виджет из маркетплейса по его коду с использованием интерфейса Requester
 func InstallWithRequester(ctx context.Context, requester Requester, code string) (*Widget, error) {
-	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
-	// Создаем тело запроса
 	reqBody := struct {
 		Code string `json:"code"`
 	}{
 		Code: code,
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -295,26 +277,22 @@ func InstallWithRequester(ctx context.Context, requester Requester, code string)
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var widget Widget
 	if err := json.NewDecoder(resp.Body).Decode(&widget); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -338,23 +316,19 @@ func UpdateSettings(ctx context.Context, apiClient *client.Client, widgetID int,
 
 // UpdateSettingsWithRequester обновляет настройки виджета с использованием интерфейса Requester
 func UpdateSettingsWithRequester(ctx context.Context, requester Requester, widgetID int, settings any) (*Widget, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
-	// Создаем тело запроса
 	reqBody := struct {
 		Settings any `json:"settings"`
 	}{
 		Settings: settings,
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -365,26 +339,22 @@ func UpdateSettingsWithRequester(ctx context.Context, requester Requester, widge
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var widget Widget
 	if err := json.NewDecoder(resp.Body).Decode(&widget); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -404,10 +374,8 @@ func Delete(ctx context.Context, apiClient *client.Client, widgetID int) error {
 
 // DeleteWithRequester удаляет виджет с использованием интерфейса Requester
 func DeleteWithRequester(ctx context.Context, requester Requester, widgetID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -418,20 +386,17 @@ func DeleteWithRequester(ctx context.Context, requester Requester, widgetID int)
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -489,17 +454,14 @@ func ListMarketplace(ctx context.Context, apiClient *client.Client, page, limit 
 
 // ListMarketplaceWithRequester получает список доступных виджетов из маркетплейса с использованием интерфейса Requester
 func ListMarketplaceWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
-	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
 	params["limit"] = strconv.Itoa(limit)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL для запроса
 	url := "/api/v4/marketplace/widgets"
 	if len(params) > 0 {
 		var queryParams []string
@@ -509,7 +471,6 @@ func ListMarketplaceWithRequester(ctx context.Context, requester Requester, page
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -520,25 +481,21 @@ func ListMarketplaceWithRequester(ctx context.Context, requester Requester, page
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var marketplaceResponse struct {
 		Page     int `json:"page"`
 		PerPage  int `json:"per_page"`
@@ -565,23 +522,19 @@ func SetStatus(ctx context.Context, apiClient *client.Client, widgetID int, stat
 
 // SetStatusWithRequester активирует или деактивирует виджет с использованием интерфейса Requester
 func SetStatusWithRequester(ctx context.Context, requester Requester, widgetID int, status WidgetStatus) (*Widget, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
-	// Создаем тело запроса
 	reqBody := struct {
 		Status WidgetStatus `json:"status"`
 	}{
 		Status: status,
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -592,26 +545,22 @@ func SetStatusWithRequester(ctx context.Context, requester Requester, widgetID i
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var widget Widget
 	if err := json.NewDecoder(resp.Body).Decode(&widget); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -644,21 +593,17 @@ func BulkInstall(ctx context.Context, apiClient *client.Client, codes []string) 
 
 // BulkInstallWithRequester массово устанавливает виджеты по их кодам с использованием интерфейса Requester
 func BulkInstallWithRequester(ctx context.Context, requester Requester, codes []string) ([]Widget, error) {
-	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
-	// Создаем тело запроса
 	reqBody := BulkInput{
 		Codes: codes,
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -669,26 +614,22 @@ func BulkInstallWithRequester(ctx context.Context, requester Requester, codes []
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var bulkResponse struct {
 		Embedded struct {
 			Widgets []Widget `json:"widgets"`
@@ -713,21 +654,17 @@ func BulkDelete(ctx context.Context, apiClient *client.Client, widgetIDs []int) 
 
 // BulkDeleteWithRequester массово удаляет виджеты по их ID с использованием интерфейса Requester
 func BulkDeleteWithRequester(ctx context.Context, requester Requester, widgetIDs []int) error {
-	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
-	// Создаем тело запроса
 	reqBody := BulkInput{
 		WidgetIDs: widgetIDs,
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -738,21 +675,18 @@ func BulkDeleteWithRequester(ctx context.Context, requester Requester, widgetIDs
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

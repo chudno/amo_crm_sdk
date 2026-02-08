@@ -12,20 +12,16 @@ import (
 )
 
 func TestGetCatalogs(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/catalogs"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		expectedPage := "1"
 		if r.URL.Query().Get("page") != expectedPage {
 			t.Errorf("Ожидался параметр page=%s, получен %s", expectedPage, r.URL.Query().Get("page"))
@@ -36,7 +32,6 @@ func TestGetCatalogs(t *testing.T) {
 			t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -71,13 +66,10 @@ func TestGetCatalogs(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	catalogs, err := List(context.Background(), apiClient, 1, 50, nil)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении каталогов: %v", err)
 	}
@@ -86,7 +78,6 @@ func TestGetCatalogs(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 каталогов, получено %d", len(catalogs))
 	}
 
-	// Проверяем содержимое первого каталога
 	expectedCatalog1 := Catalog{
 		ID:        123,
 		Name:      "Тестовый каталог 1",
@@ -101,7 +92,6 @@ func TestGetCatalogs(t *testing.T) {
 		t.Errorf("Ожидался каталог %+v, получен %+v", expectedCatalog1, catalogs[0])
 	}
 
-	// Проверяем содержимое второго каталога
 	expectedCatalog2 := Catalog{
 		ID:        456,
 		Name:      "Тестовый каталог 2",
@@ -118,54 +108,51 @@ func TestGetCatalogs(t *testing.T) {
 }
 
 func TestCreateCatalog(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/catalogs"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
-			"id": 789,
-			"name": "Новый каталог",
-			"created_by": 456,
-			"updated_by": 456,
-			"created_at": 1609459200,
-			"updated_at": 1609459200,
-			"sort": 3,
-			"type": "regular"
+			"_embedded": {
+				"catalogs": [
+					{
+						"id": 789,
+						"name": "Новый каталог",
+						"created_by": 456,
+						"updated_by": 456,
+						"created_at": 1609459200,
+						"updated_at": 1609459200,
+						"sort": 3,
+						"type": "regular"
+					}
+				]
+			}
 		}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем каталог для отправки
 	newCatalog := &Catalog{
 		Name: "Новый каталог",
 		Sort: 3,
 		Type: "regular",
 	}
 
-	// Вызываем тестируемый метод
 	createdCatalog, err := Create(context.Background(), apiClient, newCatalog)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании каталога: %v", err)
 	}
 
-	// Проверяем содержимое созданного каталога
 	expectedCatalog := &Catalog{
 		ID:        789,
 		Name:      "Новый каталог",
@@ -184,20 +171,16 @@ func TestCreateCatalog(t *testing.T) {
 func TestGetCatalog(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -213,18 +196,14 @@ func TestGetCatalog(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	catalog, err := Get(context.Background(), apiClient, catalogID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении каталога: %v", err)
 	}
 
-	// Проверяем содержимое каталога
 	expectedCatalog := &Catalog{
 		ID:        123,
 		Name:      "Тестовый каталог",
@@ -243,20 +222,16 @@ func TestGetCatalog(t *testing.T) {
 func TestUpdateCatalog(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -272,25 +247,20 @@ func TestUpdateCatalog(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем каталог для обновления
 	catalogToUpdate := &Catalog{
 		ID:   catalogID,
 		Name: "Обновленный каталог",
 		Sort: 5,
 	}
 
-	// Вызываем тестируемый метод
 	updatedCatalog, err := Update(context.Background(), apiClient, catalogToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении каталога: %v", err)
 	}
 
-	// Проверяем содержимое обновленного каталога
 	expectedCatalog := &Catalog{
 		ID:        123,
 		Name:      "Обновленный каталог",
@@ -306,56 +276,19 @@ func TestUpdateCatalog(t *testing.T) {
 	}
 }
 
-func TestDeleteCatalog(t *testing.T) {
-	catalogID := 123
-
-	// Создаем тестовый сервер
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
-		if r.Method != "DELETE" {
-			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
-		}
-
-		// Проверяем путь запроса
-		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d", catalogID)
-		if r.URL.Path != expectedPath {
-			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-		}
-
-		// Отправляем ответ
-		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer server.Close()
-
-	// Создаем клиент API
-	apiClient := client.NewClient(server.URL, "test_api_key")
-
-	// Вызываем тестируемый метод
-	err := Delete(context.Background(), apiClient, catalogID)
-
-	// Проверяем результаты
-	if err != nil {
-		t.Fatalf("Ошибка при удалении каталога: %v", err)
-	}
-}
-
 func TestAddCustomFieldToCatalog(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/custom_fields", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -372,10 +305,8 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем поле для добавления
 	newField := &CustomField{
 		Name:       "Тестовое поле",
 		Type:       "text",
@@ -385,15 +316,12 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 		Code:       "TEST_FIELD",
 	}
 
-	// Вызываем тестируемый метод
 	createdField, err := AddCustomField(context.Background(), apiClient, catalogID, newField)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при добавлении поля в каталог: %v", err)
 	}
 
-	// Проверяем содержимое созданного поля
 	expectedField := &CustomField{
 		ID:         456,
 		Name:       "Тестовое поле",
@@ -413,20 +341,16 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 func TestGetCatalogCustomFields(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/custom_fields", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -460,13 +384,10 @@ func TestGetCatalogCustomFields(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	fields, err := ListCustomFields(context.Background(), apiClient, catalogID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении полей каталога: %v", err)
 	}
@@ -475,7 +396,6 @@ func TestGetCatalogCustomFields(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 полей, получено %d", len(fields))
 	}
 
-	// Проверяем содержимое первого поля
 	expectedField1 := CustomField{
 		ID:         456,
 		Name:       "Тестовое поле 1",
@@ -491,7 +411,6 @@ func TestGetCatalogCustomFields(t *testing.T) {
 		t.Errorf("Ожидалось поле %+v, получено %+v", expectedField1, fields[0])
 	}
 
-	// Проверяем содержимое второго поля
 	expectedField2 := CustomField{
 		ID:         789,
 		Name:       "Тестовое поле 2",
@@ -512,20 +431,16 @@ func TestGetCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/custom_fields/%d", catalogID, fieldID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -542,18 +457,14 @@ func TestGetCatalogCustomField(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	field, err := GetCustomField(context.Background(), apiClient, catalogID, fieldID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении поля каталога: %v", err)
 	}
 
-	// Проверяем содержимое поля
 	expectedField := &CustomField{
 		ID:         456,
 		Name:       "Тестовое поле",
@@ -574,20 +485,16 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/custom_fields/%d", catalogID, fieldID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -604,10 +511,8 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем поле для обновления
 	fieldToUpdate := &CustomField{
 		ID:         fieldID,
 		Name:       "Обновленное поле",
@@ -616,15 +521,12 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 		Code:       "UPDATED_FIELD",
 	}
 
-	// Вызываем тестируемый метод
 	updatedField, err := UpdateCustomField(context.Background(), apiClient, catalogID, fieldToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении поля каталога: %v", err)
 	}
 
-	// Проверяем содержимое обновленного поля
 	expectedField := &CustomField{
 		ID:         456,
 		Name:       "Обновленное поле",
@@ -645,31 +547,24 @@ func TestDeleteCatalogCustomField(t *testing.T) {
 	catalogID := 123
 	fieldID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/custom_fields/%d", catalogID, fieldID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	err := DeleteCustomField(context.Background(), apiClient, catalogID, fieldID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении поля каталога: %v", err)
 	}

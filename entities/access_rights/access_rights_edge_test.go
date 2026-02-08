@@ -16,13 +16,10 @@ func (m *MockClientWithError) DoRequest(ctx context.Context, req *http.Request) 
 
 // TestGetAccessRightsNetworkError проверяет обработку сетевых ошибок при получении списка прав доступа
 func TestGetAccessRightsNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Вызываем тестируемую функцию
 	_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -30,13 +27,10 @@ func TestGetAccessRightsNetworkError(t *testing.T) {
 
 // TestGetAccessRightNetworkError проверяет обработку сетевых ошибок при получении конкретного права доступа
 func TestGetAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Вызываем тестируемую функцию
 	_, err := GetWithRequester(context.Background(), mockClient, 123)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -44,10 +38,8 @@ func TestGetAccessRightNetworkError(t *testing.T) {
 
 // TestCreateAccessRightNetworkError проверяет обработку сетевых ошибок при создании права доступа
 func TestCreateAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Создаём тестовое право доступа
 	accessRight := &Right{
 		Name: "Тестовое право",
 		Type: TypeGroup,
@@ -59,10 +51,8 @@ func TestCreateAccessRightNetworkError(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемую функцию
 	_, err := CreateWithRequester(context.Background(), mockClient, accessRight)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -70,10 +60,8 @@ func TestCreateAccessRightNetworkError(t *testing.T) {
 
 // TestUpdateAccessRightNetworkError проверяет обработку сетевых ошибок при обновлении права доступа
 func TestUpdateAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Создаём тестовое право доступа
 	accessRight := &Right{
 		ID:   123,
 		Name: "Тестовое право",
@@ -86,10 +74,8 @@ func TestUpdateAccessRightNetworkError(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемую функцию
 	_, err := UpdateWithRequester(context.Background(), mockClient, accessRight)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -97,13 +83,10 @@ func TestUpdateAccessRightNetworkError(t *testing.T) {
 
 // TestDeleteAccessRightNetworkError проверяет обработку сетевых ошибок при удалении права доступа
 func TestDeleteAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Вызываем тестируемую функцию
 	err := DeleteWithRequester(context.Background(), mockClient, 123)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -111,20 +94,16 @@ func TestDeleteAccessRightNetworkError(t *testing.T) {
 
 // TestSetEntityRightsNetworkError проверяет обработку сетевых ошибок при установке прав для сущности
 func TestSetEntityRightsNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Создаём тестовые права для сущности
 	entityRights := EntityRights{
 		View: true,
 		Edit: true,
 		Add:  true,
 	}
 
-	// Вызываем тестируемую функцию
 	_, err := SetEntityRightsWithRequester(context.Background(), mockClient, 123, EntityLead, entityRights)
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -132,13 +111,10 @@ func TestSetEntityRightsNetworkError(t *testing.T) {
 
 // TestAddUsersToAccessRightNetworkError проверяет обработку сетевых ошибок при добавлении пользователей к праву доступа
 func TestAddUsersToAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Вызываем тестируемую функцию
 	_, err := AddUsersWithRequester(context.Background(), mockClient, 123, []int{101, 102})
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -146,13 +122,10 @@ func TestAddUsersToAccessRightNetworkError(t *testing.T) {
 
 // TestRemoveUsersFromAccessRightNetworkError проверяет обработку сетевых ошибок при удалении пользователей из права доступа
 func TestRemoveUsersFromAccessRightNetworkError(t *testing.T) {
-	// Создаём клиент с ошибкой
 	mockClient := &MockClientWithError{}
 
-	// Вызываем тестируемую функцию
 	_, err := RemoveUsersWithRequester(context.Background(), mockClient, 123, []int{101, 102})
 
-	// Проверяем, что вернулась ошибка
 	if err == nil {
 		t.Fatal("Ожидалась ошибка сети, но получен nil")
 	}
@@ -160,10 +133,8 @@ func TestRemoveUsersFromAccessRightNetworkError(t *testing.T) {
 
 // TestZeroID проверяет обработку нулевого ID
 func TestZeroID(t *testing.T) {
-	// Создаём мок-клиент
 	mockClient := &MockClientWithError{}
 
-	// Проверяем получение права доступа с нулевым ID
 	t.Run("GetAccessRightWithZeroID", func(t *testing.T) {
 		_, err := GetWithRequester(context.Background(), mockClient, 0)
 		if err == nil {
@@ -171,7 +142,6 @@ func TestZeroID(t *testing.T) {
 		}
 	})
 
-	// Проверяем удаление права доступа с нулевым ID
 	t.Run("DeleteAccessRightWithZeroID", func(t *testing.T) {
 		err := DeleteWithRequester(context.Background(), mockClient, 0)
 		if err == nil {
@@ -179,7 +149,6 @@ func TestZeroID(t *testing.T) {
 		}
 	})
 
-	// Проверяем обновление права доступа с нулевым ID
 	t.Run("UpdateAccessRightWithZeroID", func(t *testing.T) {
 		_, err := UpdateWithRequester(context.Background(), mockClient, &Right{ID: 0})
 		if err == nil {

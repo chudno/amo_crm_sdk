@@ -134,17 +134,14 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, option
 
 // ListWithRequester получает список прав доступа с использованием интерфейса Requester
 func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Right, error) {
-	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
 	params["limit"] = strconv.Itoa(limit)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL для запроса
 	url := "/api/v4/access_rights"
 	if len(params) > 0 {
 		var queryParams []string
@@ -154,7 +151,6 @@ func ListWithRequester(ctx context.Context, requester Requester, page, limit int
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -165,25 +161,21 @@ func ListWithRequester(ctx context.Context, requester Requester, page, limit int
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var rightsResponse struct {
 		Page     int `json:"page"`
 		PerPage  int `json:"per_page"`
@@ -209,10 +201,8 @@ func Get(ctx context.Context, apiClient *client.Client, accessRightID int) (*Rig
 
 // GetWithRequester получает информацию о конкретном праве доступа по ID с использованием интерфейса Requester
 func GetWithRequester(ctx context.Context, requester Requester, accessRightID int) (*Right, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -223,25 +213,21 @@ func GetWithRequester(ctx context.Context, requester Requester, accessRightID in
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var accessRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&accessRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -273,16 +259,13 @@ func Create(ctx context.Context, apiClient *client.Client, accessRight *Right) (
 
 // CreateWithRequester создает новое право доступа с использованием интерфейса Requester
 func CreateWithRequester(ctx context.Context, requester Requester, accessRight *Right) (*Right, error) {
-	// Формируем URL для запроса
 	url := "/api/v4/access_rights"
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(accessRight)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -293,26 +276,22 @@ func CreateWithRequester(ctx context.Context, requester Requester, accessRight *
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var createdRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&createdRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -349,16 +328,13 @@ func UpdateWithRequester(ctx context.Context, requester Requester, accessRight *
 		return nil, fmt.Errorf("ID права доступа не может быть пустым")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRight.ID)
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(accessRight)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -369,26 +345,22 @@ func UpdateWithRequester(ctx context.Context, requester Requester, accessRight *
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -408,10 +380,8 @@ func Delete(ctx context.Context, apiClient *client.Client, accessRightID int) er
 
 // DeleteWithRequester удаляет право доступа с использованием интерфейса Requester
 func DeleteWithRequester(ctx context.Context, requester Requester, accessRightID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -422,20 +392,17 @@ func DeleteWithRequester(ctx context.Context, requester Requester, accessRightID
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -459,10 +426,8 @@ func SetEntityRights(ctx context.Context, apiClient *client.Client, accessRightI
 
 // SetEntityRightsWithRequester обновляет права доступа к конкретной сущности с использованием интерфейса Requester
 func SetEntityRightsWithRequester(ctx context.Context, requester Requester, accessRightID int, entityType EntityType, rights EntityRights) (*Right, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
-	// Создаем структуру для обновления прав
 	updateData := struct {
 		Rights map[string]EntityRights `json:"rights"`
 	}{
@@ -471,13 +436,11 @@ func SetEntityRightsWithRequester(ctx context.Context, requester Requester, acce
 		},
 	}
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(updateData)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -488,26 +451,22 @@ func SetEntityRightsWithRequester(ctx context.Context, requester Requester, acce
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -528,19 +487,16 @@ func AddUsers(ctx context.Context, apiClient *client.Client, accessRightID int, 
 
 // AddUsersWithRequester добавляет пользователей в право доступа с использованием интерфейса Requester
 func AddUsersWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*Right, error) {
-	// Получаем текущее право доступа
 	currentRight, err := GetWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
 
-	// Создаем новый список пользователей без дубликатов
 	existingUsers := make(map[int]bool)
 	for _, id := range currentRight.UserIDs {
 		existingUsers[id] = true
 	}
 
-	// Добавляем новых пользователей
 	for _, id := range userIDs {
 		if !existingUsers[id] {
 			currentRight.UserIDs = append(currentRight.UserIDs, id)
@@ -548,23 +504,19 @@ func AddUsersWithRequester(ctx context.Context, requester Requester, accessRight
 		}
 	}
 
-	// Обновляем право доступа
 	updateData := struct {
 		UserIDs []int `json:"user_ids"`
 	}{
 		UserIDs: currentRight.UserIDs,
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(updateData)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -575,26 +527,22 @@ func AddUsersWithRequester(ctx context.Context, requester Requester, accessRight
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -615,19 +563,16 @@ func RemoveUsers(ctx context.Context, apiClient *client.Client, accessRightID in
 
 // RemoveUsersWithRequester удаляет пользователей из права доступа с использованием интерфейса Requester
 func RemoveUsersWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*Right, error) {
-	// Получаем текущее право доступа
 	currentRight, err := GetWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
 
-	// Создаем map для быстрого поиска пользователей для удаления
 	removeUsers := make(map[int]bool)
 	for _, id := range userIDs {
 		removeUsers[id] = true
 	}
 
-	// Создаем новый список пользователей без удаляемых
 	newUserIDs := make([]int, 0, len(currentRight.UserIDs))
 	for _, id := range currentRight.UserIDs {
 		if !removeUsers[id] {
@@ -635,23 +580,19 @@ func RemoveUsersWithRequester(ctx context.Context, requester Requester, accessRi
 		}
 	}
 
-	// Обновляем право доступа
 	updateData := struct {
 		UserIDs []int `json:"user_ids"`
 	}{
 		UserIDs: newUserIDs,
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
-	// Кодируем тело запроса в JSON
 	reqBodyJSON, err := json.Marshal(updateData)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при кодировании тела запроса: %w", err)
 	}
 
-	// Проверяем, что клиент имеет метод GetBaseURL()
 	baseURL := ""
 	if c, ok := requester.(*client.Client); ok {
 		baseURL = c.GetBaseURL()
@@ -662,26 +603,22 @@ func RemoveUsersWithRequester(ctx context.Context, requester Requester, accessRi
 		fullURL = baseURL + url
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", fullURL, strings.NewReader(string(reqBodyJSON)))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)

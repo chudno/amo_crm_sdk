@@ -59,7 +59,7 @@ func Get(ctx context.Context, apiClient *client.Client, webhookID int) (*Webhook
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var webhook Webhook
 	if err := json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
@@ -89,7 +89,7 @@ func Create(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*W
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var createdWebhook Webhook
 	if err := json.NewDecoder(resp.Body).Decode(&createdWebhook); err != nil {
@@ -123,7 +123,7 @@ func Update(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*W
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedWebhook Webhook
 	if err := json.NewDecoder(resp.Body).Decode(&updatedWebhook); err != nil {
@@ -137,7 +137,6 @@ func Update(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*W
 func List(ctx context.Context, apiClient *client.Client, limit int, page int) ([]*Webhook, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/webhooks", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("limit", fmt.Sprintf("%d", limit))
 	params.Add("page", fmt.Sprintf("%d", page))
@@ -153,9 +152,8 @@ func List(ctx context.Context, apiClient *client.Client, limit int, page int) ([
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -186,9 +184,8 @@ func Delete(ctx context.Context, apiClient *client.Client, webhookID int) error 
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

@@ -152,46 +152,38 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, option
 
 // ListWithRequester получает список рассылок с использованием интерфейса Requester.
 func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Mailing, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/mailings", requester.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := map[string]string{
 		"page":  strconv.Itoa(page),
 		"limit": strconv.Itoa(limit),
 	}
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL с параметрами
 	queryParams := url.Values{}
 	for key, value := range params {
 		queryParams.Add(key, value)
 	}
 	requestURL := fmt.Sprintf("%s?%s", baseURL, queryParams.Encode())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			Mailings []Mailing `json:"mailings"`
@@ -215,28 +207,23 @@ func Get(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error
 
 // GetWithRequester получает информацию о конкретной рассылке с использованием интерфейса Requester.
 func GetWithRequester(ctx context.Context, requester Requester, id int) (*Mailing, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var mailingInfo Mailing
 	if err := json.NewDecoder(resp.Body).Decode(&mailingInfo); err != nil {
 		return nil, err
@@ -261,35 +248,29 @@ func Create(ctx context.Context, apiClient *client.Client, mailingData *Mailing)
 
 // CreateWithRequester создает новую рассылку с использованием интерфейса Requester.
 func CreateWithRequester(ctx context.Context, requester Requester, mailingData *Mailing) (*Mailing, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings", requester.GetBaseURL())
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(mailingData)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var createdMailing Mailing
 	if err := json.NewDecoder(resp.Body).Decode(&createdMailing); err != nil {
 		return nil, err
@@ -318,35 +299,29 @@ func UpdateWithRequester(ctx context.Context, requester Requester, mailingData *
 		return nil, fmt.Errorf("ID рассылки не указан")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d", requester.GetBaseURL(), mailingData.ID)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(mailingData)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var updatedMailing Mailing
 	if err := json.NewDecoder(resp.Body).Decode(&updatedMailing); err != nil {
 		return nil, err
@@ -366,23 +341,19 @@ func Delete(ctx context.Context, apiClient *client.Client, id int) error {
 
 // DeleteWithRequester удаляет рассылку с использованием интерфейса Requester.
 func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -401,10 +372,8 @@ func ChangeStatus(ctx context.Context, apiClient *client.Client, id int, status 
 
 // ChangeStatusWithRequester изменяет статус рассылки с использованием интерфейса Requester.
 func ChangeStatusWithRequester(ctx context.Context, requester Requester, id int, status MailingStatus) (*Mailing, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/status", requester.GetBaseURL(), id)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(map[string]string{
 		"status": string(status),
 	})
@@ -412,26 +381,22 @@ func ChangeStatusWithRequester(ctx context.Context, requester Requester, id int,
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var updatedMailing Mailing
 	if err := json.NewDecoder(resp.Body).Decode(&updatedMailing); err != nil {
 		return nil, err
@@ -451,28 +416,23 @@ func GetStats(ctx context.Context, apiClient *client.Client, id int) (*Stats, er
 
 // GetStatsWithRequester получает статистику рассылки с использованием интерфейса Requester.
 func GetStatsWithRequester(ctx context.Context, requester Requester, id int) (*Stats, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/stats", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var stats Stats
 	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
 		return nil, err
@@ -493,10 +453,8 @@ func AddRecipients(ctx context.Context, apiClient *client.Client, id int, contac
 
 // AddRecipientsWithRequester добавляет получателей в рассылку с использованием интерфейса Requester.
 func AddRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/recipients", requester.GetBaseURL(), id)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(map[string][]int{
 		"contact_ids": contactIDs,
 	})
@@ -504,21 +462,18 @@ func AddRecipientsWithRequester(ctx context.Context, requester Requester, id int
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -538,10 +493,8 @@ func RemoveRecipients(ctx context.Context, apiClient *client.Client, id int, con
 
 // RemoveRecipientsWithRequester удаляет получателей из рассылки с использованием интерфейса Requester.
 func RemoveRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/recipients/delete", requester.GetBaseURL(), id)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(map[string][]int{
 		"contact_ids": contactIDs,
 	})
@@ -549,21 +502,18 @@ func RemoveRecipientsWithRequester(ctx context.Context, requester Requester, id 
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -582,36 +532,29 @@ func ListTemplates(ctx context.Context, apiClient *client.Client, page, limit in
 
 // ListTemplatesWithRequester получает список шаблонов рассылок с использованием интерфейса Requester.
 func ListTemplatesWithRequester(ctx context.Context, requester Requester, page, limit int) ([]Template, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/mailing_templates", requester.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Формируем URL с параметрами
 	requestURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			Templates []Template `json:"templates"`
@@ -635,28 +578,23 @@ func GetTemplate(ctx context.Context, apiClient *client.Client, id int) (*Templa
 
 // GetTemplateWithRequester получает информацию о конкретном шаблоне рассылки с использованием интерфейса Requester.
 func GetTemplateWithRequester(ctx context.Context, requester Requester, id int) (*Template, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailing_templates/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var template Template
 	if err := json.NewDecoder(resp.Body).Decode(&template); err != nil {
 		return nil, err

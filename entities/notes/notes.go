@@ -7,23 +7,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/chudno/amo_crm_sdk/client"
 )
 
 // Note представляет собой структуру примечания в amoCRM.
 type Note struct {
-	ID         int        `json:"id"`
-	EntityID   int        `json:"entity_id"`
-	EntityType string     `json:"entity_type"` // leads, contacts, companies, customers
-	NoteType   int        `json:"note_type"`
+	ID         int        `json:"id,omitempty"`
+	EntityID   int        `json:"entity_id,omitempty"`
+	EntityType string     `json:"entity_type,omitempty"` // leads, contacts, companies, customers
+	NoteType   string     `json:"note_type,omitempty"`
 	Text       string     `json:"text,omitempty"`
-	CreatedBy  int        `json:"created_by"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
+	CreatedBy  int        `json:"created_by,omitempty"`
+	CreatedAt  int64      `json:"created_at,omitempty"`
+	UpdatedAt  int64      `json:"updated_at,omitempty"`
 	Params     NoteParams `json:"params,omitempty"`
 }
+
+// Константы типов примечаний в amoCRM v4
+const (
+	TypeCommon                 = "common"
+	TypeCallIn                 = "call_in"
+	TypeCallOut                = "call_out"
+	TypeServiceMessage         = "service_message"
+	TypeIncomingChatMessage    = "incoming_chat_message"
+	TypeOutgoingChatMessage    = "outgoing_chat_message"
+	TypeSmsIn                  = "sms_in"
+	TypeSmsOut                 = "sms_out"
+	TypeExtendedServiceMessage = "extended_service_message"
+	TypeAttachment             = "attachment"
+	TypeAmomailMessage         = "amomail_message"
+	TypeGeolocation            = "geolocation"
+)
 
 // NoteParams содержит дополнительные параметры примечания в зависимости от типа
 type NoteParams struct {
@@ -46,7 +61,7 @@ func Get(ctx context.Context, apiClient *client.Client, entityType string, entit
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var note Note
 	if err := json.NewDecoder(resp.Body).Decode(&note); err != nil {
@@ -58,13 +73,13 @@ func Get(ctx context.Context, apiClient *client.Client, entityType string, entit
 
 // Create создает новое примечание в amoCRM.
 func Create(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
-	url := fmt.Sprintf("%s/api/v4/%s/%d/notes", apiClient.GetBaseURL(), entityType, entityID)
-	noteJSON, err := json.Marshal(note)
+	apiURL := fmt.Sprintf("%s/api/v4/%s/%d/notes", apiClient.GetBaseURL(), entityType, entityID)
+	noteJSON, err := json.Marshal([]*Note{note})
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(noteJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(noteJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -75,14 +90,26 @@ func Create(ctx context.Context, apiClient *client.Client, entityType string, en
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	var newNote Note
-	if err := json.NewDecoder(resp.Body).Decode(&newNote); err != nil {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
+
+	var response struct {
+		Embedded struct {
+			Notes []*Note `json:"notes"`
+		} `json:"_embedded"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
-	return &newNote, nil
+	if len(response.Embedded.Notes) == 0 {
+		return nil, fmt.Errorf("не удалось создать примечание")
+	}
+
+	return response.Embedded.Notes[0], nil
 }
 
 // Update обновляет существующее примечание в amoCRM.
@@ -104,7 +131,7 @@ func Update(ctx context.Context, apiClient *client.Client, entityType string, en
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedNote Note
 	if err := json.NewDecoder(resp.Body).Decode(&updatedNote); err != nil {
@@ -126,7 +153,7 @@ func List(ctx context.Context, apiClient *client.Client, entityType string, enti
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var notes struct {
 		Embedded struct {
@@ -139,26 +166,4 @@ func List(ctx context.Context, apiClient *client.Client, entityType string, enti
 	}
 
 	return notes.Embedded.Items, nil
-}
-
-// Delete удаляет примечание по его ID.
-func Delete(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) error {
-	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, noteID)
-	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := apiClient.DoRequest(ctx, req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус ответа
-	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	return nil
 }

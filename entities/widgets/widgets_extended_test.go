@@ -13,7 +13,6 @@ import (
 
 // TestGetMarketplaceWidgets проверяет получение списка виджетов из маркетплейса
 func TestGetMarketplaceWidgets(t *testing.T) {
-	// Подготавливаем ответ для успешного сценария
 	successResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -73,7 +72,6 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		}
 	}`
 
-	// Ответ для ситуации, когда виджетов нет
 	emptyResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -82,19 +80,14 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		}
 	}`
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/marketplace/widgets", http.StatusOK, successResponse, nil)
 
-		// Создаем фильтр по категории
 		categoryID := 1
 
-		// Вызываем тестируемый метод
 		widgets, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50, WithCategory(categoryID))
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении виджетов из маркетплейса: %v", err)
 		}
@@ -120,16 +113,12 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с пустым ответом
 	t.Run("Empty", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/marketplace/widgets", http.StatusOK, emptyResponse, nil)
 
-		// Вызываем тестируемый метод
 		widgets, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении виджетов из маркетплейса: %v", err)
 		}
@@ -139,16 +128,12 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой сервера
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/marketplace/widgets", http.StatusInternalServerError, `{"error": "Internal Server Error"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем, что есть ошибка
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но её не получили")
 		}
@@ -157,13 +142,10 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 
 // TestSetWidgetStatus проверяет активацию/деактивацию виджета
 func TestSetWidgetStatus(t *testing.T) {
-	// ID виджета для теста
 	widgetID := 123
 
-	// Статус для установки
 	status := WidgetStatusInactive
 
-	// Подготавливаем ответ для успешного сценария
 	successResponse := fmt.Sprintf(`{
 		"id": %d,
 		"name": "Intercom",
@@ -178,22 +160,17 @@ func TestSetWidgetStatus(t *testing.T) {
 		"is_configured": true
 	}`, widgetID, status)
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем тестовый сервер для проверки тела запроса
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "PATCH" {
 				t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			var requestBody struct {
 				Status string `json:"status"`
 			}
@@ -206,20 +183,16 @@ func TestSetWidgetStatus(t *testing.T) {
 				t.Errorf("Ожидался статус '%s', получен '%s'", status, requestBody.Status)
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(successResponse))
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		widget, err := SetStatus(context.Background(), apiClient, widgetID, status)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при изменении статуса виджета: %v", err)
 		}
@@ -233,16 +206,12 @@ func TestSetWidgetStatus(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusBadRequest, `{"error": "Invalid status"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := SetStatusWithRequester(context.Background(), mockClient, widgetID, status)
 
-		// Проверяем, что есть ошибка
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но её не получили")
 		}
@@ -251,10 +220,8 @@ func TestSetWidgetStatus(t *testing.T) {
 
 // TestBulkInstallWidgets проверяет массовую установку виджетов
 func TestBulkInstallWidgets(t *testing.T) {
-	// Коды виджетов для теста
 	codes := []string{"intercom", "callback"}
 
-	// Подготавливаем ответ для успешного сценария
 	successResponse := `{
 		"_embedded": {
 			"widgets": [
@@ -288,22 +255,17 @@ func TestBulkInstallWidgets(t *testing.T) {
 		}
 	}`
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем тестовый сервер для проверки тела запроса
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "POST" {
 				t.Errorf("Ожидался метод POST, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/widgets"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			var requestBody struct {
 				Codes []string `json:"codes"`
 			}
@@ -316,20 +278,16 @@ func TestBulkInstallWidgets(t *testing.T) {
 				t.Errorf("Ожидалось %d кодов, получено %d", len(codes), len(requestBody.Codes))
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(successResponse))
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		widgets, err := BulkInstall(context.Background(), apiClient, codes)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при массовой установке виджетов: %v", err)
 		}
@@ -347,16 +305,12 @@ func TestBulkInstallWidgets(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("POST", "/api/v4/widgets", http.StatusBadRequest, `{"error": "Invalid widget codes"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := BulkInstallWithRequester(context.Background(), mockClient, codes)
 
-		// Проверяем, что есть ошибка
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но её не получили")
 		}
@@ -365,25 +319,19 @@ func TestBulkInstallWidgets(t *testing.T) {
 
 // TestBulkDeleteWidgets проверяет массовое удаление виджетов
 func TestBulkDeleteWidgets(t *testing.T) {
-	// ID виджетов для теста
 	widgetIDs := []int{123, 456}
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем тестовый сервер для проверки тела запроса
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "DELETE" {
 				t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/widgets"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			var requestBody struct {
 				WidgetIDs []int `json:"widget_ids"`
 			}
@@ -396,33 +344,25 @@ func TestBulkDeleteWidgets(t *testing.T) {
 				t.Errorf("Ожидалось %d ID, получено %d", len(widgetIDs), len(requestBody.WidgetIDs))
 			}
 
-			// Отправляем ответ
 			w.WriteHeader(http.StatusNoContent)
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		err := BulkDelete(context.Background(), apiClient, widgetIDs)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при массовом удалении виджетов: %v", err)
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("DELETE", "/api/v4/widgets", http.StatusForbidden, `{"error": "Insufficient permissions"}`, nil)
 
-		// Вызываем тестируемый метод
 		err := BulkDeleteWithRequester(context.Background(), mockClient, widgetIDs)
 
-		// Проверяем, что есть ошибка
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но её не получили")
 		}

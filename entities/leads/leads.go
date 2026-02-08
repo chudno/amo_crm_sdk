@@ -64,10 +64,8 @@ const (
 // Get получает лид по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидом.
 func Get(ctx context.Context, apiClient *client.Client, leadID int, withOptions ...WithOption) (*Lead, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
-	// Добавляем параметры запроса, если указаны withOptions
 	if len(withOptions) > 0 {
 		params := url.Values{}
 		var withValues []string
@@ -78,7 +76,6 @@ func Get(ctx context.Context, apiClient *client.Client, leadID int, withOptions 
 		baseURL = baseURL + "?" + params.Encode()
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -88,7 +85,7 @@ func Get(ctx context.Context, apiClient *client.Client, leadID int, withOptions 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var lead Lead
 	if err := json.NewDecoder(resp.Body).Decode(&lead); err != nil {
@@ -118,7 +115,7 @@ func Create(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var response struct {
 		Embedded struct {
@@ -161,7 +158,7 @@ func Update(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedLead Lead
 	if err := json.NewDecoder(resp.Body).Decode(&updatedLead); err != nil {
@@ -171,20 +168,28 @@ func Update(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, e
 	return &updatedLead, nil
 }
 
-// Delete удаляет лид по его ID.
+// Delete удаляет (перемещает в корзину) лид по его ID.
+// amoCRM API v4 не поддерживает DELETE для сделок, используется PATCH.
 func Delete(ctx context.Context, apiClient *client.Client, leadID int) error {
-	url := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
+	apiURL := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
-	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
+	body, err := json.Marshal(map[string]bool{"is_deleted": true})
 	if err != nil {
 		return err
 	}
+
+	req, err := http.NewRequestWithContext(ctx, "PATCH", apiURL, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
@@ -206,15 +211,12 @@ type ListResponse struct {
 // List получает список лидов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидами.
 func List(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем параметр with, если указаны withOptions
 	if len(withOptions) > 0 {
 		var withValues []string
 		for _, opt := range withOptions {
@@ -223,7 +225,6 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, filter
 		params.Add("with", strings.Join(withValues, ","))
 	}
 
-	// Добавляем параметры фильтрации, если они есть
 	if len(filter) > 0 {
 		for key, value := range filter {
 			params.Add(key, value)
@@ -240,9 +241,8 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, filter
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

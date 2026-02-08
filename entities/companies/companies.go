@@ -60,10 +60,8 @@ const (
 // Get получает компанию по её ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компанией.
 func Get(ctx context.Context, apiClient *client.Client, companyID int, withOptions ...WithOption) (*Company, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies/%d", apiClient.GetBaseURL(), companyID)
 
-	// Добавляем параметры запроса, если указаны withOptions
 	if len(withOptions) > 0 {
 		params := url.Values{}
 		var withValues []string
@@ -74,7 +72,6 @@ func Get(ctx context.Context, apiClient *client.Client, companyID int, withOptio
 		baseURL = baseURL + "?" + params.Encode()
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -84,7 +81,7 @@ func Get(ctx context.Context, apiClient *client.Client, companyID int, withOptio
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var company Company
 	if err := json.NewDecoder(resp.Body).Decode(&company); err != nil {
@@ -96,13 +93,13 @@ func Get(ctx context.Context, apiClient *client.Client, companyID int, withOptio
 
 // Create создает новую компанию в amoCRM.
 func Create(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
-	url := apiClient.GetBaseURL() + "/api/v4/companies"
-	companyJSON, err := json.Marshal(company)
+	apiURL := apiClient.GetBaseURL() + "/api/v4/companies"
+	companyJSON, err := json.Marshal([]*Company{company})
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(companyJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(companyJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +110,26 @@ func Create(ctx context.Context, apiClient *client.Client, company *Company) (*C
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	var newCompany Company
-	if err := json.NewDecoder(resp.Body).Decode(&newCompany); err != nil {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
+
+	var response struct {
+		Embedded struct {
+			Companies []*Company `json:"companies"`
+		} `json:"_embedded"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
-	return &newCompany, nil
+	if len(response.Embedded.Companies) == 0 {
+		return nil, fmt.Errorf("не удалось создать компанию")
+	}
+
+	return response.Embedded.Companies[0], nil
 }
 
 // Update обновляет существующую компанию в amoCRM.
@@ -142,7 +151,7 @@ func Update(ctx context.Context, apiClient *client.Client, company *Company) (*C
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedCompany Company
 	if err := json.NewDecoder(resp.Body).Decode(&updatedCompany); err != nil {
@@ -165,15 +174,12 @@ type ListResponse struct {
 // List получает список компаний с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компаниями.
 func List(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Company, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем параметр with, если указаны withOptions
 	if len(withOptions) > 0 {
 		var withValues []string
 		for _, opt := range withOptions {
@@ -182,10 +188,8 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, withOp
 		params.Add("with", strings.Join(withValues, ","))
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -195,7 +199,7 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, withOp
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var companies ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&companies); err != nil {

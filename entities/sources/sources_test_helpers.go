@@ -46,7 +46,6 @@ func NewAdvancedMockClient(baseURL string, defaultResponse MockResponse) *Advanc
 
 // DoRequest реализует метод DoRequest из интерфейса Requester
 func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
-	// Получаем тело запроса, если оно есть
 	var bodyStr string
 	if req.Body != nil {
 		bodyBytes, err := io.ReadAll(req.Body)
@@ -57,7 +56,6 @@ func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (
 		}
 	}
 
-	// Сохраняем информацию о запросе
 	c.LastRequest = &MockRequest{
 		Method: req.Method,
 		URL:    req.URL.String(),
@@ -65,22 +63,17 @@ func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (
 		Header: req.Header,
 	}
 
-	// Формируем ключ запроса для поиска в предопределенных ответах
 	requestKey := req.Method + " " + req.URL.Path
 
-	// Ищем ответ в предопределенных ответах
 	response, ok := c.MockResponses[requestKey]
 	if !ok {
-		// Если ничего не нашли, используем ответ по умолчанию
 		response = c.DefaultResponse
 	}
 
-	// Если в ответе есть ошибка, возвращаем её
 	if response.Error != nil {
 		return nil, response.Error
 	}
 
-	// Создаем и возвращаем HTTP-ответ
 	httpResponse := &http.Response{
 		StatusCode: response.StatusCode,
 		Body:       io.NopCloser(strings.NewReader(response.Body)),

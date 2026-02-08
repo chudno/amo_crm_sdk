@@ -80,46 +80,38 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, option
 
 // ListWithRequester получает список источников с использованием интерфейса Requester.
 func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Source, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/sources", requester.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := map[string]string{
 		"page":  strconv.Itoa(page),
 		"limit": strconv.Itoa(limit),
 	}
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL с параметрами
 	queryParams := url.Values{}
 	for key, value := range params {
 		queryParams.Add(key, value)
 	}
 	requestURL := fmt.Sprintf("%s?%s", baseURL, queryParams.Encode())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			Sources []Source `json:"sources"`
@@ -143,28 +135,23 @@ func Get(ctx context.Context, apiClient *client.Client, id int) (*Source, error)
 
 // GetWithRequester получает информацию о конкретном источнике с использованием интерфейса Requester.
 func GetWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var sourceInfo Source
 	if err := json.NewDecoder(resp.Body).Decode(&sourceInfo); err != nil {
 		return nil, err
@@ -188,35 +175,29 @@ func Create(ctx context.Context, apiClient *client.Client, sourceData *Source) (
 
 // CreateWithRequester создает новый источник с использованием интерфейса Requester.
 func CreateWithRequester(ctx context.Context, requester Requester, sourceData *Source) (*Source, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources", requester.GetBaseURL())
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(sourceData)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var createdSource Source
 	if err := json.NewDecoder(resp.Body).Decode(&createdSource); err != nil {
 		return nil, err
@@ -244,35 +225,29 @@ func UpdateWithRequester(ctx context.Context, requester Requester, sourceData *S
 		return nil, fmt.Errorf("ID источника не указан")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d", requester.GetBaseURL(), sourceData.ID)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(sourceData)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var updatedSource Source
 	if err := json.NewDecoder(resp.Body).Decode(&updatedSource); err != nil {
 		return nil, err
@@ -292,23 +267,19 @@ func Delete(ctx context.Context, apiClient *client.Client, id int) error {
 
 // DeleteWithRequester удаляет источник с использованием интерфейса Requester.
 func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -327,28 +298,23 @@ func SetDefault(ctx context.Context, apiClient *client.Client, id int) (*Source,
 
 // SetDefaultWithRequester устанавливает источник как используемый по умолчанию с использованием интерфейса Requester.
 func SetDefaultWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/default", requester.GetBaseURL(), id)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var updatedSource Source
 	if err := json.NewDecoder(resp.Body).Decode(&updatedSource); err != nil {
 		return nil, err
@@ -368,28 +334,23 @@ func ListServices(ctx context.Context, apiClient *client.Client) ([]Service, err
 
 // ListServicesWithRequester получает список сервисов с использованием интерфейса Requester.
 func ListServicesWithRequester(ctx context.Context, requester Requester) ([]Service, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/services", requester.GetBaseURL())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			Services []Service `json:"services"`
@@ -413,10 +374,8 @@ func LinkToPipeline(ctx context.Context, apiClient *client.Client, sourceID, pip
 
 // LinkToPipelineWithRequester связывает источник с воронкой с использованием интерфейса Requester.
 func LinkToPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/pipeline", requester.GetBaseURL(), sourceID)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(map[string]int{
 		"pipeline_id": pipelineID,
 	})
@@ -424,26 +383,22 @@ func LinkToPipelineWithRequester(ctx context.Context, requester Requester, sourc
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var linkedSource Source
 	if err := json.NewDecoder(resp.Body).Decode(&linkedSource); err != nil {
 		return nil, err
@@ -463,28 +418,23 @@ func UnlinkFromPipeline(ctx context.Context, apiClient *client.Client, sourceID,
 
 // UnlinkFromPipelineWithRequester удаляет связь источника с воронкой с использованием интерфейса Requester.
 func UnlinkFromPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/pipeline/%d", requester.GetBaseURL(), sourceID, pipelineID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var unlinkedSource Source
 	if err := json.NewDecoder(resp.Body).Decode(&unlinkedSource); err != nil {
 		return nil, err

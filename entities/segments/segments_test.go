@@ -12,20 +12,16 @@ import (
 
 // TestAddSegment проверяет создание сегмента
 func TestAddSegment(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/segments"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -55,10 +51,8 @@ func TestAddSegment(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем сегмент для отправки
 	segment := &Segment{
 		Name:  "Тестовый сегмент",
 		Color: "#FF5555",
@@ -75,10 +69,8 @@ func TestAddSegment(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
 	createdSegment, err := Create(context.Background(), apiClient, segment)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании сегмента: %v", err)
 	}
@@ -102,29 +94,23 @@ func TestAddSegment(t *testing.T) {
 
 // TestGetSegment проверяет получение информации о сегменте
 func TestGetSegment(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметр with
 		expectedWith := "contacts"
 		if r.URL.Query().Get("with") != expectedWith {
 			t.Errorf("Ожидался параметр with=%s, получен %s", expectedWith, r.URL.Query().Get("with"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -170,13 +156,10 @@ func TestGetSegment(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод с параметром WithContacts
 	segment, err := Get(context.Background(), apiClient, segmentID, WithContacts())
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении сегмента: %v", err)
 	}
@@ -193,7 +176,6 @@ func TestGetSegment(t *testing.T) {
 		t.Errorf("Ожидалось количество контактов 42, получено %d", segment.ContactsCount)
 	}
 
-	// Проверяем контакты
 	if segment.Embedded == nil {
 		t.Fatalf("Отсутствует секция _embedded")
 	}
@@ -215,7 +197,6 @@ func TestGetSegment(t *testing.T) {
 
 // TestGetSegments проверяет получение списка сегментов
 func TestGetSegments(t *testing.T) {
-	// Подготавливаем ответ для нормального сценария
 	successResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -251,7 +232,6 @@ func TestGetSegments(t *testing.T) {
 		}
 	}`
 
-	// Ответ для ситуации, когда сегментов нет
 	emptyResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -260,21 +240,16 @@ func TestGetSegments(t *testing.T) {
 		}
 	}`
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/segments", http.StatusOK, successResponse, nil)
 
-		// Создаем фильтр
 		filter := map[string]string{
 			"filter[name]": "Активные клиенты",
 		}
 
-		// Вызываем тестируемый метод с нашим мок-клиентом
 		segments, err := GetSegmentsWithRequester(mockClient, 1, 50, WithFilter(filter))
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении сегментов: %v", err)
 		}
@@ -283,7 +258,6 @@ func TestGetSegments(t *testing.T) {
 			t.Fatalf("Ожидалось получение 2 сегментов, получено %d", len(segments))
 		}
 
-		// Проверяем содержимое первого сегмента
 		if segments[0].ID != 123 {
 			t.Errorf("Ожидался ID 123, получен %d", segments[0].ID)
 		}
@@ -293,36 +267,27 @@ func TestGetSegments(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с пустым списком
 	t.Run("EmptyList", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/segments", http.StatusOK, emptyResponse, nil)
 
-		// Вызываем тестируемый метод
 		segments, err := GetSegmentsWithRequester(mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении сегментов: %v", err)
 		}
 
-		// Проверяем, что массив пуст
 		if len(segments) != 0 {
 			t.Fatalf("Ожидался пустой массив сегментов, получено %d", len(segments))
 		}
 	})
 
-	// Проверяем сценарий с ошибкой сервера
 	t.Run("ServerError", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/segments", http.StatusInternalServerError, `{"error": "Internal Server Error"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := GetSegmentsWithRequester(mockClient, 1, 50)
 
-		// Проверяем, что есть ошибка
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но её не получили")
 		}
@@ -331,23 +296,18 @@ func TestGetSegments(t *testing.T) {
 
 // TestUpdateSegment проверяет обновление сегмента
 func TestUpdateSegment(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -371,20 +331,16 @@ func TestUpdateSegment(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем сегмент для обновления
 	segment := &Segment{
 		ID:    segmentID,
 		Name:  "Обновленный сегмент",
 		Color: "#5555FF",
 	}
 
-	// Вызываем тестируемый метод
 	updatedSegment, err := Update(context.Background(), apiClient, segment)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении сегмента: %v", err)
 	}
@@ -404,34 +360,26 @@ func TestUpdateSegment(t *testing.T) {
 
 // TestDeleteSegment проверяет удаление сегмента
 func TestDeleteSegment(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	err := Delete(context.Background(), apiClient, segmentID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении сегмента: %v", err)
 	}
@@ -439,36 +387,27 @@ func TestDeleteSegment(t *testing.T) {
 
 // TestAddContactsToSegment проверяет добавление контактов в сегмент
 func TestAddContactsToSegment(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
-	// ID контактов для добавления
 	contactIDs := []int{1001, 1002, 1003}
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d/contacts", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ без декодирования тела запроса
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	err := AddContacts(context.Background(), apiClient, segmentID, contactIDs)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при добавлении контактов в сегмент: %v", err)
 	}
@@ -476,36 +415,27 @@ func TestAddContactsToSegment(t *testing.T) {
 
 // TestRemoveContactsFromSegment проверяет удаление контактов из сегмента
 func TestRemoveContactsFromSegment(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
-	// ID контактов для удаления
 	contactIDs := []int{1001, 1002, 1003}
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d/contacts/delete", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	err := RemoveContacts(context.Background(), apiClient, segmentID, contactIDs)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении контактов из сегмента: %v", err)
 	}
@@ -513,23 +443,18 @@ func TestRemoveContactsFromSegment(t *testing.T) {
 
 // TestGetSegmentContacts проверяет получение контактов сегмента
 func TestGetSegmentContacts(t *testing.T) {
-	// ID сегмента для теста
 	segmentID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/segments/%d/contacts", segmentID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -557,23 +482,18 @@ func TestGetSegmentContacts(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	contactIDs, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении контактов сегмента: %v", err)
 	}
 
-	// Проверяем количество полученных ID контактов
 	if len(contactIDs) != 3 {
 		t.Fatalf("Ожидалось получение 3 ID контактов, получено %d", len(contactIDs))
 	}
 
-	// Проверяем ID контактов
 	expectedIDs := []int{1001, 1002, 1003}
 	for i, id := range expectedIDs {
 		if contactIDs[i] != id {

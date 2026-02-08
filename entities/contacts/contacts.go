@@ -62,10 +62,8 @@ const (
 // Get получает контакт по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактом.
 func Get(ctx context.Context, apiClient *client.Client, contactID int, withOptions ...WithOption) (*Contact, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/%d", apiClient.GetBaseURL(), contactID)
 
-	// Добавляем параметры запроса, если указаны withOptions
 	if len(withOptions) > 0 {
 		params := url.Values{}
 		var withValues []string
@@ -76,7 +74,6 @@ func Get(ctx context.Context, apiClient *client.Client, contactID int, withOptio
 		baseURL = baseURL + "?" + params.Encode()
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -86,7 +83,7 @@ func Get(ctx context.Context, apiClient *client.Client, contactID int, withOptio
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var contact Contact
 	if err := json.NewDecoder(resp.Body).Decode(&contact); err != nil {
@@ -98,13 +95,13 @@ func Get(ctx context.Context, apiClient *client.Client, contactID int, withOptio
 
 // Create создает новый контакт в amoCRM.
 func Create(ctx context.Context, apiClient *client.Client, contact *Contact) (*Contact, error) {
-	url := apiClient.GetBaseURL() + "/api/v4/contacts"
-	contactJSON, err := json.Marshal(contact)
+	apiURL := apiClient.GetBaseURL() + "/api/v4/contacts"
+	contactJSON, err := json.Marshal([]*Contact{contact})
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(contactJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(contactJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -115,14 +112,26 @@ func Create(ctx context.Context, apiClient *client.Client, contact *Contact) (*C
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	var newContact Contact
-	if err := json.NewDecoder(resp.Body).Decode(&newContact); err != nil {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+	}
+
+	var response struct {
+		Embedded struct {
+			Contacts []*Contact `json:"contacts"`
+		} `json:"_embedded"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
-	return &newContact, nil
+	if len(response.Embedded.Contacts) == 0 {
+		return nil, fmt.Errorf("не удалось создать контакт")
+	}
+
+	return response.Embedded.Contacts[0], nil
 }
 
 // DeleteResponse представляет ответ от API при удалении контактов
@@ -145,15 +154,12 @@ type ListResponse struct {
 // List получает список контактов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактами.
 func List(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Contact, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем параметр with, если указаны withOptions
 	if len(withOptions) > 0 {
 		var withValues []string
 		for _, opt := range withOptions {
@@ -162,10 +168,8 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, withOp
 		params.Add("with", strings.Join(withValues, ","))
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -175,9 +179,8 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, withOp
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -192,36 +195,25 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, withOp
 
 // LinkWithCompany связывает контакт с компанией
 func LinkWithCompany(ctx context.Context, apiClient *client.Client, contactID, companyID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/%d/link", apiClient.GetBaseURL(), contactID)
 
-	// Формируем тело запроса
-	type linkRequest struct {
-		To []struct {
-			EntityID   int    `json:"entity_id"`
-			EntityType string `json:"entity_type"`
-		} `json:"to"`
+	type linkItem struct {
+		ToEntityID   int    `json:"to_entity_id"`
+		ToEntityType string `json:"to_entity_type"`
 	}
 
-	reqBody := linkRequest{
-		To: []struct {
-			EntityID   int    `json:"entity_id"`
-			EntityType string `json:"entity_type"`
-		}{
-			{
-				EntityID:   companyID,
-				EntityType: "companies",
-			},
+	reqBody := []linkItem{
+		{
+			ToEntityID:   companyID,
+			ToEntityType: "companies",
 		},
 	}
 
-	// Преобразуем тело запроса в JSON
 	reqJSON, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqJSON))
 	if err != nil {
 		return err
@@ -229,14 +221,12 @@ func LinkWithCompany(ctx context.Context, apiClient *client.Client, contactID, c
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус ответа
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}

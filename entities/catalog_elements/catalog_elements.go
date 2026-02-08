@@ -87,20 +87,16 @@ const (
 
 // List получает список элементов каталога с возможностью пагинации и фильтрации.
 func List(ctx context.Context, apiClient *client.Client, catalogID, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Element, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем фильтры
 	for key, value := range filter {
 		params.Add(key, value)
 	}
 
-	// Добавляем параметр with, если указаны withOptions
 	if len(withOptions) > 0 {
 		var withValues []string
 		for _, opt := range withOptions {
@@ -109,10 +105,8 @@ func List(ctx context.Context, apiClient *client.Client, catalogID, page, limit 
 		params.Add("with", stringsJoin(withValues, ","))
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -122,9 +116,8 @@ func List(ctx context.Context, apiClient *client.Client, catalogID, page, limit 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -153,19 +146,15 @@ func stringsJoin(strings []string, sep string) string {
 
 // Create создает новый элемент каталога.
 func Create(ctx context.Context, apiClient *client.Client, catalogID int, element *Element) (*Element, error) {
-	// Проверяем, что указан ID каталога
 	element.CatalogID = catalogID
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
-	// Преобразуем структуру элемента в JSON
 	elementJSON, err := json.Marshal([]*Element{element})
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(elementJSON))
 	if err != nil {
 		return nil, err
@@ -173,14 +162,12 @@ func Create(ctx context.Context, apiClient *client.Client, catalogID int, elemen
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -203,21 +190,17 @@ func Create(ctx context.Context, apiClient *client.Client, catalogID int, elemen
 
 // CreateBatch создает несколько элементов каталога за один запрос.
 func CreateBatch(ctx context.Context, apiClient *client.Client, catalogID int, elements []Element) ([]Element, error) {
-	// Проверяем, что указан ID каталога для всех элементов
 	for i := range elements {
 		elements[i].CatalogID = catalogID
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
-	// Преобразуем структуры элементов в JSON
 	elementsJSON, err := json.Marshal(elements)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(elementsJSON))
 	if err != nil {
 		return nil, err
@@ -225,14 +208,12 @@ func CreateBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -251,10 +232,8 @@ func CreateBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 // Get получает информацию об элементе каталога по его ID.
 func Get(ctx context.Context, apiClient *client.Client, catalogID, elementID int, withOptions ...WithOption) (*Element, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d", apiClient.GetBaseURL(), catalogID, elementID)
 
-	// Добавляем параметр with, если указаны withOptions
 	if len(withOptions) > 0 {
 		params := url.Values{}
 		var withValues []string
@@ -265,20 +244,17 @@ func Get(ctx context.Context, apiClient *client.Client, catalogID, elementID int
 		baseURL = baseURL + "?" + params.Encode()
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -297,19 +273,15 @@ func Update(ctx context.Context, apiClient *client.Client, catalogID int, elemen
 		return nil, fmt.Errorf("ID элемента каталога не может быть пустым")
 	}
 
-	// Проверяем, что указан ID каталога
 	element.CatalogID = catalogID
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d", apiClient.GetBaseURL(), catalogID, element.ID)
 
-	// Преобразуем структуру элемента в JSON
 	elementJSON, err := json.Marshal(element)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(elementJSON))
 	if err != nil {
 		return nil, err
@@ -317,14 +289,12 @@ func Update(ctx context.Context, apiClient *client.Client, catalogID int, elemen
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -339,25 +309,20 @@ func Update(ctx context.Context, apiClient *client.Client, catalogID int, elemen
 
 // UpdateBatch обновляет информацию о нескольких элементах каталога за один запрос.
 func UpdateBatch(ctx context.Context, apiClient *client.Client, catalogID int, elements []Element) ([]Element, error) {
-	// Проверяем, что у всех элементов есть ID
 	for i := range elements {
 		if elements[i].ID == 0 {
 			return nil, fmt.Errorf("ID элемента каталога не может быть пустым")
 		}
-		// Проверяем, что указан ID каталога
 		elements[i].CatalogID = catalogID
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
-	// Преобразуем структуры элементов в JSON
 	elementsJSON, err := json.Marshal(elements)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(elementsJSON))
 	if err != nil {
 		return nil, err
@@ -365,14 +330,12 @@ func UpdateBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -391,23 +354,19 @@ func UpdateBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 // Delete удаляет элемент каталога по его ID.
 func Delete(ctx context.Context, apiClient *client.Client, catalogID, elementID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d", apiClient.GetBaseURL(), catalogID, elementID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -417,10 +376,8 @@ func Delete(ctx context.Context, apiClient *client.Client, catalogID, elementID 
 
 // DeleteBatch удаляет несколько элементов каталога за один запрос.
 func DeleteBatch(ctx context.Context, apiClient *client.Client, catalogID int, elementIDs []int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements", apiClient.GetBaseURL(), catalogID)
 
-	// Формируем тело запроса
 	type deleteRequest struct {
 		ID int `json:"id"`
 	}
@@ -430,13 +387,11 @@ func DeleteBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 		requests = append(requests, deleteRequest{ID: id})
 	}
 
-	// Преобразуем запрос в JSON
 	requestJSON, err := json.Marshal(requests)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
@@ -444,14 +399,12 @@ func DeleteBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -461,16 +414,13 @@ func DeleteBatch(ctx context.Context, apiClient *client.Client, catalogID int, e
 
 // LinkWithTags связывает элемент каталога с тегами.
 func LinkWithTags(ctx context.Context, apiClient *client.Client, catalogID, elementID int, tags []Tag) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d/tags", apiClient.GetBaseURL(), catalogID, elementID)
 
-	// Преобразуем теги в JSON
 	tagsJSON, err := json.Marshal(tags)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return err
@@ -478,14 +428,12 @@ func LinkWithTags(ctx context.Context, apiClient *client.Client, catalogID, elem
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -495,23 +443,19 @@ func LinkWithTags(ctx context.Context, apiClient *client.Client, catalogID, elem
 
 // ListTags получает теги элемента каталога.
 func ListTags(ctx context.Context, apiClient *client.Client, catalogID, elementID int) ([]Tag, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/elements/%d/tags", apiClient.GetBaseURL(), catalogID, elementID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

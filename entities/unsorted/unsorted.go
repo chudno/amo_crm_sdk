@@ -192,16 +192,13 @@ func CreateLead(ctx context.Context, apiClient *client.Client, lead *LeadCreate)
 		lead.PipelineType = PipelineTypeLead
 	}
 
-	// Преобразуем заявку в JSON
 	leadJSON, err := json.Marshal([]LeadCreate{*lead})
 	if err != nil {
 		return nil, err
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/api", apiClient.GetBaseURL())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(leadJSON))
 	if err != nil {
 		return nil, err
@@ -209,14 +206,12 @@ func CreateLead(ctx context.Context, apiClient *client.Client, lead *LeadCreate)
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -236,16 +231,13 @@ func CreateContact(ctx context.Context, apiClient *client.Client, contact *Conta
 		contact.CreatedAt = time.Now().Unix()
 	}
 
-	// Преобразуем заявку в JSON
 	contactJSON, err := json.Marshal([]ContactCreate{*contact})
 	if err != nil {
 		return nil, err
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/api", apiClient.GetBaseURL())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(contactJSON))
 	if err != nil {
 		return nil, err
@@ -253,14 +245,12 @@ func CreateContact(ctx context.Context, apiClient *client.Client, contact *Conta
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -275,36 +265,29 @@ func CreateContact(ctx context.Context, apiClient *client.Client, contact *Conta
 
 // ListLeads получает список неразобранных заявок с типом "Сделка"
 func ListLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Item, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/leads/unsorted", apiClient.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем фильтры
 	for key, value := range filter {
 		params.Add(key, value)
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -323,36 +306,29 @@ func ListLeads(ctx context.Context, apiClient *client.Client, page, limit int, f
 
 // ListContacts получает список неразобранных заявок с типом "Контакт"
 func ListContacts(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Item, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/unsorted", apiClient.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем фильтры
 	for key, value := range filter {
 		params.Add(key, value)
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -371,23 +347,19 @@ func ListContacts(ctx context.Context, apiClient *client.Client, page, limit int
 
 // GetSummary получает сводку по неразобранным заявкам
 func GetSummary(ctx context.Context, apiClient *client.Client) (map[string]any, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/unsorted/summary", apiClient.GetBaseURL())
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -402,10 +374,8 @@ func GetSummary(ctx context.Context, apiClient *client.Client) (map[string]any, 
 
 // AcceptLead принимает неразобранную заявку сделки
 func AcceptLead(ctx context.Context, apiClient *client.Client, unsortedUID string, statusID, responsibleUserID int) (int, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем структуру для запроса
 	requestBody := struct {
 		StatusID          int `json:"status_id"`
 		ResponsibleUserID int `json:"responsible_user_id"`
@@ -414,13 +384,11 @@ func AcceptLead(ctx context.Context, apiClient *client.Client, unsortedUID strin
 		ResponsibleUserID: responsibleUserID,
 	}
 
-	// Преобразуем структуру в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return 0, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
@@ -428,14 +396,12 @@ func AcceptLead(ctx context.Context, apiClient *client.Client, unsortedUID strin
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -456,23 +422,19 @@ func AcceptLead(ctx context.Context, apiClient *client.Client, unsortedUID strin
 
 // AcceptContact принимает неразобранную заявку контакта
 func AcceptContact(ctx context.Context, apiClient *client.Client, unsortedUID string, responsibleUserID int) (int, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем структуру для запроса
 	requestBody := struct {
 		ResponsibleUserID int `json:"responsible_user_id"`
 	}{
 		ResponsibleUserID: responsibleUserID,
 	}
 
-	// Преобразуем структуру в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return 0, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
@@ -480,14 +442,12 @@ func AcceptContact(ctx context.Context, apiClient *client.Client, unsortedUID st
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -508,23 +468,19 @@ func AcceptContact(ctx context.Context, apiClient *client.Client, unsortedUID st
 
 // DeclineLead отклоняет неразобранную заявку сделки
 func DeclineLead(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -534,23 +490,19 @@ func DeclineLead(ctx context.Context, apiClient *client.Client, unsortedUID stri
 
 // DeclineContact отклоняет неразобранную заявку контакта
 func DeclineContact(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -560,23 +512,19 @@ func DeclineContact(ctx context.Context, apiClient *client.Client, unsortedUID s
 
 // LinkLeadWithContact связывает неразобранную заявку сделки с контактом
 func LinkLeadWithContact(ctx context.Context, apiClient *client.Client, unsortedUID string, contactID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем структуру для запроса
 	requestBody := struct {
 		ContactID int `json:"contact_id"`
 	}{
 		ContactID: contactID,
 	}
 
-	// Преобразуем структуру в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
@@ -584,14 +532,12 @@ func LinkLeadWithContact(ctx context.Context, apiClient *client.Client, unsorted
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -601,23 +547,19 @@ func LinkLeadWithContact(ctx context.Context, apiClient *client.Client, unsorted
 
 // LinkLeadWithCompany связывает неразобранную заявку сделки с компанией
 func LinkLeadWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем структуру для запроса
 	requestBody := struct {
 		CompanyID int `json:"company_id"`
 	}{
 		CompanyID: companyID,
 	}
 
-	// Преобразуем структуру в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
@@ -625,14 +567,12 @@ func LinkLeadWithCompany(ctx context.Context, apiClient *client.Client, unsorted
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -642,23 +582,19 @@ func LinkLeadWithCompany(ctx context.Context, apiClient *client.Client, unsorted
 
 // LinkContactWithCompany связывает неразобранную заявку контакта с компанией
 func LinkContactWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
-	// Создаем структуру для запроса
 	requestBody := struct {
 		CompanyID int `json:"company_id"`
 	}{
 		CompanyID: companyID,
 	}
 
-	// Преобразуем структуру в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
@@ -666,14 +602,12 @@ func LinkContactWithCompany(ctx context.Context, apiClient *client.Client, unsor
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

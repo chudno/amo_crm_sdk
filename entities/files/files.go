@@ -78,27 +78,22 @@ type ListResponse struct {
 
 // Upload загружает файл в amoCRM и прикрепляет его к указанной сущности
 func Upload(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, filePath string) (*File, error) {
-	// Открываем файл для чтения
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
-	// Получаем информацию о файле
 	fileInfo, err := file.Stat()
 	if err != nil {
 		return nil, err
 	}
 
-	// Формируем URL для загрузки файла
 	uploadURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Создаем буфер для multipart формы
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	// Добавляем файл в форму
 	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
 	if err != nil {
 		return nil, err
@@ -108,34 +103,28 @@ func Upload(ctx context.Context, apiClient *client.Client, entityType EntityType
 		return nil, err
 	}
 
-	// Закрываем multipart writer
 	err = writer.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", uploadURL, body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Устанавливаем заголовки
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var result struct {
 		File *File `json:"_embedded"`
 	}
@@ -156,14 +145,11 @@ func Upload(ctx context.Context, apiClient *client.Client, entityType EntityType
 
 // UploadByContent загружает файл в amoCRM по содержимому и прикрепляет его к указанной сущности
 func UploadByContent(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileName string, content []byte) (*File, error) {
-	// Формируем URL для загрузки файла
 	uploadURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Создаем буфер для multipart формы
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	// Добавляем файл в форму
 	part, err := writer.CreateFormFile("file", fileName)
 	if err != nil {
 		return nil, err
@@ -173,34 +159,28 @@ func UploadByContent(ctx context.Context, apiClient *client.Client, entityType E
 		return nil, err
 	}
 
-	// Закрываем multipart writer
 	err = writer.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", uploadURL, body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Устанавливаем заголовки
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var result struct {
 		File *File `json:"_embedded"`
 	}
@@ -221,36 +201,29 @@ func UploadByContent(ctx context.Context, apiClient *client.Client, entityType E
 
 // List получает список файлов, прикрепленных к сущности
 func List(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, page, limit int) ([]File, error) {
-	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Добавляем параметры пагинации
 	params := url.Values{}
 	params.Add("page", strconv.Itoa(page))
 	params.Add("limit", strconv.Itoa(limit))
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var filesResponse ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&filesResponse); err != nil {
 		return nil, err
@@ -261,28 +234,23 @@ func List(ctx context.Context, apiClient *client.Client, entityType EntityType, 
 
 // Get получает информацию о конкретном файле
 func Get(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (*File, error) {
-	// Формируем URL для запроса
 	fileURL := fmt.Sprintf("%s/api/v4/%s/%d/files/%d", apiClient.GetBaseURL(), entityType, entityID, fileID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", fileURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var file File
 	if err := json.NewDecoder(resp.Body).Decode(&file); err != nil {
 		return nil, err
@@ -293,23 +261,19 @@ func Get(ctx context.Context, apiClient *client.Client, entityType EntityType, e
 
 // Delete удаляет файл
 func Delete(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) error {
-	// Формируем URL для запроса
 	deleteURL := fmt.Sprintf("%s/api/v4/%s/%d/files/%d", apiClient.GetBaseURL(), entityType, entityID, fileID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", deleteURL, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -319,34 +283,28 @@ func Delete(ctx context.Context, apiClient *client.Client, entityType EntityType
 
 // BatchDelete удаляет несколько файлов одним запросом
 func BatchDelete(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileIDs []int) error {
-	// Формируем URL для запроса
 	deleteURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Создаем список ID файлов для удаления
 	idsStr := make([]string, len(fileIDs))
 	for i, id := range fileIDs {
 		idsStr[i] = fmt.Sprintf("%d", id)
 	}
 
-	// Добавляем параметр с ID файлов к URL
 	params := url.Values{}
 	params.Add("filter[id]", strings.Join(idsStr, ","))
 	deleteURL = deleteURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", deleteURL, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -356,7 +314,6 @@ func BatchDelete(ctx context.Context, apiClient *client.Client, entityType Entit
 
 // Download скачивает файл и сохраняет его по указанному пути
 func Download(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int, savePath string) error {
-	// Получаем информацию о файле
 	file, err := Get(ctx, apiClient, entityType, entityID, fileID)
 	if err != nil {
 		return err
@@ -367,33 +324,28 @@ func Download(ctx context.Context, apiClient *client.Client, entityType EntityTy
 		return fmt.Errorf("ссылка для скачивания файла не найдена")
 	}
 
-	// Создаем запрос для скачивания файла
 	downloadURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), file.Links.Download.Href)
 	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("неожиданный статус-код при скачивании файла: %d", resp.StatusCode)
 	}
 
-	// Создаем файл для сохранения
 	outFile, err := os.Create(savePath)
 	if err != nil {
 		return err
 	}
-	defer outFile.Close()
+	defer func() { _ = outFile.Close() }()
 
-	// Копируем содержимое ответа в файл
 	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
 		return err
@@ -404,7 +356,6 @@ func Download(ctx context.Context, apiClient *client.Client, entityType EntityTy
 
 // GetDownloadURL получает URL для скачивания файла
 func GetDownloadURL(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (string, error) {
-	// Получаем информацию о файле
 	file, err := Get(ctx, apiClient, entityType, entityID, fileID)
 	if err != nil {
 		return "", err
@@ -415,7 +366,6 @@ func GetDownloadURL(ctx context.Context, apiClient *client.Client, entityType En
 		return "", fmt.Errorf("ссылка для скачивания файла не найдена")
 	}
 
-	// Формируем полный URL для скачивания
 	downloadURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), file.Links.Download.Href)
 	return downloadURL, nil
 }

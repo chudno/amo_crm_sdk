@@ -13,20 +13,16 @@ import (
 )
 
 func TestGetTask(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/tasks/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -42,13 +38,10 @@ func TestGetTask(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	task, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении задачи: %v", err)
 	}
@@ -75,20 +68,16 @@ func TestGetTask(t *testing.T) {
 }
 
 func TestCreateTask(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/tasks"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -108,10 +97,8 @@ func TestCreateTask(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем задачу для теста
 	taskToCreate := &Task{
 		Text:              "Новая задача",
 		ResponsibleUserID: 456,
@@ -120,10 +107,8 @@ func TestCreateTask(t *testing.T) {
 		CompleteTill:      1609632000,
 	}
 
-	// Вызываем тестируемый метод
 	createdTask, err := Create(context.Background(), apiClient, taskToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании задачи: %v", err)
 	}
@@ -180,18 +165,15 @@ func TestListTasks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// Проверяем метод запроса
 				if r.Method != "GET" {
 					t.Errorf("Ожидался метод GET, получен %s", r.Method)
 				}
 
-				// Проверяем URL запроса
 				expectedPath := "/api/v4/tasks"
 				if r.URL.Path != expectedPath {
 					t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 				}
 
-				// Проверяем параметры запроса
 				query := r.URL.Query()
 				if query.Get("page") != fmt.Sprintf("%d", tt.page) {
 					t.Errorf("Ожидался параметр page=%d, получен %s", tt.page, query.Get("page"))
@@ -200,19 +182,15 @@ func TestListTasks(t *testing.T) {
 					t.Errorf("Ожидался параметр limit=%d, получен %s", tt.limit, query.Get("limit"))
 				}
 
-				// Устанавливаем код ответа и тело
 				w.WriteHeader(tt.responseCode)
 				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
-			// Создаем клиент
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
-			// Вызываем тестируемую функцию
 			tasks, err := List(context.Background(), apiClient, tt.limit, tt.page, nil)
 
-			// Проверяем результаты
 			if tt.expectError && err == nil {
 				t.Error("Ожидалась ошибка, но ее не было")
 			}
@@ -231,20 +209,16 @@ func TestListTasks(t *testing.T) {
 }
 
 func TestCreateTaskForEntity(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/tasks"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем тело запроса
 		var tasks []*Task
 		if err := json.NewDecoder(r.Body).Decode(&tasks); err != nil {
 			t.Errorf("Ошибка декодирования тела запроса: %v", err)
@@ -267,7 +241,6 @@ func TestCreateTaskForEntity(t *testing.T) {
 			t.Errorf("Ожидался текст задачи 'Тестовая задача для лида', получен '%s'", task.Text)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -287,10 +260,8 @@ func TestCreateTaskForEntity(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Задаем параметры для создания задачи
 	entityType := "leads"
 	entityID := 123
 	taskTypeID := 1
@@ -298,10 +269,8 @@ func TestCreateTaskForEntity(t *testing.T) {
 	completeTill := time.Unix(1609632000, 0)
 	responsibleUserID := 789
 
-	// Вызываем тестируемый метод
 	createdTask, err := CreateForEntity(context.Background(), apiClient, entityType, entityID, taskTypeID, text, completeTill, responsibleUserID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании задачи для сущности: %v", err)
 	}

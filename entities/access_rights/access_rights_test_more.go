@@ -13,7 +13,6 @@ import (
 
 // TestCreateAccessRight проверяет создание нового права доступа
 func TestCreateAccessRight(t *testing.T) {
-	// Подготавливаем тестовые данные
 	newAccessRight := &Right{
 		Name: "Тестовое право доступа",
 		Type: TypeGroup,
@@ -32,7 +31,6 @@ func TestCreateAccessRight(t *testing.T) {
 		UserIDs: []int{101, 102},
 	}
 
-	// Подготавливаем ответ для успешного сценария
 	successResponse := `{
 		"id": 789,
 		"name": "Тестовое право доступа",
@@ -61,22 +59,17 @@ func TestCreateAccessRight(t *testing.T) {
 		"user_ids": [101, 102]
 	}`
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем тестовый сервер для проверки тела запроса
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "POST" {
 				t.Errorf("Ожидался метод POST, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/access_rights"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			var requestBody Right
 			decoder := json.NewDecoder(r.Body)
 			if err := decoder.Decode(&requestBody); err != nil {
@@ -91,20 +84,16 @@ func TestCreateAccessRight(t *testing.T) {
 				t.Errorf("Ожидался тип '%s', получен '%s'", newAccessRight.Type, requestBody.Type)
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 			_, _ = w.Write([]byte(successResponse))
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		createdRight, err := Create(context.Background(), apiClient, newAccessRight)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при создании права доступа: %v", err)
 		}
@@ -122,16 +111,12 @@ func TestCreateAccessRight(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("POST", "/api/v4/access_rights", http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := CreateWithRequester(context.Background(), mockClient, newAccessRight)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}
@@ -140,10 +125,8 @@ func TestCreateAccessRight(t *testing.T) {
 
 // TestUpdateAccessRight проверяет обновление существующего права доступа
 func TestUpdateAccessRight(t *testing.T) {
-	// ID права доступа для теста
 	accessRightID := 123
 
-	// Подготавливаем тестовые данные
 	updateAccessRight := &Right{
 		ID:   accessRightID,
 		Name: "Обновленное право доступа",
@@ -159,7 +142,6 @@ func TestUpdateAccessRight(t *testing.T) {
 		UserIDs: []int{101, 102, 103},
 	}
 
-	// Подготавливаем ответ для успешного сценария
 	successResponse := fmt.Sprintf(`{
 		"id": %d,
 		"name": "Обновленное право доступа",
@@ -181,22 +163,17 @@ func TestUpdateAccessRight(t *testing.T) {
 		"user_ids": [101, 102, 103]
 	}`, accessRightID)
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем тестовый сервер для проверки тела запроса
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "PATCH" {
 				t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			var requestBody Right
 			decoder := json.NewDecoder(r.Body)
 			if err := decoder.Decode(&requestBody); err != nil {
@@ -207,20 +184,16 @@ func TestUpdateAccessRight(t *testing.T) {
 				t.Errorf("Ожидалось имя '%s', получено '%s'", updateAccessRight.Name, requestBody.Name)
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(successResponse))
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		updatedRight, err := Update(context.Background(), apiClient, updateAccessRight)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при обновлении права доступа: %v", err)
 		}
@@ -242,24 +215,18 @@ func TestUpdateAccessRight(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusBadRequest, `{"error": "Invalid request"}`, nil)
 
-		// Вызываем тестируемый метод
 		_, err := UpdateWithRequester(context.Background(), mockClient, updateAccessRight)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}
 	})
 
-	// Проверяем сценарий с пустым ID
 	t.Run("EmptyID", func(t *testing.T) {
-		// Создаем право доступа без ID
 		emptyIDRight := &Right{
 			Name: "Тест с пустым ID",
 			Rights: Rights{
@@ -269,13 +236,10 @@ func TestUpdateAccessRight(t *testing.T) {
 			},
 		}
 
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 
-		// Вызываем тестируемый метод
 		_, err := UpdateWithRequester(context.Background(), mockClient, emptyIDRight)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}
@@ -284,34 +248,25 @@ func TestUpdateAccessRight(t *testing.T) {
 
 // TestDeleteAccessRight проверяет удаление права доступа
 func TestDeleteAccessRight(t *testing.T) {
-	// ID права доступа для теста
 	accessRightID := 123
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNoContent, "", nil)
 
-		// Вызываем тестируемый метод
 		err := DeleteWithRequester(context.Background(), mockClient, accessRightID)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при удалении права доступа: %v", err)
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusForbidden, `{"error": "Insufficient permissions"}`, nil)
 
-		// Вызываем тестируемый метод
 		err := DeleteWithRequester(context.Background(), mockClient, accessRightID)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}

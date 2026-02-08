@@ -72,7 +72,7 @@ const (
 
 // Event структура события в amoCRM.
 type Event struct {
-	ID                 int             `json:"id,omitempty"`
+	ID                 string          `json:"id,omitempty"`
 	Type               EventType       `json:"type"`
 	EntityID           int             `json:"entity_id"`
 	EntityType         EventEntityType `json:"entity_type"`
@@ -193,12 +193,10 @@ func WithOrder(field, order string) WithOption {
 func List(ctx context.Context, apiClient *client.Client, options ...WithOption) ([]Event, error) {
 	params := make(map[string]string)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL с параметрами
 	url := "/api/v4/events"
 	if len(params) > 0 {
 		var queryParams []string
@@ -208,23 +206,19 @@ func List(ctx context.Context, apiClient *client.Client, options ...WithOption) 
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Формируем полный URL с базовым URL клиента
 	fullURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), url)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Разбираем ответ
 	var eventsResponse ListResponse
 	err = json.NewDecoder(resp.Body).Decode(&eventsResponse)
 	if err != nil {
@@ -235,20 +229,19 @@ func List(ctx context.Context, apiClient *client.Client, options ...WithOption) 
 }
 
 // Get получает информацию о конкретном событии по его ID.
+// ID событий в amoCRM v4 являются строками (ULID), например "01kgxd71ymp8r7vtc5wmyz0tsv".
 //
 // Пример использования:
 //
-//	event, err := events.Get(apiClient, 123, events.WithEntity())
-func Get(ctx context.Context, apiClient *client.Client, eventID int, options ...WithOption) (*Event, error) {
+//	event, err := events.Get(apiClient, "01kgxd71ymp8r7vtc5wmyz0tsv", events.WithEntity())
+func Get(ctx context.Context, apiClient *client.Client, eventID string, options ...WithOption) (*Event, error) {
 	params := make(map[string]string)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL с параметрами
-	url := fmt.Sprintf("/api/v4/events/%d", eventID)
+	url := fmt.Sprintf("/api/v4/events/%s", eventID)
 	if len(params) > 0 {
 		var queryParams []string
 		for key, value := range params {
@@ -257,23 +250,19 @@ func Get(ctx context.Context, apiClient *client.Client, eventID int, options ...
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Формируем полный URL с базовым URL клиента
 	fullURL := fmt.Sprintf("%s%s", apiClient.GetBaseURL(), url)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Разбираем ответ
 	var event Event
 	err = json.NewDecoder(resp.Body).Decode(&event)
 	if err != nil {

@@ -115,17 +115,13 @@ func verifyFilterInRequest(t *testing.T, mockClient *AdvancedMockClient, expecte
 
 // TestGetMailings проверяет функцию получения списка рассылок
 func TestGetMailings(t *testing.T) {
-	// Используем пакет time для тестов с датами
 	_ = time.Now()
 
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetMailingsSuccessMockClient()
 
-		// Вызываем тестируемую функцию
 		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -134,13 +130,10 @@ func TestGetMailings(t *testing.T) {
 	})
 
 	t.Run("Empty", func(t *testing.T) {
-		// Создаем мок-клиент с пустым списком рассылок
 		mockClient := createGetMailingsEmptyMockClient()
 
-		// Вызываем тестируемую функцию
 		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -149,38 +142,30 @@ func TestGetMailings(t *testing.T) {
 	})
 
 	t.Run("ServerError", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой сервера
 		mockClient := createGetMailingsErrorMockClient()
 
-		// Вызываем тестируемую функцию
 		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
 	})
 
 	t.Run("WithFilter", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetMailingsWithFilterMockClient()
 
-		// Создаем фильтр
 		filter := map[string]string{
 			"filter[status]": "active",
 		}
 
-		// Вызываем тестируемую функцию с фильтром
 		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
 		verifyMailingsList(t, mailings, 1)
 
-		// Проверка фильтра в запросе
 		expectedFilterPart := "filter%5Bstatus%5D=active"
 		verifyFilterInRequest(t, mockClient, expectedFilterPart)
 	})
@@ -191,7 +176,6 @@ func TestGetMailings(t *testing.T) {
 // TestGetMailing проверяет функцию получения конкретной рассылки
 func TestGetMailing(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -216,10 +200,8 @@ func TestGetMailing(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		mailingInfo, err := GetWithRequester(context.Background(), mockClient, 1001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -228,12 +210,10 @@ func TestGetMailing(t *testing.T) {
 			t.Fatal("Ожидался объект рассылки, но получен nil")
 		}
 
-		// Проверяем основные поля
 		if mailingInfo.ID != 1001 || mailingInfo.Name != "Тестовая рассылка 1" || mailingInfo.Status != "active" {
 			t.Errorf("Неверные данные рассылки: %+v", mailingInfo)
 		}
 
-		// Проверяем вложенные объекты
 		if mailingInfo.Template == nil || mailingInfo.Template.ID != 201 {
 			t.Errorf("Неверные данные шаблона: %+v", mailingInfo.Template)
 		}
@@ -242,23 +222,19 @@ func TestGetMailing(t *testing.T) {
 			t.Errorf("Неверные данные статистики: %+v", mailingInfo.Stats)
 		}
 
-		// Проверяем slices
 		if len(mailingInfo.SegmentIDs) != 2 || mailingInfo.SegmentIDs[0] != 101 || mailingInfo.SegmentIDs[1] != 102 {
 			t.Errorf("Неверные ID сегментов: %+v", mailingInfo.SegmentIDs)
 		}
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой Not Found
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Mailing not found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := GetWithRequester(context.Background(), mockClient, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -268,7 +244,6 @@ func TestGetMailing(t *testing.T) {
 // TestCreateMailing проверяет функцию создания рассылки
 func TestCreateMailing(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusCreated,
 			Body: `{
@@ -281,17 +256,14 @@ func TestCreateMailing(t *testing.T) {
 			}`,
 		})
 
-		// Создаем данные для рассылки
 		mailingData := &Mailing{
 			Name:      "Новая рассылка",
 			Subject:   "Тема новой рассылки",
 			Frequency: MailingFrequencyOnce,
 		}
 
-		// Вызываем тестируемую функцию
 		createdMailing, err := CreateWithRequester(context.Background(), mockClient, mailingData)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -300,56 +272,46 @@ func TestCreateMailing(t *testing.T) {
 			t.Fatal("Ожидался объект созданной рассылки, но получен nil")
 		}
 
-		// Проверяем основные поля
 		if createdMailing.ID != 1001 || createdMailing.Name != "Новая рассылка" || createdMailing.Status != "draft" {
 			t.Errorf("Неверные данные созданной рассылки: %+v", createdMailing)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем тело запроса
 		if mockClient.LastRequest.Body == "" {
 			t.Fatal("Тело запроса пустое")
 		}
 
-		// Декодируем тело запроса
 		var sentData Mailing
 		if err := json.Unmarshal([]byte(mockClient.LastRequest.Body), &sentData); err != nil {
 			t.Fatalf("Ошибка декодирования тела запроса: %v", err)
 		}
 
-		// Проверяем отправленные данные
 		if sentData.Name != mailingData.Name || sentData.Subject != mailingData.Subject {
 			t.Errorf("Отправленные данные не соответствуют ожидаемым: %+v", sentData)
 		}
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       `{"error": "Bad Request"}`,
 		})
 
-		// Создаем данные для рассылки
 		mailingData := &Mailing{
 			Name:      "Новая рассылка",
 			Subject:   "Тема новой рассылки",
 			Frequency: MailingFrequencyOnce,
 		}
 
-		// Вызываем тестируемую функцию
 		_, err := CreateWithRequester(context.Background(), mockClient, mailingData)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -359,7 +321,6 @@ func TestCreateMailing(t *testing.T) {
 // TestUpdateMailing проверяет функцию обновления рассылки
 func TestUpdateMailing(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -371,17 +332,14 @@ func TestUpdateMailing(t *testing.T) {
 			}`,
 		})
 
-		// Создаем данные для обновления
 		mailingData := &Mailing{
 			ID:      1001,
 			Name:    "Обновленная рассылка",
 			Subject: "Новая тема рассылки",
 		}
 
-		// Вызываем тестируемую функцию
 		updatedMailing, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -390,22 +348,18 @@ func TestUpdateMailing(t *testing.T) {
 			t.Fatal("Ожидался объект обновленной рассылки, но получен nil")
 		}
 
-		// Проверяем основные поля
 		if updatedMailing.ID != 1001 || updatedMailing.Name != "Обновленная рассылка" || updatedMailing.Subject != "Новая тема рассылки" {
 			t.Errorf("Неверные данные обновленной рассылки: %+v", updatedMailing)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/mailings/1001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -413,45 +367,37 @@ func TestUpdateMailing(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       `{"error": "Bad Request"}`,
 		})
 
-		// Создаем данные для обновления
 		mailingData := &Mailing{
 			ID:      1001,
 			Name:    "Обновленная рассылка",
 			Subject: "Новая тема рассылки",
 		}
 
-		// Вызываем тестируемую функцию
 		_, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
 	})
 
 	t.Run("NoID", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body:       `{}`,
 		})
 
-		// Создаем данные без ID
 		mailingData := &Mailing{
 			Name:    "Обновленная рассылка",
 			Subject: "Новая тема рассылки",
 		}
 
-		// Вызываем тестируемую функцию
 		_, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за отсутствия ID, но её нет")
 		}
@@ -461,31 +407,25 @@ func TestUpdateMailing(t *testing.T) {
 // TestDeleteMailing проверяет функцию удаления рассылки
 func TestDeleteMailing(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNoContent,
 			Body:       ``,
 		})
 
-		// Вызываем тестируемую функцию
 		err := DeleteWithRequester(context.Background(), mockClient, 1001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/mailings/1001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -493,16 +433,13 @@ func TestDeleteMailing(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Mailing not found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		err := DeleteWithRequester(context.Background(), mockClient, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -512,7 +449,6 @@ func TestDeleteMailing(t *testing.T) {
 // TestChangeMailingStatus проверяет функцию изменения статуса рассылки
 func TestChangeMailingStatus(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -524,10 +460,8 @@ func TestChangeMailingStatus(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		updatedMailing, err := ChangeStatusWithRequester(context.Background(), mockClient, 1001, MailingStatusPaused)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -536,28 +470,23 @@ func TestChangeMailingStatus(t *testing.T) {
 			t.Fatal("Ожидался объект рассылки, но получен nil")
 		}
 
-		// Проверяем статус
 		if updatedMailing.Status != MailingStatusPaused {
 			t.Errorf("Ожидался статус %s, получен %s", MailingStatusPaused, updatedMailing.Status)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/mailings/1001/status"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
 		}
 
-		// Проверяем тело запроса
 		expectedBodyPart := `"status":"paused"`
 		if !strings.Contains(mockClient.LastRequest.Body, expectedBodyPart) {
 			t.Errorf("Тело запроса не содержит ожидаемой части: %s", mockClient.LastRequest.Body)
@@ -565,16 +494,13 @@ func TestChangeMailingStatus(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       `{"error": "Invalid status"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := ChangeStatusWithRequester(context.Background(), mockClient, 1001, "invalid_status")
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}

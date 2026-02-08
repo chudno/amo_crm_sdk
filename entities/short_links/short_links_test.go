@@ -160,86 +160,67 @@ func verifyFilteredShortLink(t *testing.T, link ShortLink) {
 // TestGetShortLinks проверяет получение списка коротких ссылок
 func TestGetShortLinks(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetShortLinksSuccessMockClient()
 
-		// Вызываем тестируемый метод
 		links, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при получении списка коротких ссылок: %v", err)
 		}
 
-		// Проверка количества полученных ссылок
 		if len(links) != 2 {
 			t.Errorf("Ожидалось получение 2 ссылок, получено %d", len(links))
 		}
 
-		// Проверка данных ссылок
 		verifyFirstShortLink(t, links[0])
 		verifySecondShortLink(t, links[1])
 	})
 
 	t.Run("Empty", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetShortLinksEmptyMockClient()
 
-		// Вызываем тестируемый метод
 		links, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при получении списка коротких ссылок: %v", err)
 		}
 
-		// Проверка количества полученных ссылок
 		if len(links) != 0 {
 			t.Errorf("Ожидался пустой список ссылок, получено %d", len(links))
 		}
 	})
 
 	t.Run("ServerError", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetShortLinksErrorMockClient()
 
-		// Вызываем тестируемый метод
 		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}
 	})
 
 	t.Run("WithFilter", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetShortLinksWithFilterMockClient()
 
-		// Создаем фильтр
 		filter := map[string]string{
 			"filter[entity_type]": "leads",
 		}
 
-		// Вызываем тестируемый метод с фильтром
 		links, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при получении списка коротких ссылок: %v", err)
 		}
 
-		// Проверка количества полученных ссылок
 		if len(links) != 1 {
 			t.Errorf("Ожидалось получение 1 ссылки, получено %d", len(links))
 		}
 
-		// Проверка фильтра в запросе
 		if !strings.Contains(mockClient.LastRequest.URL, "filter%5Bentity_type%5D=leads") {
 			t.Errorf("Фильтр не был добавлен к URL запроса: %s", mockClient.LastRequest.URL)
 		}
 
-		// Проверка данных ссылки
 		verifyFilteredShortLink(t, links[0])
 	})
 }
@@ -247,10 +228,8 @@ func TestGetShortLinks(t *testing.T) {
 // TestGetShortLink проверяет получение информации о конкретной короткой ссылке
 func TestGetShortLink(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// ID ссылки для теста
 		linkID := 123
 
-		// Создаем мок-клиент
 		mockClient := &AdvancedMockClient{
 			BaseURL:        "https://example.amocrm.ru",
 			ExpectedMethod: "GET",
@@ -274,15 +253,12 @@ func TestGetShortLink(t *testing.T) {
 			},
 		}
 
-		// Вызываем тестируемый метод
 		link, err := GetWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при получении короткой ссылки: %v", err)
 		}
 
-		// Проверка данных ссылки
 		if link.ID != linkID ||
 			link.URL != "https://example.com/test" ||
 			link.Key != "abc123" ||
@@ -298,7 +274,6 @@ func TestGetShortLink(t *testing.T) {
 		// ID несуществующей ссылки
 		linkID := 999
 
-		// Создаем мок-клиент
 		mockClient := &AdvancedMockClient{
 			BaseURL:        "https://example.amocrm.ru",
 			ExpectedMethod: "GET",
@@ -309,10 +284,8 @@ func TestGetShortLink(t *testing.T) {
 			},
 		}
 
-		// Вызываем тестируемый метод
 		_, err := GetWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}
@@ -322,7 +295,6 @@ func TestGetShortLink(t *testing.T) {
 // TestCreateShortLink проверяет создание новой короткой ссылки
 func TestCreateShortLink(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := &AdvancedMockClient{
 			BaseURL:        "https://example.amocrm.ru",
 			ExpectedMethod: "POST",
@@ -355,22 +327,18 @@ func TestCreateShortLink(t *testing.T) {
 			},
 		}
 
-		// Создаем новую ссылку
 		newLink := &ShortLink{
 			URL:        "https://example.com/test",
 			EntityType: "leads",
 			EntityID:   123,
 		}
 
-		// Вызываем тестируемый метод
 		createdLink, err := CreateWithRequester(context.Background(), mockClient, newLink)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при создании короткой ссылки: %v", err)
 		}
 
-		// Проверка данных созданной ссылки
 		if createdLink.ID != 456 ||
 			createdLink.URL != "https://example.com/test" ||
 			createdLink.Key != "def456" ||
@@ -382,7 +350,6 @@ func TestCreateShortLink(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := &AdvancedMockClient{
 			BaseURL:        "https://example.amocrm.ru",
 			ExpectedMethod: "POST",
@@ -396,15 +363,12 @@ func TestCreateShortLink(t *testing.T) {
 			},
 		}
 
-		// Создаем новую ссылку с некорректными данными
 		newLink := &ShortLink{
 			URL: "https://example.com/test",
 		}
 
-		// Вызываем тестируемый метод
 		_, err := CreateWithRequester(context.Background(), mockClient, newLink)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}
@@ -489,35 +453,26 @@ func TestUpdateShortLink(t *testing.T) {
 		// ID ссылки для обновления
 		linkID := 123
 
-		// Создаем мок-клиент
 		mockClient := createUpdateShortLinkSuccessMockClient()
 
-		// Создаем ссылку для обновления
 		updateLink := createUpdateShortLinkData(linkID)
 
-		// Вызываем тестируемый метод
 		updatedLink, err := UpdateWithRequester(context.Background(), mockClient, updateLink)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при обновлении короткой ссылки: %v", err)
 		}
 
-		// Проверка данных обновленной ссылки
 		verifyUpdatedShortLink(t, updatedLink, linkID)
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createUpdateShortLinkErrorMockClient()
 
-		// Создаем ссылку без ID
 		updateLink := createInvalidUpdateShortLinkData()
 
-		// Вызываем тестируемый метод
 		_, err := UpdateWithRequester(context.Background(), mockClient, updateLink)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}
@@ -556,13 +511,10 @@ func TestDeleteShortLink(t *testing.T) {
 		// ID ссылки для удаления
 		linkID := 123
 
-		// Создаем мок-клиент
 		mockClient := createDeleteShortLinkSuccessMockClient()
 
-		// Вызываем тестируемый метод
 		err := DeleteWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при удалении короткой ссылки: %v", err)
 		}
@@ -572,13 +524,10 @@ func TestDeleteShortLink(t *testing.T) {
 		// ID несуществующей ссылки
 		linkID := 999
 
-		// Создаем мок-клиент
 		mockClient := createDeleteShortLinkErrorMockClient()
 
-		// Вызываем тестируемый метод
 		err := DeleteWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}
@@ -639,18 +588,14 @@ func TestGetShortLinkStats(t *testing.T) {
 		// ID ссылки для получения статистики
 		linkID := 123
 
-		// Создаем мок-клиент
 		mockClient := createGetShortLinkStatsSuccessMockClient()
 
-		// Вызываем тестируемый метод
 		stats, err := GetStatsWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err != nil {
 			t.Fatalf("Ошибка при получении статистики короткой ссылки: %v", err)
 		}
 
-		// Проверка данных статистики
 		verifyShortLinkStats(t, stats, linkID)
 	})
 
@@ -658,13 +603,10 @@ func TestGetShortLinkStats(t *testing.T) {
 		// ID несуществующей ссылки
 		linkID := 999
 
-		// Создаем мок-клиент
 		mockClient := createGetShortLinkStatsErrorMockClient()
 
-		// Вызываем тестируемый метод
 		_, err := GetStatsWithRequester(context.Background(), mockClient, linkID)
 
-		// Проверка наличия ошибки
 		if err == nil {
 			t.Fatal("Ожидалась ошибка, но её не было")
 		}

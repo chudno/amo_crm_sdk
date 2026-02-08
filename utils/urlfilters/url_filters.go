@@ -26,25 +26,21 @@ type ParsedFilter struct {
 // ParseURL разбирает URL из веб-интерфейса amoCRM и возвращает структуру с фильтрами,
 // которые можно использовать в SDK.
 func ParseURL(rawURL string) (*ParsedFilter, error) {
-	// Парсим URL
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при парсинге URL: %w", err)
 	}
 
-	// Извлекаем тип сущности из пути
 	entityType := extractEntityType(parsedURL.Path)
 	if entityType == "" {
 		return nil, fmt.Errorf("не удалось определить тип сущности из URL: %s", parsedURL.Path)
 	}
 
-	// Парсим query-параметры
 	queryParams, err := url.ParseQuery(parsedURL.RawQuery)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при парсинге параметров запроса: %w", err)
 	}
 
-	// Создаем результат
 	result := &ParsedFilter{
 		Filter:     make(map[string]string),
 		EntityType: entityType,
@@ -53,7 +49,6 @@ func ParseURL(rawURL string) (*ParsedFilter, error) {
 		RawQuery:   parsedURL.RawQuery,
 	}
 
-	// Извлекаем страницу и лимит, если они указаны
 	if page := queryParams.Get("page"); page != "" {
 		result.Page = page
 	}
@@ -61,7 +56,6 @@ func ParseURL(rawURL string) (*ParsedFilter, error) {
 		result.Limit = limit
 	}
 
-	// Обрабатываем фильтры
 	for key, values := range queryParams {
 		if strings.HasPrefix(key, "filter") {
 			// В случае с множественными значениями для одного фильтра, берем первое
@@ -76,27 +70,23 @@ func ParseURL(rawURL string) (*ParsedFilter, error) {
 
 // ParseLeadURL парсит URL лидов amoCRM и возвращает фильтры
 func ParseLeadURL(rawURL string) (*ParsedFilter, error) {
-	// Выполняем базовый парсинг URL
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при парсинге URL: %w", err)
 	}
 
-	// Вручную проверяем, что это URL лидов - ищем "/leads/list/" в пути
 	reLeads := regexp.MustCompile(`/leads/list/?`)
 	if !reLeads.MatchString(parsedURL.Path) {
 		return nil, fmt.Errorf("УРЛ не относится к лидам")
 	}
 
-	// Теперь, когда мы точно знаем, что это URL лидов, используем обычный парсер
 	parsedFilter, err := ParseURL(rawURL)
 	if err != nil {
 		return nil, err
 	}
 
-	// Если все прошло успешно, то entityType должен быть "leads" благодаря маппингу
 	if parsedFilter.EntityType != "leads" {
-		return nil, fmt.Errorf("Внутренняя ошибка: тип сущности не был распознан как leads")
+		return nil, fmt.Errorf("внутренняя ошибка: тип сущности не был распознан как leads")
 	}
 
 	return parsedFilter, nil
@@ -114,19 +104,15 @@ var AmoCRMEntityTypeMap = map[string]string{
 
 // extractEntityType извлекает тип сущности из пути URL и преобразует его в формат SDK
 func extractEntityType(path string) string {
-	// Ищем шаблоны типа "/leads/list/", "/contacts/list/" и т.д.
 	re := regexp.MustCompile(`/([a-z_]+)/list/?`)
 	matches := re.FindStringSubmatch(path)
 	if len(matches) >= 2 {
-		// Получаем тип сущности из URL
 		entityTypeInURL := matches[1]
 
-		// Преобразуем тип сущности из URL в тип сущности в SDK
 		if sdkType, exists := AmoCRMEntityTypeMap[entityTypeInURL]; exists {
 			return sdkType
 		}
 
-		// Если маппинг не найден, возвращаем оригинальное значение
 		return entityTypeInURL
 	}
 	return ""

@@ -10,20 +10,16 @@ import (
 )
 
 func TestGetUser(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/users/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -33,12 +29,12 @@ func TestGetUser(t *testing.T) {
 			"lang": "ru",
 			"is_active": true,
 			"rights": {
-				"leads": true,
-				"contacts": true,
-				"companies": true,
-				"tasks": true,
-				"mailbox": false,
-				"catalog": false,
+				"leads": {"view": "M", "edit": "M", "add": "D", "delete": "M", "export": "M"},
+				"contacts": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+				"companies": {"view": "A", "edit": "A", "add": "D", "delete": "A", "export": "A"},
+				"tasks": {"edit": "A", "delete": "A"},
+				"mail_access": false,
+				"catalog_access": true,
 				"is_admin": false,
 				"is_manager": true
 			}
@@ -46,13 +42,10 @@ func TestGetUser(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	user, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении пользователя: %v", err)
 	}
@@ -69,8 +62,14 @@ func TestGetUser(t *testing.T) {
 		t.Errorf("Ожидался email пользователя 'ivan@example.com', получен '%s'", user.Email)
 	}
 
-	if !user.Rights.Leads {
-		t.Errorf("Ожидались права на лиды (Rights.Leads=true)")
+	if user.Rights.Leads == nil {
+		t.Fatal("Ожидались права на лиды (Rights.Leads не nil)")
+	}
+	if user.Rights.Leads.View != AccessOwn {
+		t.Errorf("Ожидался уровень доступа Leads.View=%q, получен %q", AccessOwn, user.Rights.Leads.View)
+	}
+	if user.Rights.Leads.Add != AccessDeny {
+		t.Errorf("Ожидался уровень доступа Leads.Add=%q, получен %q", AccessDeny, user.Rights.Leads.Add)
 	}
 
 	if !user.Rights.IsManager {
@@ -80,52 +79,60 @@ func TestGetUser(t *testing.T) {
 	if user.Rights.IsAdmin {
 		t.Errorf("Не ожидались права администратора (Rights.IsAdmin=false)")
 	}
+
+	if !user.Rights.CatalogAccess {
+		t.Errorf("Ожидался доступ к каталогам (CatalogAccess=true)")
+	}
 }
 
 func TestGetCurrentUser(t *testing.T) {
-	// Создаем тестовый сервер
+	// Создаем тестовый сервер, который обрабатывает два маршрута:
+	// 1. /api/v4/account — возвращает current_user_id
+	// 2. /api/v4/users/456 — возвращает данные пользователя
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
-		expectedPath := "/api/v4/users/self"
-		if r.URL.Path != expectedPath {
-			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-		}
-
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{
-			"id": 456,
-			"name": "Петр Петров",
-			"email": "petr@example.com",
-			"lang": "ru",
-			"is_active": true,
-			"rights": {
-				"leads": true,
-				"contacts": true,
-				"companies": true,
-				"tasks": true,
-				"mailbox": true,
-				"catalog": true,
-				"is_admin": true,
-				"is_manager": false
-			}
-		}`))
+
+		switch r.URL.Path {
+		case "/api/v4/account":
+			_, _ = w.Write([]byte(`{
+				"id": 1,
+				"name": "Test Account",
+				"subdomain": "test",
+				"current_user_id": 456
+			}`))
+		case "/api/v4/users/456":
+			_, _ = w.Write([]byte(`{
+				"id": 456,
+				"name": "Петр Петров",
+				"email": "petr@example.com",
+				"lang": "ru",
+				"is_active": true,
+				"rights": {
+					"leads": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+					"contacts": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+					"companies": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+					"tasks": {"edit": "A", "delete": "A"},
+					"mail_access": true,
+					"catalog_access": true,
+					"is_admin": true,
+					"is_manager": false
+				}
+			}`))
+		default:
+			t.Errorf("Неожиданный путь запроса: %s", r.URL.Path)
+		}
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	user, err := GetCurrent(context.Background(), apiClient)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении текущего пользователя: %v", err)
 	}
@@ -152,20 +159,16 @@ func TestGetCurrentUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/users"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		query := r.URL.Query()
 		if query.Get("limit") != "50" {
 			t.Errorf("Ожидался параметр limit=50, получен %s", query.Get("limit"))
@@ -174,7 +177,6 @@ func TestListUsers(t *testing.T) {
 			t.Errorf("Ожидался параметр page=1, получен %s", query.Get("page"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -187,12 +189,12 @@ func TestListUsers(t *testing.T) {
 						"lang": "ru",
 						"is_active": true,
 						"rights": {
-							"leads": true,
-							"contacts": true,
-							"companies": true,
-							"tasks": true,
-							"mailbox": false,
-							"catalog": false,
+							"leads": {"view": "M", "edit": "M", "add": "D", "delete": "M", "export": "M"},
+							"contacts": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+							"companies": {"view": "A", "edit": "A", "add": "D", "delete": "A", "export": "A"},
+							"tasks": {"edit": "A", "delete": "A"},
+							"mail_access": false,
+							"catalog_access": false,
 							"is_admin": false,
 							"is_manager": true
 						}
@@ -204,12 +206,12 @@ func TestListUsers(t *testing.T) {
 						"lang": "ru",
 						"is_active": true,
 						"rights": {
-							"leads": true,
-							"contacts": true,
-							"companies": true,
-							"tasks": true,
-							"mailbox": true,
-							"catalog": true,
+							"leads": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+							"contacts": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+							"companies": {"view": "A", "edit": "A", "add": "A", "delete": "A", "export": "A"},
+							"tasks": {"edit": "A", "delete": "A"},
+							"mail_access": true,
+							"catalog_access": true,
 							"is_admin": true,
 							"is_manager": false
 						}
@@ -220,13 +222,10 @@ func TestListUsers(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	users, err := List(context.Background(), apiClient, 50, 1)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении списка пользователей: %v", err)
 	}

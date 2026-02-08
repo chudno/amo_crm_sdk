@@ -2,6 +2,7 @@ package leads
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,20 +14,16 @@ import (
 func TestUpdateLead(t *testing.T) {
 	leadID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/leads/%d", leadID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -42,10 +39,8 @@ func TestUpdateLead(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем данные для обновления
 	leadToUpdate := &Lead{
 		ID:                leadID,
 		Name:              "Обновленный лид",
@@ -55,10 +50,8 @@ func TestUpdateLead(t *testing.T) {
 		ResponsibleUserID: 456,
 	}
 
-	// Вызываем тестируемый метод
 	updatedLead, err := Update(context.Background(), apiClient, leadToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении лида: %v", err)
 	}
@@ -86,19 +79,15 @@ func TestUpdateLead(t *testing.T) {
 
 // Тест обновления лида с ошибкой - не указан ID
 func TestUpdateLeadWithoutID(t *testing.T) {
-	// Создаем клиент API с любым URL, так как запрос не будет отправлен
 	apiClient := client.NewClient("http://localhost", "test_api_key")
 
-	// Создаем данные для обновления без ID
 	leadToUpdate := &Lead{
 		Name:  "Лид без ID",
 		Price: 15000,
 	}
 
-	// Вызываем тестируемый метод
 	_, err := Update(context.Background(), apiClient, leadToUpdate)
 
-	// Проверяем результаты - должна быть ошибка
 	if err == nil {
 		t.Fatalf("Ожидалась ошибка при обновлении лида без ID, но ее не было")
 	}
@@ -107,31 +96,34 @@ func TestUpdateLeadWithoutID(t *testing.T) {
 func TestDeleteLead(t *testing.T) {
 	leadID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
-		if r.Method != "DELETE" {
-			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
+		if r.Method != "PATCH" {
+			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/leads/%d", leadID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
-		w.WriteHeader(http.StatusNoContent)
+		var body map[string]bool
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Fatalf("Ошибка при декодировании тела запроса: %v", err)
+		}
+		if !body["is_deleted"] {
+			t.Errorf("Ожидалось is_deleted=true в теле запроса")
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id": 123, "is_deleted": true}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
 	err := Delete(context.Background(), apiClient, leadID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении лида: %v", err)
 	}
@@ -140,7 +132,6 @@ func TestDeleteLead(t *testing.T) {
 func TestGetLeadWithOptions(t *testing.T) {
 	leadID := 123
 
-	// Тестируем разные комбинации опций with
 	testCases := []struct {
 		name         string
 		withOptions  []WithOption
@@ -165,25 +156,20 @@ func TestGetLeadWithOptions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Создаем тестовый сервер
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// Проверяем метод запроса
 				if r.Method != "GET" {
 					t.Errorf("Ожидался метод GET, получен %s", r.Method)
 				}
 
-				// Проверяем путь запроса с параметрами
 				fullPath := r.URL.Path
 				if r.URL.RawQuery != "" {
 					fullPath = fullPath + "?" + r.URL.RawQuery
 				}
 
-				// Сравниваем с ожидаемым путем
 				if fullPath != tc.expectedPath {
 					t.Errorf("Ожидался путь %s, получен %s", tc.expectedPath, fullPath)
 				}
 
-				// Формируем ответ в зависимости от опций
 				response := `{
 					"id": 123,
 					"name": "Тестовый лид",
@@ -192,7 +178,6 @@ func TestGetLeadWithOptions(t *testing.T) {
 					"created_at": 1609459200,
 					"updated_at": 1609545600`
 
-				// Добавляем связанные сущности, если они запрошены
 				var embedded bool
 				for _, opt := range tc.withOptions {
 					if !embedded {
@@ -230,20 +215,16 @@ func TestGetLeadWithOptions(t *testing.T) {
 
 				response += `}`
 
-				// Отправляем ответ
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
 				_, _ = w.Write([]byte(response))
 			}))
 			defer server.Close()
 
-			// Создаем клиент API
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
-			// Вызываем тестируемый метод с опциями
 			lead, err := Get(context.Background(), apiClient, leadID, tc.withOptions...)
 
-			// Проверяем результаты
 			if err != nil {
 				t.Fatalf("Ошибка при получении лида с опциями: %v", err)
 			}
@@ -252,7 +233,6 @@ func TestGetLeadWithOptions(t *testing.T) {
 				t.Errorf("Ожидался ID лида %d, получен %d", leadID, lead.ID)
 			}
 
-			// Проверяем наличие связанных сущностей в ответе
 			for _, opt := range tc.withOptions {
 				switch opt {
 				case WithContacts:

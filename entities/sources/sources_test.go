@@ -11,71 +11,54 @@ import (
 // TestGetSources проверяет функцию получения списка источников сделок
 func TestGetSources(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент с успешным ответом
 		mockClient := createGetSourcesSuccessMockClient()
 
-		// Вызываем тестируемую функцию
 		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
-		// Проверяем полученный список источников
 		verifySourcesList(t, sources, 2)
 	})
 
 	t.Run("Empty", func(t *testing.T) {
-		// Создаем мок-клиент с пустым списком источников
 		mockClient := createGetSourcesEmptyMockClient()
 
-		// Вызываем тестируемую функцию
 		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
-		// Проверяем пустой список
 		verifySourcesList(t, sources, 0)
 	})
 
 	t.Run("ServerError", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой сервера
 		mockClient := createGetSourcesErrorMockClient()
 
-		// Вызываем тестируемую функцию
 		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
 	})
 
 	t.Run("WithFilter", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := createGetSourcesWithFilterMockClient()
 
-		// Создаем фильтр
 		filter := map[string]string{
 			"filter[type]": "calls",
 		}
 
-		// Вызываем тестируемую функцию с фильтром
 		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
-		// Проверяем полученный список источников
 		verifySourcesList(t, sources, 1)
 
-		// Проверяем наличие фильтра в URL запроса
 		verifyFilterInRequest(t, mockClient, "filter%5Btype%5D=calls")
 	})
 }
@@ -83,7 +66,6 @@ func TestGetSources(t *testing.T) {
 // TestGetSource проверяет функцию получения конкретного источника
 func TestGetSource(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -96,10 +78,8 @@ func TestGetSource(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		source, err := GetWithRequester(context.Background(), mockClient, 1001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -112,12 +92,10 @@ func TestGetSource(t *testing.T) {
 			t.Errorf("Неверные данные в источнике: %+v", source)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -125,16 +103,13 @@ func TestGetSource(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Not Found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := GetWithRequester(context.Background(), mockClient, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -144,7 +119,6 @@ func TestGetSource(t *testing.T) {
 // TestCreateSource проверяет функцию создания источника
 func TestCreateSource(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -157,16 +131,13 @@ func TestCreateSource(t *testing.T) {
 			}`,
 		})
 
-		// Создаем новый источник
 		newSource := &Source{
 			Name: "Новый источник",
 			Type: "other",
 		}
 
-		// Вызываем тестируемую функцию
 		createdSource, err := CreateWithRequester(context.Background(), mockClient, newSource)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -179,23 +150,19 @@ func TestCreateSource(t *testing.T) {
 			t.Errorf("Неверные данные в созданном источнике: %+v", createdSource)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
 		}
 
-		// Проверяем тело запроса
 		var requestBody map[string]any
 		err = json.Unmarshal([]byte(mockClient.LastRequest.Body), &requestBody)
 		if err != nil {
@@ -208,21 +175,17 @@ func TestCreateSource(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       `{"error": "Bad Request"}`,
 		})
 
-		// Создаем источник с невалидными данными
 		invalidSource := &Source{
 			Name: "", // Пустое имя
 		}
 
-		// Вызываем тестируемую функцию
 		_, err := CreateWithRequester(context.Background(), mockClient, invalidSource)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -232,7 +195,6 @@ func TestCreateSource(t *testing.T) {
 // TestUpdateSource проверяет функцию обновления источника
 func TestUpdateSource(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -245,16 +207,13 @@ func TestUpdateSource(t *testing.T) {
 			}`,
 		})
 
-		// Создаем источник для обновления
 		sourceToUpdate := &Source{
 			ID:   1001,
 			Name: "Обновленный источник",
 		}
 
-		// Вызываем тестируемую функцию
 		updatedSource, err := UpdateWithRequester(context.Background(), mockClient, sourceToUpdate)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -267,23 +226,19 @@ func TestUpdateSource(t *testing.T) {
 			t.Errorf("Неверные данные в обновленном источнике: %+v", updatedSource)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
 		}
 
-		// Проверяем тело запроса
 		var requestBody map[string]any
 		err = json.Unmarshal([]byte(mockClient.LastRequest.Body), &requestBody)
 		if err != nil {
@@ -296,22 +251,18 @@ func TestUpdateSource(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Not Found"}`,
 		})
 
-		// Создаем источник с несуществующим ID
 		nonExistentSource := &Source{
 			ID:   9999,
 			Name: "Несуществующий источник",
 		}
 
-		// Вызываем тестируемую функцию
 		_, err := UpdateWithRequester(context.Background(), mockClient, nonExistentSource)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -321,31 +272,25 @@ func TestUpdateSource(t *testing.T) {
 // TestDeleteSource проверяет функцию удаления источника
 func TestDeleteSource(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body:       `{}`,
 		})
 
-		// Вызываем тестируемую функцию
 		err := DeleteWithRequester(context.Background(), mockClient, 1001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -353,16 +298,13 @@ func TestDeleteSource(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Not Found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		err := DeleteWithRequester(context.Background(), mockClient, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -372,7 +314,6 @@ func TestDeleteSource(t *testing.T) {
 // TestSetSourceDefault проверяет функцию установки источника по умолчанию
 func TestSetSourceDefault(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -385,10 +326,8 @@ func TestSetSourceDefault(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		defaultSource, err := SetDefaultWithRequester(context.Background(), mockClient, 1001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -401,17 +340,14 @@ func TestSetSourceDefault(t *testing.T) {
 			t.Error("Источник не был установлен как источник по умолчанию")
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001/default"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -419,16 +355,13 @@ func TestSetSourceDefault(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Not Found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := SetDefaultWithRequester(context.Background(), mockClient, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -438,7 +371,6 @@ func TestSetSourceDefault(t *testing.T) {
 // TestGetSourceServices проверяет функцию получения списка сервисов для источников
 func TestGetSourceServices(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -459,10 +391,8 @@ func TestGetSourceServices(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		services, err := ListServicesWithRequester(context.Background(), mockClient)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -479,12 +409,10 @@ func TestGetSourceServices(t *testing.T) {
 			t.Errorf("Неверные данные во втором сервисе: %+v", services[1])
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/services"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -492,16 +420,13 @@ func TestGetSourceServices(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body:       `{"error": "Internal Server Error"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := ListServicesWithRequester(context.Background(), mockClient)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -511,7 +436,6 @@ func TestGetSourceServices(t *testing.T) {
 // TestLinkSourceToPipeline проверяет функцию связывания источника с воронкой
 func TestLinkSourceToPipeline(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -524,10 +448,8 @@ func TestLinkSourceToPipeline(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		linkedSource, err := LinkToPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -536,28 +458,23 @@ func TestLinkSourceToPipeline(t *testing.T) {
 			t.Fatal("Ожидался объект источника, но получен nil")
 		}
 
-		// Проверяем, что источник связан с воронкой
 		if linkedSource.Pipeline == nil || linkedSource.Pipeline.ID != 2001 {
 			t.Errorf("Источник не связан с воронкой 2001: %+v", linkedSource.Pipeline)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001/pipeline"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
 		}
 
-		// Проверяем тело запроса
 		expectedBodyPart := `"pipeline_id":2001`
 		if !strings.Contains(mockClient.LastRequest.Body, expectedBodyPart) {
 			t.Errorf("Тело запроса не содержит ожидаемой части: %s", mockClient.LastRequest.Body)
@@ -565,16 +482,13 @@ func TestLinkSourceToPipeline(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusBadRequest,
 			Body:       `{"error": "Bad Request"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := LinkToPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
@@ -584,7 +498,6 @@ func TestLinkSourceToPipeline(t *testing.T) {
 // TestUnlinkSourceFromPipeline проверяет функцию удаления связи источника с воронкой
 func TestUnlinkSourceFromPipeline(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusOK,
 			Body: `{
@@ -594,10 +507,8 @@ func TestUnlinkSourceFromPipeline(t *testing.T) {
 			}`,
 		})
 
-		// Вызываем тестируемую функцию
 		unlinkedSource, err := UnlinkFromPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Errorf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -606,22 +517,18 @@ func TestUnlinkSourceFromPipeline(t *testing.T) {
 			t.Fatal("Ожидался объект источника, но получен nil")
 		}
 
-		// Проверяем, что источник не связан с воронкой
 		if unlinkedSource.Pipeline != nil {
 			t.Errorf("Источник все еще связан с воронкой: %+v", unlinkedSource.Pipeline)
 		}
 
-		// Проверяем, что запрос был отправлен
 		if mockClient.LastRequest == nil {
 			t.Fatal("Запрос не был выполнен")
 		}
 
-		// Проверяем метод запроса
 		if mockClient.LastRequest.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", mockClient.LastRequest.Method)
 		}
 
-		// Проверяем URL запроса
 		expectedURLPart := "/api/v4/sources/1001/pipeline/2001"
 		if !strings.Contains(mockClient.LastRequest.URL, expectedURLPart) {
 			t.Errorf("URL запроса не содержит ожидаемой части: %s", mockClient.LastRequest.URL)
@@ -629,16 +536,13 @@ func TestUnlinkSourceFromPipeline(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
-		// Создаем мок-клиент с ошибкой
 		mockClient := NewAdvancedMockClient("https://example.amocrm.ru", MockResponse{
 			StatusCode: http.StatusNotFound,
 			Body:       `{"error": "Not Found"}`,
 		})
 
-		// Вызываем тестируемую функцию
 		_, err := UnlinkFromPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Error("Ожидалась ошибка, но её нет")
 		}
