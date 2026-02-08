@@ -15,20 +15,16 @@ import (
 func TestUpdateTask(t *testing.T) {
 	// Сценарий: успешное обновление задачи
 	t.Run("Успешное обновление", func(t *testing.T) {
-		// Создаем тестовый сервер
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "PATCH" {
 				t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/tasks/123"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Ошибка чтения тела запроса: %v", err)
@@ -47,7 +43,6 @@ func TestUpdateTask(t *testing.T) {
 				t.Errorf("Ожидался текст задачи 'Обновленная задача', получен '%s'", task.Text)
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			if _, err := w.Write([]byte(`{
@@ -64,10 +59,8 @@ func TestUpdateTask(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Создаем задачу для обновления
 		taskToUpdate := &Task{
 			ID:                123,
 			Text:              "Обновленная задача",
@@ -77,10 +70,8 @@ func TestUpdateTask(t *testing.T) {
 			CompleteTill:      1609632000,
 		}
 
-		// Вызываем тестируемый метод
 		updatedTask, err := Update(context.Background(), apiClient, taskToUpdate)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при обновлении задачи: %v", err)
 		}
@@ -96,19 +87,15 @@ func TestUpdateTask(t *testing.T) {
 
 	// Сценарий: попытка обновления задачи без указания ID
 	t.Run("Ошибка: ID не указан", func(t *testing.T) {
-		// Создаем клиент API (не нужен реальный сервер, т.к. ошибка будет раньше)
 		apiClient := client.NewClient("http://example.com", "test_api_key")
 
-		// Создаем задачу без ID
 		taskWithoutID := &Task{
 			Text:              "Задача без ID",
 			ResponsibleUserID: 456,
 		}
 
-		// Вызываем тестируемый метод
 		_, err := Update(context.Background(), apiClient, taskWithoutID)
 
-		// Проверяем, что возникла ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка о не указанном ID, но ее не возникло")
 		}
@@ -116,19 +103,15 @@ func TestUpdateTask(t *testing.T) {
 
 	// Сценарий: ошибка от сервера
 	t.Run("Ошибка от сервера", func(t *testing.T) {
-		// Используем домен, который не существует, чтобы вызвать сетевую ошибку
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
-		// Создаем задачу для обновления
 		taskToUpdate := &Task{
 			ID:   999, // несуществующий ID
 			Text: "Несуществующая задача",
 		}
 
-		// Вызываем тестируемый метод
 		_, err := Update(context.Background(), apiClient, taskToUpdate)
 
-		// Проверяем, что возникла ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка от сервера, но ее не возникло")
 		}
@@ -137,22 +120,17 @@ func TestUpdateTask(t *testing.T) {
 
 // TestCompleteTask проверяет функциональность отметки задачи как выполненной
 func TestCompleteTask(t *testing.T) {
-	// Сценарий: успешное выполнение задачи
 	t.Run("Успешное выполнение", func(t *testing.T) {
-		// Создаем тестовый сервер
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "PATCH" {
 				t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/tasks/123"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем тело запроса
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Ошибка чтения тела запроса: %v", err)
@@ -171,11 +149,14 @@ func TestCompleteTask(t *testing.T) {
 				t.Error("Ожидалось, что задача будет отмечена как выполненная")
 			}
 
-			if task.Result != "Задача выполнена успешно" {
-				t.Errorf("Ожидался результат 'Задача выполнена успешно', получен '%s'", task.Result)
+			// Result теперь json.RawMessage, проверяем что он содержит ожидаемый текст
+			var resultObj map[string]string
+			if err := json.Unmarshal(task.Result, &resultObj); err != nil {
+				t.Errorf("Ошибка разбора result: %v", err)
+			} else if resultObj["text"] != "Задача выполнена успешно" {
+				t.Errorf("Ожидался результат с текстом 'Задача выполнена успешно', получен '%s'", string(task.Result))
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			if _, err := w.Write([]byte(`{
@@ -183,7 +164,7 @@ func TestCompleteTask(t *testing.T) {
 				"text": "Тестовая задача",
 				"responsible_user_id": 456,
 				"is_completed": true,
-				"result": "Задача выполнена успешно",
+				"result": [{"text": "Задача выполнена успешно"}],
 				"updated_at": 1609545600
 			}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
@@ -191,13 +172,10 @@ func TestCompleteTask(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
 		completedTask, err := Complete(context.Background(), apiClient, 123, "Задача выполнена успешно")
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при выполнении задачи: %v", err)
 		}
@@ -210,69 +188,20 @@ func TestCompleteTask(t *testing.T) {
 			t.Error("Ожидалось, что задача будет отмечена как выполненная")
 		}
 
-		if completedTask.Result != "Задача выполнена успешно" {
-			t.Errorf("Ожидался результат 'Задача выполнена успешно', получен '%s'", completedTask.Result)
+		var completedResultArr []map[string]string
+		if err := json.Unmarshal(completedTask.Result, &completedResultArr); err != nil {
+			t.Errorf("Ошибка разбора result: %v", err)
+		} else if len(completedResultArr) == 0 || completedResultArr[0]["text"] != "Задача выполнена успешно" {
+			t.Errorf("Ожидался результат с текстом 'Задача выполнена успешно', получен '%s'", string(completedTask.Result))
 		}
 	})
 
 	// Сценарий: ошибка обновления при выполнении задачи
 	t.Run("Ошибка при выполнении", func(t *testing.T) {
-		// Используем домен, который не существует, чтобы вызвать сетевую ошибку
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
-		// Вызываем тестируемый метод
 		_, err := Complete(context.Background(), apiClient, 123, "Результат выполнения")
 
-		// Проверяем, что возникла ошибка
-		if err == nil {
-			t.Error("Ожидалась ошибка от сервера, но ее не возникло")
-		}
-	})
-}
-
-// TestDeleteTask проверяет функциональность удаления задачи
-func TestDeleteTask(t *testing.T) {
-	// Сценарий: успешное удаление задачи
-	t.Run("Успешное удаление", func(t *testing.T) {
-		// Создаем тестовый сервер
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
-			if r.Method != "DELETE" {
-				t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
-			}
-
-			// Проверяем путь запроса
-			expectedPath := "/api/v4/tasks/123"
-			if r.URL.Path != expectedPath {
-				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-			}
-
-			// Отправляем ответ успешного удаления
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer server.Close()
-
-		// Создаем клиент API
-		apiClient := client.NewClient(server.URL, "test_api_key")
-
-		// Вызываем тестируемый метод
-		err := Delete(context.Background(), apiClient, 123)
-
-		// Проверяем результаты
-		if err != nil {
-			t.Fatalf("Ошибка при удалении задачи: %v", err)
-		}
-	})
-
-	// Сценарий: ошибка при удалении
-	t.Run("Ошибка при удалении", func(t *testing.T) {
-		// Используем домен, который не существует, чтобы вызвать сетевую ошибку
-		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
-
-		// Вызываем тестируемый метод с несуществующим ID
-		err := Delete(context.Background(), apiClient, 999)
-
-		// Проверяем, что возникла ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка от сервера, но ее не возникло")
 		}

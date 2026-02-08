@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -75,23 +76,18 @@ const (
 
 // List получает список каталогов с возможностью пагинации и фильтрации.
 func List(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Catalog, error) {
-	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем фильтры
 	for key, value := range filter {
 		params.Add(key, value)
 	}
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
@@ -101,9 +97,8 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, filter
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -118,62 +113,62 @@ func List(ctx context.Context, apiClient *client.Client, page, limit int, filter
 
 // Create создает новый каталог.
 func Create(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
+	apiURL := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
-	// Преобразуем структуру каталога в JSON
-	catalogJSON, err := json.Marshal(catalog)
+	catalogJSON, err := json.Marshal([]*Catalog{catalog})
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(catalogJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(catalogJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("неожиданный статус-код: %d, ответ: %s", resp.StatusCode, body)
 	}
 
-	var createdCatalog Catalog
-	if err := json.NewDecoder(resp.Body).Decode(&createdCatalog); err != nil {
+	var response struct {
+		Embedded struct {
+			Catalogs []*Catalog `json:"catalogs"`
+		} `json:"_embedded"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
-	return &createdCatalog, nil
+	if len(response.Embedded.Catalogs) == 0 {
+		return nil, fmt.Errorf("не удалось создать каталог")
+	}
+
+	return response.Embedded.Catalogs[0], nil
 }
 
 // Get получает информацию о каталоге по его ID.
 func Get(ctx context.Context, apiClient *client.Client, catalogID int) (*Catalog, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -192,16 +187,13 @@ func Update(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*C
 		return nil, fmt.Errorf("ID каталога не может быть пустым")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalog.ID)
 
-	// Преобразуем структуру каталога в JSON
 	catalogJSON, err := json.Marshal(catalog)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(catalogJSON))
 	if err != nil {
 		return nil, err
@@ -209,14 +201,12 @@ func Update(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*C
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -229,44 +219,15 @@ func Update(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*C
 	return &updatedCatalog, nil
 }
 
-// Delete удаляет каталог по его ID.
-func Delete(ctx context.Context, apiClient *client.Client, catalogID int) error {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
-
-	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(ctx, req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
 // AddCustomField добавляет пользовательское поле в каталог
 func AddCustomField(ctx context.Context, apiClient *client.Client, catalogID int, customField *CustomField) (*CustomField, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
-	// Преобразуем структуру поля в JSON
 	fieldJSON, err := json.Marshal(customField)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(fieldJSON))
 	if err != nil {
 		return nil, err
@@ -274,14 +235,12 @@ func AddCustomField(ctx context.Context, apiClient *client.Client, catalogID int
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -296,23 +255,19 @@ func AddCustomField(ctx context.Context, apiClient *client.Client, catalogID int
 
 // ListCustomFields получает список пользовательских полей каталога
 func ListCustomFields(ctx context.Context, apiClient *client.Client, catalogID int) ([]CustomField, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -331,23 +286,19 @@ func ListCustomFields(ctx context.Context, apiClient *client.Client, catalogID i
 
 // GetCustomField получает информацию о пользовательском поле каталога по ID
 func GetCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) (*CustomField, error) {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -366,16 +317,13 @@ func UpdateCustomField(ctx context.Context, apiClient *client.Client, catalogID 
 		return nil, fmt.Errorf("ID поля не может быть пустым")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, field.ID)
 
-	// Преобразуем структуру поля в JSON
 	fieldJSON, err := json.Marshal(field)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(fieldJSON))
 	if err != nil {
 		return nil, err
@@ -383,14 +331,12 @@ func UpdateCustomField(ctx context.Context, apiClient *client.Client, catalogID 
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -405,23 +351,19 @@ func UpdateCustomField(ctx context.Context, apiClient *client.Client, catalogID 
 
 // DeleteCustomField удаляет пользовательское поле каталога
 func DeleteCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) error {
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 
-	// Создаем запрос
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
 	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

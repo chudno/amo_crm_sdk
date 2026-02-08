@@ -14,22 +14,22 @@ import (
 
 // Task представляет собой структуру задачи в amoCRM.
 type Task struct {
-	ID                int    `json:"id,omitempty"`
-	CreatedBy         int    `json:"created_by,omitempty"`
-	UpdatedBy         int    `json:"updated_by,omitempty"`
-	CreatedAt         int64  `json:"created_at,omitempty"`
-	UpdatedAt         int64  `json:"updated_at,omitempty"`
-	ResponsibleUserID int    `json:"responsible_user_id,omitempty"`
-	GroupID           int    `json:"group_id,omitempty"`
-	EntityID          int    `json:"entity_id,omitempty"`
-	EntityType        string `json:"entity_type,omitempty"`
-	Duration          int    `json:"duration,omitempty"`
-	IsCompleted       bool   `json:"is_completed,omitempty"`
-	TaskTypeID        int    `json:"task_type_id,omitempty"`
-	Text              string `json:"text,omitempty"`
-	Result            string `json:"result,omitempty"`
-	CompleteTill      int64  `json:"complete_till,omitempty"`
-	AccountID         int    `json:"account_id,omitempty"`
+	ID                int             `json:"id,omitempty"`
+	CreatedBy         int             `json:"created_by,omitempty"`
+	UpdatedBy         int             `json:"updated_by,omitempty"`
+	CreatedAt         int64           `json:"created_at,omitempty"`
+	UpdatedAt         int64           `json:"updated_at,omitempty"`
+	ResponsibleUserID int             `json:"responsible_user_id,omitempty"`
+	GroupID           int             `json:"group_id,omitempty"`
+	EntityID          int             `json:"entity_id,omitempty"`
+	EntityType        string          `json:"entity_type,omitempty"`
+	Duration          int             `json:"duration,omitempty"`
+	IsCompleted       bool            `json:"is_completed,omitempty"`
+	TaskTypeID        int             `json:"task_type_id,omitempty"`
+	Text              string          `json:"text,omitempty"`
+	Result            json.RawMessage `json:"result,omitempty"`
+	CompleteTill      int64           `json:"complete_till,omitempty"`
+	AccountID         int             `json:"account_id,omitempty"`
 }
 
 // EntityType определяет тип сущности, к которой привязана задача
@@ -53,7 +53,7 @@ func Get(ctx context.Context, apiClient *client.Client, taskID int) (*Task, erro
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var task Task
 	if err := json.NewDecoder(resp.Body).Decode(&task); err != nil {
@@ -83,7 +83,7 @@ func Create(ctx context.Context, apiClient *client.Client, task *Task) (*Task, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var response struct {
 		Embedded struct {
@@ -126,7 +126,7 @@ func Update(ctx context.Context, apiClient *client.Client, task *Task) (*Task, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var updatedTask Task
 	if err := json.NewDecoder(resp.Body).Decode(&updatedTask); err != nil {
@@ -138,10 +138,11 @@ func Update(ctx context.Context, apiClient *client.Client, task *Task) (*Task, e
 
 // Complete отмечает задачу как выполненную.
 func Complete(ctx context.Context, apiClient *client.Client, taskID int, result string) (*Task, error) {
+	resultJSON, _ := json.Marshal(map[string]string{"text": result})
 	task := &Task{
 		ID:          taskID,
 		IsCompleted: true,
-		Result:      result,
+		Result:      resultJSON,
 	}
 
 	return Update(ctx, apiClient, task)
@@ -151,12 +152,10 @@ func Complete(ctx context.Context, apiClient *client.Client, taskID int, result 
 func List(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Task, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/tasks", apiClient.GetBaseURL())
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("limit", fmt.Sprintf("%d", limit))
 	params.Add("page", fmt.Sprintf("%d", page))
 
-	// Если указаны фильтры, добавляем их в запрос
 	if len(filter) > 0 {
 		filterData, err := json.Marshal(filter)
 		if err != nil {
@@ -176,9 +175,8 @@ func List(ctx context.Context, apiClient *client.Client, limit int, page int, fi
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -194,28 +192,6 @@ func List(ctx context.Context, apiClient *client.Client, limit int, page int, fi
 	}
 
 	return response.Embedded.Tasks, nil
-}
-
-// Delete удаляет задачу по её ID.
-func Delete(ctx context.Context, apiClient *client.Client, taskID int) error {
-	url := fmt.Sprintf("%s/api/v4/tasks/%d", apiClient.GetBaseURL(), taskID)
-
-	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := apiClient.DoRequest(ctx, req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
 }
 
 // CreateForEntity создает новую задачу, привязанную к сущности (лид, контакт, компания).
