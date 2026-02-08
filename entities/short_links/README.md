@@ -48,7 +48,7 @@ type ShortLink struct {
 ### Получение списка коротких ссылок
 
 ```go
-func GetShortLinks(apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error)
 ```
 
 Возвращает список коротких ссылок с поддержкой пагинации и фильтрации.
@@ -68,13 +68,13 @@ filter := map[string]string{
     "filter[entity_type]": "leads",
     "filter[entity_id]": "123",
 }
-shortLinks, err := short_links.GetShortLinks(apiClient, 1, 50, short_links.WithFilter(filter))
+shortLinks, err := short_links.List(ctx, apiClient, 1, 50, short_links.WithFilter(filter))
 ```
 
 ### Получение информации о конкретной ссылке
 
 ```go
-func GetShortLink(apiClient *client.Client, id int) (*ShortLink, error)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error)
 ```
 
 Возвращает информацию о конкретной короткой ссылке по её ID.
@@ -86,7 +86,7 @@ func GetShortLink(apiClient *client.Client, id int) (*ShortLink, error)
 ### Создание короткой ссылки
 
 ```go
-func CreateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
+func Create(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
 ```
 
 Создаёт новую короткую ссылку и возвращает информацию о созданной ссылке.
@@ -98,7 +98,7 @@ func CreateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink
 ### Обновление короткой ссылки
 
 ```go
-func UpdateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
+func Update(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error)
 ```
 
 Обновляет существующую короткую ссылку и возвращает обновлённую информацию.
@@ -110,7 +110,7 @@ func UpdateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink
 ### Удаление короткой ссылки
 
 ```go
-func DeleteShortLink(apiClient *client.Client, id int) error
+func Delete(ctx context.Context, apiClient *client.Client, id int) error
 ```
 
 Удаляет короткую ссылку по ID.
@@ -122,7 +122,7 @@ func DeleteShortLink(apiClient *client.Client, id int) error
 ### Получение статистики использования ссылки
 
 ```go
-func GetShortLinkStats(apiClient *client.Client, id int) (*ShortLink, error)
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error)
 ```
 
 Возвращает статистику использования короткой ссылки.
@@ -139,34 +139,23 @@ func GetShortLinkStats(apiClient *client.Client, id int) (*ShortLink, error)
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // Получаем список ссылок
-    links, err := short_links.GetShortLinks(apiClient, 1, 10)
+    links, err := short_links.List(ctx, apiClient, 1, 10)
     if err != nil {
         log.Fatalf("Ошибка при получении списка ссылок: %v", err)
     }
 
-    // Выводим информацию о полученных ссылках
     for i, link := range links {
         fmt.Printf("Ссылка %d: %s (ID: %d)\n", i+1, link.ShortURL, link.ID)
     }
@@ -179,45 +168,33 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // Создаем новую короткую ссылку
     newLink := &short_links.ShortLink{
-        URL:          "https://example.com/product/123",
-        EntityType:   "leads",
-        EntityID:     456,
-        UTMSource:    "newsletter",
-        UTMMedium:    "email",
-        UTMCampaign:  "spring_promo",
+        URL:           "https://example.com/product/123",
+        EntityType:    "leads",
+        EntityID:      456,
+        UTMSource:     "newsletter",
+        UTMMedium:     "email",
+        UTMCampaign:   "spring_promo",
         UseInEmbedded: true,
     }
 
-    // Отправляем запрос на создание
-    createdLink, err := short_links.CreateShortLink(apiClient, newLink)
+    createdLink, err := short_links.Create(ctx, apiClient, newLink)
     if err != nil {
         log.Fatalf("Ошибка при создании короткой ссылки: %v", err)
     }
 
-    // Выводим информацию о созданной ссылке
     fmt.Printf("Создана короткая ссылка: %s\n", createdLink.ShortURL)
     fmt.Printf("ID: %d\nКлюч: %s\n", createdLink.ID, createdLink.Key)
 }
@@ -229,41 +206,29 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/short_links"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // ID короткой ссылки
     linkID := 123
 
-    // Получаем статистику использования
-    stats, err := short_links.GetShortLinkStats(apiClient, linkID)
+    stats, err := short_links.GetStats(ctx, apiClient, linkID)
     if err != nil {
         log.Fatalf("Ошибка при получении статистики: %v", err)
     }
 
-    // Выводим информацию о статистике
     fmt.Printf("Статистика для ссылки %s:\n", stats.ShortURL)
     fmt.Printf("Количество переходов: %d\n", stats.VisitCount)
-    
+
     if stats.LastVisitAt > 0 {
         lastVisit := time.Unix(stats.LastVisitAt, 0)
         fmt.Printf("Последний переход: %s\n", lastVisit.Format("02.01.2006 15:04:05"))

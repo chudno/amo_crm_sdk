@@ -1,6 +1,7 @@
 package catalog_elements
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -13,20 +14,16 @@ import (
 func TestGetCatalogElements(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		expectedPage := "1"
 		if r.URL.Query().Get("page") != expectedPage {
 			t.Errorf("Ожидался параметр page=%s, получен %s", expectedPage, r.URL.Query().Get("page"))
@@ -37,7 +34,6 @@ func TestGetCatalogElements(t *testing.T) {
 			t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -96,13 +92,10 @@ func TestGetCatalogElements(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	elements, err := GetCatalogElements(apiClient, catalogID, 1, 50, nil)
+	elements, err := List(context.Background(), apiClient, catalogID, 1, 50, nil)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении элементов каталога: %v", err)
 	}
@@ -111,8 +104,7 @@ func TestGetCatalogElements(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 элементов, получено %d", len(elements))
 	}
 
-	// Проверяем содержимое первого элемента
-	expectedElement1 := CatalogElement{
+	expectedElement1 := Element{
 		ID:        456,
 		Name:      "Тестовый элемент 1",
 		CreatedBy: 789,
@@ -142,20 +134,16 @@ func TestGetCatalogElements(t *testing.T) {
 func TestCreateCatalogElement(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -189,11 +177,9 @@ func TestCreateCatalogElement(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем элемент для отправки
-	newElement := &CatalogElement{
+	newElement := &Element{
 		Name:      "Новый элемент",
 		CatalogID: catalogID,
 		CustomFieldsValues: []CustomFieldValue{
@@ -208,16 +194,13 @@ func TestCreateCatalogElement(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	createdElement, err := CreateCatalogElement(apiClient, catalogID, newElement)
+	createdElement, err := Create(context.Background(), apiClient, catalogID, newElement)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании элемента каталога: %v", err)
 	}
 
-	// Проверяем содержимое созданного элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Новый элемент",
 		CreatedBy: 789,
@@ -248,20 +231,16 @@ func TestGetCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -289,19 +268,15 @@ func TestGetCatalogElement(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	element, err := GetCatalogElement(apiClient, catalogID, elementID)
+	element, err := Get(context.Background(), apiClient, catalogID, elementID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении элемента каталога: %v", err)
 	}
 
-	// Проверяем содержимое элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Тестовый элемент",
 		CreatedBy: 789,
@@ -332,20 +307,16 @@ func TestUpdateCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -373,11 +344,9 @@ func TestUpdateCatalogElement(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем элемент для обновления
-	elementToUpdate := &CatalogElement{
+	elementToUpdate := &Element{
 		ID:        elementID,
 		Name:      "Обновленный элемент",
 		CatalogID: catalogID,
@@ -393,16 +362,13 @@ func TestUpdateCatalogElement(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	updatedElement, err := UpdateCatalogElement(apiClient, catalogID, elementToUpdate)
+	updatedElement, err := Update(context.Background(), apiClient, catalogID, elementToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении элемента каталога: %v", err)
 	}
 
-	// Проверяем содержимое обновленного элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Обновленный элемент",
 		CreatedBy: 789,
@@ -433,31 +399,24 @@ func TestDeleteCatalogElement(t *testing.T) {
 	catalogID := 123
 	elementID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d", catalogID, elementID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	err := DeleteCatalogElement(apiClient, catalogID, elementID)
+	err := Delete(context.Background(), apiClient, catalogID, elementID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении элемента каталога: %v", err)
 	}
@@ -467,20 +426,16 @@ func TestLinkCatalogElementWithTags(t *testing.T) {
 	catalogID := 123
 	elementID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -502,10 +457,8 @@ func TestLinkCatalogElementWithTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем теги для связывания
 	tags := []Tag{
 		{
 			Name:  "Тег 1",
@@ -517,10 +470,8 @@ func TestLinkCatalogElementWithTags(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	err := LinkCatalogElementWithTags(apiClient, catalogID, elementID, tags)
+	err := LinkWithTags(context.Background(), apiClient, catalogID, elementID, tags)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при связывании элемента каталога с тегами: %v", err)
 	}
@@ -530,20 +481,16 @@ func TestGetCatalogElementTags(t *testing.T) {
 	catalogID := 123
 	elementID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements/%d/tags", catalogID, elementID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -565,13 +512,10 @@ func TestGetCatalogElementTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	tags, err := GetCatalogElementTags(apiClient, catalogID, elementID)
+	tags, err := ListTags(context.Background(), apiClient, catalogID, elementID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении тегов элемента каталога: %v", err)
 	}
@@ -580,7 +524,6 @@ func TestGetCatalogElementTags(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 тегов, получено %d", len(tags))
 	}
 
-	// Проверяем содержимое первого тега
 	expectedTag1 := Tag{
 		ID:    101,
 		Name:  "Тег 1",
@@ -590,7 +533,6 @@ func TestGetCatalogElementTags(t *testing.T) {
 		t.Errorf("Ожидался тег %+v, получен %+v", expectedTag1, tags[0])
 	}
 
-	// Проверяем содержимое второго тега
 	expectedTag2 := Tag{
 		ID:    102,
 		Name:  "Тег 2",

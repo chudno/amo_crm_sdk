@@ -1,8 +1,9 @@
-// Пакет tags предоставляет методы для взаимодействия с сущностями "Теги" в API amoCRM.
+// Package tags предоставляет методы для взаимодействия с сущностями "Теги" в API amoCRM.
 package tags
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,8 +19,8 @@ type Tag struct {
 	Color string `json:"color,omitempty"`
 }
 
-// TagsResponse представляет ответ от API при получении списка тегов
-type TagsResponse struct {
+// ListResponse представляет ответ от API при получении списка тегов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -47,37 +48,32 @@ const (
 	EntityTypeCustomer EntityType = "customers"
 )
 
-// GetTags получает список тегов с возможностью пагинации по указанному типу сущности.
-func GetTags(apiClient *client.Client, entityType EntityType, page, limit int) ([]Tag, error) {
-	// Формируем базовый URL
+// List получает список тегов с возможностью пагинации по указанному типу сущности.
+func List(ctx context.Context, apiClient *client.Client, entityType EntityType, page, limit int) ([]Tag, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
-	// Добавляем параметры запроса
 	params := url.Values{}
 	params.Add("page", fmt.Sprintf("%d", page))
 	params.Add("limit", fmt.Sprintf("%d", limit))
 
-	// Добавляем параметры к URL
 	baseURL = baseURL + "?" + params.Encode()
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var tags TagsResponse
+	var tags ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&tags); err != nil {
 		return nil, err
 	}
@@ -85,72 +81,70 @@ func GetTags(apiClient *client.Client, entityType EntityType, page, limit int) (
 	return tags.Embedded.Tags, nil
 }
 
-// CreateTag создает новый тег для указанного типа сущности.
-func CreateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
+// Create создает новый тег для указанного типа сущности.
+func Create(ctx context.Context, apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
+	apiURL := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
-	// Преобразуем структуру тега в JSON
-	tagJSON, err := json.Marshal(tag)
+	tagJSON, err := json.Marshal([]*Tag{tag})
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewBuffer(tagJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var tagResponse TagResponse
-	if err := json.NewDecoder(resp.Body).Decode(&tagResponse); err != nil {
+	var response struct {
+		Embedded struct {
+			Tags []*Tag `json:"tags"`
+		} `json:"_embedded"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
 
-	return &tagResponse.Tag, nil
+	if len(response.Embedded.Tags) == 0 {
+		return nil, fmt.Errorf("не удалось создать тег")
+	}
+
+	return response.Embedded.Tags[0], nil
 }
 
-// CreateTags создает несколько тегов для указанного типа сущности.
-func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]Tag, error) {
-	// Формируем URL для запроса
+// CreateBatch создает несколько тегов для указанного типа сущности.
+func CreateBatch(ctx context.Context, apiClient *client.Client, entityType EntityType, tags []Tag) ([]Tag, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/tags", apiClient.GetBaseURL(), entityType)
 
-	// Преобразуем структуру тегов в JSON
 	tagsJSON, err := json.Marshal(tags)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagsJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -167,68 +161,65 @@ func CreateTags(apiClient *client.Client, entityType EntityType, tags []Tag) ([]
 	return tagsResponse.Embedded.Tags, nil
 }
 
-// GetTag получает информацию о теге по его ID для указанного типа сущности.
-func GetTag(apiClient *client.Client, entityType EntityType, tagID int) (*Tag, error) {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/%s/tags/%d", apiClient.GetBaseURL(), entityType, tagID)
+// Get получает информацию о теге по его ID для указанного типа сущности.
+// Используется endpoint списка тегов с фильтром по ID, так как API amoCRM v4
+// не поддерживает получение одного тега по прямому URL.
+func Get(ctx context.Context, apiClient *client.Client, entityType EntityType, tagID int) (*Tag, error) {
+	requestURL := fmt.Sprintf("%s/api/v4/%s/tags?filter[id][]=%d", apiClient.GetBaseURL(), entityType, tagID)
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var tag Tag
-	if err := json.NewDecoder(resp.Body).Decode(&tag); err != nil {
+	var listResponse ListResponse
+	if err := json.NewDecoder(resp.Body).Decode(&listResponse); err != nil {
 		return nil, err
 	}
 
-	return &tag, nil
+	if len(listResponse.Embedded.Tags) == 0 {
+		return nil, fmt.Errorf("тег с ID %d не найден", tagID)
+	}
+
+	return &listResponse.Embedded.Tags[0], nil
 }
 
-// UpdateTag обновляет информацию о теге по его ID для указанного типа сущности.
-func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
+// Update обновляет информацию о теге по его ID для указанного типа сущности.
+func Update(ctx context.Context, apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag, error) {
 	if tag.ID == 0 {
 		return nil, fmt.Errorf("ID тега не может быть пустым")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/%s/tags/%d", apiClient.GetBaseURL(), entityType, tag.ID)
 
-	// Преобразуем структуру тега в JSON
 	tagJSON, err := json.Marshal(tag)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(tagJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(tagJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -241,59 +232,28 @@ func UpdateTag(apiClient *client.Client, entityType EntityType, tag *Tag) (*Tag,
 	return &updatedTag, nil
 }
 
-// DeleteTag удаляет тег по его ID для указанного типа сущности.
-func DeleteTag(apiClient *client.Client, entityType EntityType, tagID int) error {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/%s/tags/%d", apiClient.GetBaseURL(), entityType, tagID)
-
-	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-// LinkEntityWithTags связывает сущность с тегами
-func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityID int, tags []Tag) error {
-	// Формируем URL для запроса
+// LinkEntity связывает сущность с тегами
+func LinkEntity(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, tags []Tag) error {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/tags", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Преобразуем структуру тегов в JSON
 	tagsJSON, err := json.Marshal(tags)
 	if err != nil {
 		return err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(tagsJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(tagsJSON))
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -301,25 +261,21 @@ func LinkEntityWithTags(apiClient *client.Client, entityType EntityType, entityI
 	return nil
 }
 
-// GetEntityTags получает список тегов для указанной сущности
-func GetEntityTags(apiClient *client.Client, entityType EntityType, entityID int) ([]Tag, error) {
-	// Формируем URL для запроса
+// ListForEntity получает список тегов для указанной сущности
+func ListForEntity(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int) ([]Tag, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/tags", apiClient.GetBaseURL(), entityType, entityID)
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}

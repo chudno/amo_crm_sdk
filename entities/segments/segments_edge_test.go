@@ -1,6 +1,7 @@
 package segments
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,7 +13,6 @@ import (
 func TestGetSegmentErrors(t *testing.T) {
 	segmentID := 123
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -20,14 +20,13 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
 		}
 	})
 
-	// Тест на некорректный JSON
 	t.Run("InvalidJSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -37,14 +36,13 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
 		}
 	})
 
-	// Тест на отсутствие сегмента
 	t.Run("NotFound", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
@@ -52,7 +50,7 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -62,7 +60,6 @@ func TestGetSegmentErrors(t *testing.T) {
 
 // TestGetSegmentsErrors проверяет обработку ошибок при получении списка сегментов
 func TestGetSegmentsErrors(t *testing.T) {
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -70,14 +67,13 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegments(apiClient, 1, 50)
+		_, err := List(context.Background(), apiClient, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
 		}
 	})
 
-	// Тест на некорректный JSON
 	t.Run("InvalidJSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -87,14 +83,13 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegments(apiClient, 1, 50)
+		_, err := List(context.Background(), apiClient, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
 		}
 	})
 
-	// Тест на пустой список сегментов
 	t.Run("EmptySegments", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -115,7 +110,7 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		segments, err := GetSegments(apiClient, 1, 50)
+		segments, err := List(context.Background(), apiClient, 1, 50)
 
 		if err != nil {
 			t.Fatalf("Неожиданная ошибка: %v", err)
@@ -143,7 +138,6 @@ func TestAddSegmentErrors(t *testing.T) {
 		},
 	}
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -151,14 +145,13 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
 		}
 	})
 
-	// Тест на некорректный JSON
 	t.Run("InvalidJSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -168,14 +161,13 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
 		}
 	})
 
-	// Тест на пустой список сегментов в ответе
 	t.Run("EmptyResponse", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -189,7 +181,7 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка пустого ответа, но получен nil")
@@ -205,7 +197,6 @@ func TestUpdateSegmentErrors(t *testing.T) {
 		Type: SegmentTypeDynamic,
 	}
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -213,14 +204,13 @@ func TestUpdateSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateSegment(apiClient, segment)
+		_, err := Update(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
 		}
 	})
 
-	// Тест на некорректный JSON
 	t.Run("InvalidJSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -230,17 +220,16 @@ func TestUpdateSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateSegment(apiClient, segment)
+		_, err := Update(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
 		}
 	})
 
-	// Тест на отсутствие ID
 	t.Run("MissingID", func(t *testing.T) {
 		apiClient := client.NewClient("http://example.com", "test_api_key")
-		_, err := UpdateSegment(apiClient, &Segment{
+		_, err := Update(context.Background(), apiClient, &Segment{
 			Name: "Сегмент без ID",
 			Type: SegmentTypeDynamic,
 		})
@@ -255,7 +244,6 @@ func TestUpdateSegmentErrors(t *testing.T) {
 func TestDeleteSegmentErrors(t *testing.T) {
 	segmentID := 123
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -263,7 +251,7 @@ func TestDeleteSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := DeleteSegment(apiClient, segmentID)
+		err := Delete(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -276,7 +264,6 @@ func TestAddContactsToSegmentErrors(t *testing.T) {
 	segmentID := 123
 	contactIDs := []int{1001, 1002, 1003}
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -284,7 +271,7 @@ func TestAddContactsToSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := AddContactsToSegment(apiClient, segmentID, contactIDs)
+		err := AddContacts(context.Background(), apiClient, segmentID, contactIDs)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -297,7 +284,6 @@ func TestRemoveContactsFromSegmentErrors(t *testing.T) {
 	segmentID := 123
 	contactIDs := []int{1001, 1002, 1003}
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -305,7 +291,7 @@ func TestRemoveContactsFromSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := RemoveContactsFromSegment(apiClient, segmentID, contactIDs)
+		err := RemoveContacts(context.Background(), apiClient, segmentID, contactIDs)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -317,7 +303,6 @@ func TestRemoveContactsFromSegmentErrors(t *testing.T) {
 func TestGetSegmentContactsErrors(t *testing.T) {
 	segmentID := 123
 
-	// Тест на ошибку сервера
 	t.Run("ServerError", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -325,14 +310,13 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegmentContacts(apiClient, segmentID, 1, 50)
+		_, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
 		}
 	})
 
-	// Тест на некорректный JSON
 	t.Run("InvalidJSON", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -342,14 +326,13 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegmentContacts(apiClient, segmentID, 1, 50)
+		_, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
 		}
 	})
 
-	// Тест на пустой список контактов
 	t.Run("EmptyContacts", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -370,7 +353,7 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		contactIDs, err := GetSegmentContacts(apiClient, segmentID, 1, 50)
+		contactIDs, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err != nil {
 			t.Fatalf("Неожиданная ошибка: %v", err)

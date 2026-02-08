@@ -1,6 +1,7 @@
 package catalog_elements
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -12,20 +13,16 @@ import (
 func TestCreateCatalogElements(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -81,11 +78,9 @@ func TestCreateCatalogElements(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем элементы для добавления
-	elements := []CatalogElement{
+	elements := []Element{
 		{
 			Name:      "Тестовый элемент 1",
 			CatalogID: catalogID,
@@ -116,10 +111,8 @@ func TestCreateCatalogElements(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	createdElements, err := CreateCatalogElements(apiClient, catalogID, elements)
+	createdElements, err := CreateBatch(context.Background(), apiClient, catalogID, elements)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании элементов каталога: %v", err)
 	}
@@ -128,7 +121,6 @@ func TestCreateCatalogElements(t *testing.T) {
 		t.Fatalf("Ожидалось создание 2 элементов, получено %d", len(createdElements))
 	}
 
-	// Проверяем ID созданных элементов
 	if createdElements[0].ID != 456 {
 		t.Errorf("Ожидался ID 456 для первого элемента, получен %d", createdElements[0].ID)
 	}
@@ -141,20 +133,16 @@ func TestCreateCatalogElements(t *testing.T) {
 func TestUpdateCatalogElements(t *testing.T) {
 	catalogID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -210,11 +198,9 @@ func TestUpdateCatalogElements(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем элементы для обновления
-	elements := []CatalogElement{
+	elements := []Element{
 		{
 			ID:        456,
 			Name:      "Обновленный элемент 1",
@@ -247,10 +233,8 @@ func TestUpdateCatalogElements(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	updatedElements, err := UpdateCatalogElements(apiClient, catalogID, elements)
+	updatedElements, err := UpdateBatch(context.Background(), apiClient, catalogID, elements)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении элементов каталога: %v", err)
 	}
@@ -259,7 +243,6 @@ func TestUpdateCatalogElements(t *testing.T) {
 		t.Fatalf("Ожидалось обновление 2 элементов, получено %d", len(updatedElements))
 	}
 
-	// Проверяем имена обновленных элементов
 	if updatedElements[0].Name != "Обновленный элемент 1" {
 		t.Errorf("Ожидалось имя 'Обновленный элемент 1', получено '%s'", updatedElements[0].Name)
 	}
@@ -268,7 +251,6 @@ func TestUpdateCatalogElements(t *testing.T) {
 		t.Errorf("Ожидалось имя 'Обновленный элемент 2', получено '%s'", updatedElements[1].Name)
 	}
 
-	// Проверяем значения пользовательских полей
 	if len(updatedElements[0].CustomFieldsValues) != 1 ||
 		len(updatedElements[0].CustomFieldsValues[0].Values) != 1 ||
 		updatedElements[0].CustomFieldsValues[0].Values[0].Value != "EL-001-UPD" {
@@ -286,31 +268,24 @@ func TestBatchDeleteCatalogElements(t *testing.T) {
 	catalogID := 123
 	elementIDs := []int{456, 789}
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/catalogs/%d/elements", catalogID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	err := BatchDeleteCatalogElements(apiClient, catalogID, elementIDs)
+	err := DeleteBatch(context.Background(), apiClient, catalogID, elementIDs)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при пакетном удалении элементов каталога: %v", err)
 	}

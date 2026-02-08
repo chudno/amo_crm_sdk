@@ -71,7 +71,7 @@ type File struct {
     URL         string      `json:"url,omitempty"`
     Download    string      `json:"download_link,omitempty"`
     Preview     string      `json:"preview,omitempty"`
-    Links       FileLinks   `json:"_links,omitempty"`
+    Links       Links   `json:"_links,omitempty"`
 }
 ```
 
@@ -83,6 +83,7 @@ type File struct {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -94,13 +95,16 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры загрузки
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
     filePath := "/path/to/document.pdf" // Путь к файлу для загрузки
 
     // Загружаем файл
-    file, err := files.UploadFile(apiClient, entityType, entityID, filePath)
+    file, err := files.Upload(ctx, apiClient, entityType, entityID, filePath)
     if err != nil {
         log.Fatalf("Ошибка при загрузке файла: %v", err)
     }
@@ -121,6 +125,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "io/ioutil"
     "log"
@@ -133,11 +138,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры загрузки
     entityType := files.EntityTypeContact // Тип сущности - контакт
     entityID := 456                      // ID контакта
     fileName := "document.pdf"           // Имя файла
-    
+
     // Читаем содержимое файла (в реальном приложении это может быть файл из памяти или другого источника)
     content, err := ioutil.ReadFile("/path/to/document.pdf")
     if err != nil {
@@ -145,7 +153,7 @@ func main() {
     }
 
     // Загружаем файл по содержимому
-    file, err := files.UploadFileByContent(apiClient, entityType, entityID, fileName, content)
+    file, err := files.UploadByContent(ctx, apiClient, entityType, entityID, fileName, content)
     if err != nil {
         log.Fatalf("Ошибка при загрузке файла: %v", err)
     }
@@ -166,6 +174,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -178,6 +187,9 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
@@ -185,7 +197,7 @@ func main() {
     limit := 50                        // Лимит файлов на странице
 
     // Получаем список файлов
-    filesList, err := files.GetFiles(apiClient, entityType, entityID, page, limit)
+    filesList, err := files.List(ctx, apiClient, entityType, entityID, page, limit)
     if err != nil {
         log.Fatalf("Ошибка при получении списка файлов: %v", err)
     }
@@ -209,6 +221,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -221,13 +234,16 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
     fileID := 456                      // ID файла
 
     // Получаем информацию о файле
-    file, err := files.GetFile(apiClient, entityType, entityID, fileID)
+    file, err := files.Get(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о файле: %v", err)
     }
@@ -250,6 +266,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -261,13 +278,16 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
     fileID := 456                      // ID файла для удаления
 
     // Удаляем файл
-    err := files.DeleteFile(apiClient, entityType, entityID, fileID)
+    err := files.Delete(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при удалении файла: %v", err)
     }
@@ -282,6 +302,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -293,13 +314,16 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
     fileIDs := []int{456, 789, 1234}   // ID файлов для удаления
 
     // Удаляем файлы
-    err := files.BatchDeleteFiles(apiClient, entityType, entityID, fileIDs)
+    err := files.BatchDelete(ctx, apiClient, entityType, entityID, fileIDs)
     if err != nil {
         log.Fatalf("Ошибка при массовом удалении файлов: %v", err)
     }
@@ -314,6 +338,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -325,6 +350,9 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
@@ -332,7 +360,7 @@ func main() {
     savePath := "/path/to/save/file.pdf" // Путь для сохранения файла
 
     // Скачиваем файл
-    err := files.DownloadFile(apiClient, entityType, entityID, fileID, savePath)
+    err := files.Download(ctx, apiClient, entityType, entityID, fileID, savePath)
     if err != nil {
         log.Fatalf("Ошибка при скачивании файла: %v", err)
     }
@@ -347,6 +375,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -358,13 +387,16 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     entityType := files.EntityTypeLead // Тип сущности - сделка
     entityID := 123                    // ID сделки
     fileID := 456                      // ID файла
 
     // Получаем URL для скачивания файла
-    downloadURL, err := files.GetDownloadFileURL(apiClient, entityType, entityID, fileID)
+    downloadURL, err := files.GetDownloadURL(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при получении URL для скачивания файла: %v", err)
     }

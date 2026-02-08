@@ -8,8 +8,7 @@ import (
 )
 
 func TestCustomFieldValueJSON(t *testing.T) {
-	// Создаем тестовую структуру
-	customFieldValue := CustomFieldValue{
+	customFieldValue := Value{
 		FieldID:   12345,
 		FieldName: "Тестовое поле",
 		Values: []FieldValue{
@@ -19,13 +18,11 @@ func TestCustomFieldValueJSON(t *testing.T) {
 		},
 	}
 
-	// Маршализуем в JSON
 	jsonData, err := json.Marshal(customFieldValue)
 	if err != nil {
 		t.Fatalf("Ошибка при маршализации в JSON: %v", err)
 	}
 
-	// Проверяем, что JSON содержит правильные ключи
 	jsonStr := string(jsonData)
 	if !contains(jsonStr, "field_id") {
 		t.Errorf("JSON не содержит ключ field_id: %s", jsonStr)
@@ -37,13 +34,11 @@ func TestCustomFieldValueJSON(t *testing.T) {
 		t.Errorf("JSON не содержит ключ values: %s", jsonStr)
 	}
 
-	// Демаршализуем обратно в структуру
-	var decodedValue CustomFieldValue
+	var decodedValue Value
 	if err := json.Unmarshal(jsonData, &decodedValue); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
 
-	// Проверяем, что структура соответствует исходной
 	if decodedValue.FieldID != customFieldValue.FieldID {
 		t.Errorf("FieldID не совпадает: ожидалось %d, получено %d", customFieldValue.FieldID, decodedValue.FieldID)
 	}
@@ -58,7 +53,6 @@ func TestCustomFieldValueJSON(t *testing.T) {
 }
 
 func TestFieldValueJSON(t *testing.T) {
-	// Создаем тестовую структуру
 	fieldValue := FieldValue{
 		Value:     "Тестовое значение",
 		EnumID:    789,
@@ -66,13 +60,11 @@ func TestFieldValueJSON(t *testing.T) {
 		EnumValue: "Тестовое значение списка",
 	}
 
-	// Маршализуем в JSON
 	jsonData, err := json.Marshal(fieldValue)
 	if err != nil {
 		t.Fatalf("Ошибка при маршализации в JSON: %v", err)
 	}
 
-	// Проверяем, что JSON содержит правильные ключи
 	jsonStr := string(jsonData)
 	if !contains(jsonStr, "value") {
 		t.Errorf("JSON не содержит ключ value: %s", jsonStr)
@@ -87,13 +79,11 @@ func TestFieldValueJSON(t *testing.T) {
 		t.Errorf("JSON не содержит ключ enum_value: %s", jsonStr)
 	}
 
-	// Демаршализуем обратно в структуру
 	var decodedValue FieldValue
 	if err := json.Unmarshal(jsonData, &decodedValue); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
 
-	// Проверяем, что структура соответствует исходной
 	if decodedValue.Value != fieldValue.Value {
 		t.Errorf("Value не совпадает: ожидалось %v, получено %v", fieldValue.Value, decodedValue.Value)
 	}
@@ -109,8 +99,7 @@ func TestFieldValueJSON(t *testing.T) {
 }
 
 func TestCustomFieldJSON(t *testing.T) {
-	// Создаем тестовую структуру
-	customField := CustomField{
+	customField := Field{
 		ID:           123,
 		Name:         "Тестовое поле",
 		Type:         "text",
@@ -122,7 +111,7 @@ func TestCustomFieldJSON(t *testing.T) {
 		IsRequired:   false,
 		IsDeleteable: true,
 		IsVisible:    true,
-		Enums: []CustomFieldEnum{
+		Enums: []Enum{
 			{
 				ID:    456,
 				Value: "Вариант 1",
@@ -132,13 +121,11 @@ func TestCustomFieldJSON(t *testing.T) {
 		},
 	}
 
-	// Маршализуем в JSON
 	jsonData, err := json.Marshal(customField)
 	if err != nil {
 		t.Fatalf("Ошибка при маршализации в JSON: %v", err)
 	}
 
-	// Проверяем, что JSON содержит правильные ключи
 	jsonStr := string(jsonData)
 	if !contains(jsonStr, "id") {
 		t.Errorf("JSON не содержит ключ id: %s", jsonStr)
@@ -153,13 +140,11 @@ func TestCustomFieldJSON(t *testing.T) {
 		t.Errorf("JSON не содержит ключ enums: %s", jsonStr)
 	}
 
-	// Демаршализуем обратно в структуру
-	var decodedField CustomField
+	var decodedField Field
 	if err := json.Unmarshal(jsonData, &decodedField); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
 
-	// Проверяем, что структура соответствует исходной
 	if !reflect.DeepEqual(customField, decodedField) {
 		t.Errorf("Демаршализованная структура не совпадает с исходной")
 		t.Errorf("Ожидалось: %+v", customField)
@@ -168,21 +153,18 @@ func TestCustomFieldJSON(t *testing.T) {
 }
 
 func TestCustomFieldEnumJSON(t *testing.T) {
-	// Создаем тестовую структуру
-	customFieldEnum := CustomFieldEnum{
+	customFieldEnum := Enum{
 		ID:    789,
 		Value: "Тестовый вариант",
 		Sort:  5,
 		Code:  "test_option",
 	}
 
-	// Маршализуем в JSON
 	jsonData, err := json.Marshal(customFieldEnum)
 	if err != nil {
 		t.Fatalf("Ошибка при маршализации в JSON: %v", err)
 	}
 
-	// Проверяем, что JSON содержит правильные ключи
 	jsonStr := string(jsonData)
 	if !contains(jsonStr, "id") {
 		t.Errorf("JSON не содержит ключ id: %s", jsonStr)
@@ -197,13 +179,11 @@ func TestCustomFieldEnumJSON(t *testing.T) {
 		t.Errorf("JSON не содержит ключ code: %s", jsonStr)
 	}
 
-	// Демаршализуем обратно в структуру
-	var decodedEnum CustomFieldEnum
+	var decodedEnum Enum
 	if err := json.Unmarshal(jsonData, &decodedEnum); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
 
-	// Проверяем, что структура соответствует исходной
 	if decodedEnum.ID != customFieldEnum.ID {
 		t.Errorf("ID не совпадает: ожидалось %d, получено %d", customFieldEnum.ID, decodedEnum.ID)
 	}

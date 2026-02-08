@@ -97,7 +97,6 @@ func TestParseURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := ParseURL(tt.url)
 
-			// Проверяем ошибку
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -107,9 +106,9 @@ func TestParseURL(t *testing.T) {
 				return
 			}
 
-			expectedEntityType := "" // Извлекаем тип сущности
+			expectedEntityType := ""
 			if strings.Contains(tt.url, "/leads/list") {
-				expectedEntityType = "leads" // Тип для лидов
+				expectedEntityType = "leads"
 			} else if strings.Contains(tt.url, "/contacts/list") {
 				expectedEntityType = "contacts"
 			} else if strings.Contains(tt.url, "/companies/list") {
@@ -120,17 +119,14 @@ func TestParseURL(t *testing.T) {
 				t.Errorf("ParseURL() entityType = %v, want %v", result.EntityType, expectedEntityType)
 			}
 
-			// Проверяем номер страницы
 			if result.Page != tt.wantPage {
 				t.Errorf("ParseURL() page = %v, want %v", result.Page, tt.wantPage)
 			}
 
-			// Проверяем лимит
 			if result.Limit != tt.wantLimit {
 				t.Errorf("ParseURL() limit = %v, want %v", result.Limit, tt.wantLimit)
 			}
 
-			// Проверяем фильтры
 			if len(result.Filter) != len(tt.wantFilters) {
 				t.Errorf("ParseURL() filter count = %v, want %v", len(result.Filter), len(tt.wantFilters))
 			}

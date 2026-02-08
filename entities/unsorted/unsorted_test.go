@@ -1,6 +1,7 @@
 package unsorted
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -11,20 +12,16 @@ import (
 )
 
 func TestCreateUnsortedLead(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/unsorted/api"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -39,13 +36,11 @@ func TestCreateUnsortedLead(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем неразобранную заявку
 	now := time.Now().Unix()
-	lead := &UnsortedLeadCreate{
-		UnsortedBase: UnsortedBase{
+	lead := &LeadCreate{
+		Base: Base{
 			SourceName: "API Test",
 			SourceType: SourceTypeAPI,
 			Category:   CategoryTypeForms,
@@ -54,7 +49,7 @@ func TestCreateUnsortedLead(t *testing.T) {
 		},
 		LeadName: "Тестовая заявка",
 		Price:    1000,
-		Contact: &UnsortedContact{
+		Contact: &Contact{
 			Name:  "Иван Иванов",
 			Email: "ivan@example.com",
 			Phone: "+79001234567",
@@ -63,10 +58,8 @@ func TestCreateUnsortedLead(t *testing.T) {
 		PipelineType:      PipelineTypeLead,
 	}
 
-	// Вызываем тестируемый метод
-	response, err := CreateUnsortedLead(apiClient, lead)
+	response, err := CreateLead(context.Background(), apiClient, lead)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании неразобранной заявки: %v", err)
 	}
@@ -81,20 +74,16 @@ func TestCreateUnsortedLead(t *testing.T) {
 }
 
 func TestCreateUnsortedContact(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/contacts/unsorted/api"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -109,19 +98,17 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем неразобранную заявку контакта
 	now := time.Now().Unix()
-	contact := &UnsortedContactCreate{
-		UnsortedBase: UnsortedBase{
+	contact := &ContactCreate{
+		Base: Base{
 			SourceName: "API Test",
 			SourceType: SourceTypeAPI,
 			Category:   CategoryTypeForms,
 			CreatedAt:  now,
 		},
-		Contact: &UnsortedContact{
+		Contact: &Contact{
 			Name:  "Петр Петров",
 			Email: "petr@example.com",
 			Phone: "+79001234568",
@@ -129,10 +116,8 @@ func TestCreateUnsortedContact(t *testing.T) {
 		ResponsibleUserID: 456,
 	}
 
-	// Вызываем тестируемый метод
-	response, err := CreateUnsortedContact(apiClient, contact)
+	response, err := CreateContact(context.Background(), apiClient, contact)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании неразобранного контакта: %v", err)
 	}
@@ -146,21 +131,18 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}
 }
 
-// getUnsortedLeadsServerHandler создает обработчик запросов для тестового сервера GetUnsortedLeads
+// getUnsortedLeadsServerHandler создает обработчик запросов для тестового сервера ListLeads
 func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/unsorted"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		expectedPage := "1"
 		if r.URL.Query().Get("page") != expectedPage {
 			t.Errorf("Ожидался параметр page=%s, получен %s", expectedPage, r.URL.Query().Get("page"))
@@ -171,7 +153,6 @@ func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
 			t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -213,9 +194,9 @@ func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
 	}
 }
 
-// createExpectedUnsortedItem создает ожидаемый объект UnsortedItem для тестирования
-func createExpectedUnsortedItem() UnsortedItem {
-	return UnsortedItem{
+// createExpectedUnsortedItem создает ожидаемый объект Item для тестирования
+func createExpectedUnsortedItem() Item {
+	return Item{
 		ID:           "unsorted-lead-1",
 		UID:          "unsorted-uid-1",
 		SourceUID:    "src-1",
@@ -295,8 +276,8 @@ func createExpectedUnsortedItem() UnsortedItem {
 	}
 }
 
-// verifyBasicFields проверяет основные поля UnsortedItem
-func verifyBasicFields(t *testing.T, actual, expected UnsortedItem) {
+// verifyBasicFields проверяет основные поля Item
+func verifyBasicFields(t *testing.T, actual, expected Item) {
 	if actual.ID != expected.ID ||
 		actual.UID != expected.UID ||
 		actual.SourceUID != expected.SourceUID ||
@@ -310,8 +291,8 @@ func verifyBasicFields(t *testing.T, actual, expected UnsortedItem) {
 	}
 }
 
-// verifyEmbeddedLeads проверяет вложенные сделки в UnsortedItem
-func verifyEmbeddedLeads(t *testing.T, item UnsortedItem) {
+// verifyEmbeddedLeads проверяет вложенные сделки в Item
+func verifyEmbeddedLeads(t *testing.T, item Item) {
 	if item.Embedded != nil && item.Embedded.Leads != nil && len(item.Embedded.Leads) > 0 {
 		if item.Embedded.Leads[0].ID != 456 || item.Embedded.Leads[0].Name != "Тестовая сделка" {
 			t.Errorf("Вложенная сделка не соответствует ожидаемой")
@@ -322,17 +303,13 @@ func verifyEmbeddedLeads(t *testing.T, item UnsortedItem) {
 }
 
 func TestGetUnsortedLeads(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(getUnsortedLeadsServerHandler(t))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	items, err := GetUnsortedLeads(apiClient, 1, 50, nil)
+	items, err := ListLeads(context.Background(), apiClient, 1, 50, nil)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении неразобранных заявок: %v", err)
 	}
@@ -341,34 +318,26 @@ func TestGetUnsortedLeads(t *testing.T) {
 		t.Fatalf("Ожидалось получение 1 заявки, получено %d", len(items))
 	}
 
-	// Создаем ожидаемый объект для сравнения
 	expectedItem := createExpectedUnsortedItem()
 
-	// Проверяем основные поля
 	verifyBasicFields(t, items[0], expectedItem)
 
-	// Проверяем вложенные структуры
 	verifyEmbeddedLeads(t, items[0])
 }
 
 func TestAcceptUnsortedLead(t *testing.T) {
-	// Тестовый UID неразобранной заявки
 	unsortedUID := "test-unsorted-uid-123"
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/leads/unsorted/%s/accept", unsortedUID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -381,13 +350,10 @@ func TestAcceptUnsortedLead(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	leadID, err := AcceptUnsortedLead(apiClient, unsortedUID, 123, 456)
+	leadID, err := AcceptLead(context.Background(), apiClient, unsortedUID, 123, 456)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при принятии неразобранной заявки: %v", err)
 	}
@@ -398,54 +364,42 @@ func TestAcceptUnsortedLead(t *testing.T) {
 }
 
 func TestDeclineUnsortedLead(t *testing.T) {
-	// Тестовый UID неразобранной заявки
 	unsortedUID := "test-unsorted-uid-123"
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/leads/unsorted/%s/decline", unsortedUID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	err := DeclineUnsortedLead(apiClient, unsortedUID)
+	err := DeclineLead(context.Background(), apiClient, unsortedUID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при отклонении неразобранной заявки: %v", err)
 	}
 }
 
 func TestGetUnsortedSummary(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/unsorted/summary"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -465,19 +419,15 @@ func TestGetUnsortedSummary(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	summary, err := GetUnsortedSummary(apiClient)
+	summary, err := GetSummary(context.Background(), apiClient)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении сводки по неразобранным заявкам: %v", err)
 	}
 
-	// Проверяем содержимое сводки
-	total, ok := summary["total"].(map[string]interface{})
+	total, ok := summary["total"].(map[string]any)
 	if !ok {
 		t.Fatalf("Не удалось получить поле total из сводки")
 	}
@@ -489,8 +439,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 		t.Errorf("Ожидалось значение total.count равное 10, получено %v", totalCount)
 	}
 
-	// Проверяем количество обработанных заявок
-	accepted, ok := summary["accepted"].(map[string]interface{})
+	accepted, ok := summary["accepted"].(map[string]any)
 	if !ok {
 		t.Fatalf("Не удалось получить поле accepted из сводки")
 	}
@@ -503,21 +452,18 @@ func TestGetUnsortedSummary(t *testing.T) {
 	}
 }
 
-// getUnsortedContactsServerHandler создает обработчик запросов для тестового сервера GetUnsortedContacts
+// getUnsortedContactsServerHandler создает обработчик запросов для тестового сервера ListContacts
 func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/contacts/unsorted"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		query := r.URL.Query()
 		page := query.Get("page")
 		limit := query.Get("limit")
@@ -531,7 +477,6 @@ func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
 			t.Errorf("Ожидался параметр limit=50, получен %s", limit)
 		}
 
-		// Формируем JSON для ответа
 		response := `{
 			"_embedded": {
 				"unsorted": [
@@ -587,7 +532,6 @@ func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
 			}
 		}`
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(response))
@@ -595,19 +539,14 @@ func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
 }
 
 func TestGetUnsortedContacts(t *testing.T) {
-	// Создаем тестовый сервер с обработчиком
 	server := httptest.NewServer(getUnsortedContactsServerHandler(t))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Базовый тест без фильтров
 	t.Run("Базовый запрос", func(t *testing.T) {
-		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, nil)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, nil)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении неразобранных контактов: %v", err)
 		}
@@ -616,7 +555,6 @@ func TestGetUnsortedContacts(t *testing.T) {
 			t.Fatalf("Ожидался минимум 1 контакт, получено %d", len(contacts))
 		}
 
-		// Проверяем данные первого контакта
 		if contacts[0].UID != "test-unsorted-contact-uid-123" {
 			t.Errorf("Ожидался UID test-unsorted-contact-uid-123, получен %s", contacts[0].UID)
 		}
@@ -626,17 +564,13 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 	})
 
-	// Тест с фильтром по категории
 	t.Run("С фильтром по категории", func(t *testing.T) {
-		// Устанавливаем фильтр
 		filter := map[string]string{
 			"filter[category]": "forms",
 		}
 
-		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, filter)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении неразобранных контактов с фильтром: %v", err)
 		}
@@ -646,18 +580,14 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 	})
 
-	// Тест с фильтром по дате создания
 	t.Run("С фильтром по дате", func(t *testing.T) {
-		// Устанавливаем фильтр
 		timeFrom := time.Now().AddDate(0, 0, -1).Unix()
 		filter := map[string]string{
 			"filter[created_at][from]": fmt.Sprintf("%d", timeFrom),
 		}
 
-		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(apiClient, 1, 50, filter)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, filter)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении неразобранных контактов с фильтром по дате: %v", err)
 		}

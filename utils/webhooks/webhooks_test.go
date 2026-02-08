@@ -1,6 +1,7 @@
 package webhooks
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,20 +13,16 @@ import (
 )
 
 func TestGetWebhook(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/webhooks/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -41,13 +38,10 @@ func TestGetWebhook(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	webhook, err := GetWebhook(apiClient, 123)
+	webhook, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении вебхука: %v", err)
 	}
@@ -70,20 +64,16 @@ func TestGetWebhook(t *testing.T) {
 }
 
 func TestCreateWebhook(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/webhooks"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем тело запроса
 		var webhook Webhook
 		if err := json.NewDecoder(r.Body).Decode(&webhook); err != nil {
 			t.Errorf("Ошибка декодирования тела запроса: %v", err)
@@ -93,7 +83,6 @@ func TestCreateWebhook(t *testing.T) {
 			t.Errorf("Ожидался URL вебхука 'https://example.com/new-webhook', получен '%s'", webhook.Destination)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -109,22 +98,18 @@ func TestCreateWebhook(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем вебхук для теста
 	webhookToCreate := &Webhook{
 		Destination: "https://example.com/new-webhook",
-		Settings: &WebhookSettings{
+		Settings: &Settings{
 			Entities: []string{"leads"},
 			Actions:  []string{"add"},
 		},
 	}
 
-	// Вызываем тестируемый метод
-	createdWebhook, err := CreateWebhook(apiClient, webhookToCreate)
+	createdWebhook, err := Create(context.Background(), apiClient, webhookToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании вебхука: %v", err)
 	}
@@ -172,30 +157,24 @@ func TestDeleteWebhook(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// Проверяем метод запроса
 				if r.Method != "DELETE" {
 					t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 				}
 
-				// Проверяем URL запроса
 				expectedPath := fmt.Sprintf("/api/v4/webhooks/%d", tt.webhookID)
 				if r.URL.Path != expectedPath {
 					t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 				}
 
-				// Устанавливаем код ответа и тело
 				w.WriteHeader(tt.responseCode)
 				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
-			// Создаем клиент
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
-			// Вызываем тестируемую функцию
-			err := DeleteWebhook(apiClient, tt.webhookID)
+			err := Delete(context.Background(), apiClient, tt.webhookID)
 
-			// Проверяем результаты
 			if tt.expectError && err == nil {
 				t.Error("Ожидалась ошибка, но ее не было")
 			}
@@ -246,18 +225,15 @@ func TestListWebhooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// Проверяем метод запроса
 				if r.Method != "GET" {
 					t.Errorf("Ожидался метод GET, получен %s", r.Method)
 				}
 
-				// Проверяем URL запроса
 				expectedPath := "/api/v4/webhooks"
 				if r.URL.Path != expectedPath {
 					t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 				}
 
-				// Проверяем параметры запроса
 				query := r.URL.Query()
 				if query.Get("page") != fmt.Sprintf("%d", tt.page) {
 					t.Errorf("Ожидался параметр page=%d, получен %s", tt.page, query.Get("page"))
@@ -266,19 +242,15 @@ func TestListWebhooks(t *testing.T) {
 					t.Errorf("Ожидался параметр limit=%d, получен %s", tt.limit, query.Get("limit"))
 				}
 
-				// Устанавливаем код ответа и тело
 				w.WriteHeader(tt.responseCode)
 				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
-			// Создаем клиент
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
-			// Вызываем тестируемую функцию
-			webhooks, err := ListWebhooks(apiClient, tt.limit, tt.page)
+			webhooks, err := List(context.Background(), apiClient, tt.limit, tt.page)
 
-			// Проверяем результаты
 			if tt.expectError && err == nil {
 				t.Error("Ожидалась ошибка, но ее не было")
 			}
@@ -323,27 +295,21 @@ func validateWebhook(t *testing.T, webhook Webhook, expectedDestination string, 
 }
 
 func TestCreateSimpleWebhook(t *testing.T) {
-	// Константы для теста
 	expectedDestination := "https://example.com/simple-webhook"
 	expectedEntities := []string{"leads"}
 	expectedActions := []string{"add"}
 	expectedID := 789
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем базовые параметры запроса
 		validateRequestBasics(t, r, "POST", "/api/v4/webhooks")
 
-		// Проверяем тело запроса
 		var webhook Webhook
 		if err := json.NewDecoder(r.Body).Decode(&webhook); err != nil {
 			t.Errorf("Ошибка декодирования тела запроса: %v", err)
 		}
 
-		// Проверяем параметры вебхука
 		validateWebhook(t, webhook, expectedDestination, expectedEntities, expectedActions)
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -359,13 +325,10 @@ func TestCreateSimpleWebhook(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	createdWebhook, err := CreateSimpleWebhook(apiClient, expectedDestination, expectedEntities, expectedActions)
+	createdWebhook, err := CreateSimple(context.Background(), apiClient, expectedDestination, expectedEntities, expectedActions)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании простого вебхука: %v", err)
 	}
@@ -374,6 +337,5 @@ func TestCreateSimpleWebhook(t *testing.T) {
 		t.Errorf("Ожидался ID вебхука %d, получен %d", expectedID, createdWebhook.ID)
 	}
 
-	// Проверяем параметры созданного вебхука
 	validateWebhook(t, *createdWebhook, expectedDestination, expectedEntities, expectedActions)
 }

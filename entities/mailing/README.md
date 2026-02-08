@@ -12,6 +12,7 @@
   - [Обновление рассылки](#обновление-рассылки)
   - [Удаление рассылки](#удаление-рассылки)
   - [Изменение статуса рассылки](#изменение-статуса-рассылки)
+  - [Получение статистики рассылки](#получение-статистики-рассылки)
   - [Получение шаблонов рассылок](#получение-шаблонов-рассылок)
   - [Управление получателями рассылки](#управление-получателями-рассылки)
 - [Примеры использования](#примеры-использования)
@@ -37,7 +38,7 @@ type Mailing struct {
     SegmentFilters   []SegmentFilter   `json:"segment_filters,omitempty"`
     SelectedContacts []int             `json:"selected_contacts,omitempty"`
     ExcludedContacts []int             `json:"excluded_contacts,omitempty"`
-    Stats            *MailingStats     `json:"stats,omitempty"`
+    Stats            *Stats     `json:"stats,omitempty"`
     AccountID        int               `json:"account_id,omitempty"`
     FromEmail        string            `json:"from_email,omitempty"`
     FromName         string            `json:"from_name,omitempty"`
@@ -96,10 +97,10 @@ type Template struct {
 }
 ```
 
-### MailingStats
+### Stats
 
 ```go
-type MailingStats struct {
+type Stats struct {
     TotalRecipients int `json:"total_recipients"`
     Delivered       int `json:"delivered"`
     Opened          int `json:"opened"`
@@ -115,7 +116,7 @@ type MailingStats struct {
 ### Получение списка рассылок
 
 ```go
-func GetMailings(apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error)
 ```
 
 Возвращает список рассылок с поддержкой пагинации и фильтрации.
@@ -134,27 +135,27 @@ func GetMailings(apiClient *client.Client, page, limit int, options ...WithOptio
 filter := map[string]string{
     "filter[status]": "active",
 }
-mailings, err := mailing.GetMailings(apiClient, 1, 50, mailing.WithFilter(filter))
+mailings, err := mailing.List(ctx, apiClient, 1, 50, mailing.WithFilter(filter))
 ```
 
 Также доступны готовые функции для фильтрации:
 
 ```go
 // Фильтрация по статусу
-mailings, err := mailing.GetMailings(apiClient, 1, 50, mailing.WithStatus(mailing.MailingStatusActive))
+mailings, err := mailing.List(ctx, apiClient, 1, 50, mailing.WithStatus(mailing.MailingStatusActive))
 
 // Фильтрация по дате создания
 from := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 to := time.Now()
-mailings, err := mailing.GetMailings(apiClient, 1, 50, 
-    mailing.WithDateFrom(from), 
+mailings, err := mailing.List(ctx, apiClient, 1, 50,
+    mailing.WithDateFrom(from),
     mailing.WithDateTo(to))
 ```
 
 ### Получение информации о конкретной рассылке
 
 ```go
-func GetMailing(apiClient *client.Client, id int) (*Mailing, error)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error)
 ```
 
 Возвращает информацию о конкретной рассылке по её ID.
@@ -166,7 +167,7 @@ func GetMailing(apiClient *client.Client, id int) (*Mailing, error)
 ### Создание рассылки
 
 ```go
-func CreateMailing(apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
+func Create(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
 ```
 
 Создаёт новую рассылку и возвращает информацию о созданной рассылке.
@@ -178,7 +179,7 @@ func CreateMailing(apiClient *client.Client, mailingData *Mailing) (*Mailing, er
 ### Обновление рассылки
 
 ```go
-func UpdateMailing(apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
+func Update(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
 ```
 
 Обновляет существующую рассылку и возвращает обновлённую информацию.
@@ -190,7 +191,7 @@ func UpdateMailing(apiClient *client.Client, mailingData *Mailing) (*Mailing, er
 ### Удаление рассылки
 
 ```go
-func DeleteMailing(apiClient *client.Client, id int) error
+func Delete(ctx context.Context, apiClient *client.Client, id int) error
 ```
 
 Удаляет рассылку по ID.
@@ -202,7 +203,7 @@ func DeleteMailing(apiClient *client.Client, id int) error
 ### Изменение статуса рассылки
 
 ```go
-func ChangeMailingStatus(apiClient *client.Client, id int, status MailingStatus) (*Mailing, error)
+func ChangeStatus(ctx context.Context, apiClient *client.Client, id int, status MailingStatus) (*Mailing, error)
 ```
 
 Изменяет статус рассылки.
@@ -215,7 +216,7 @@ func ChangeMailingStatus(apiClient *client.Client, id int, status MailingStatus)
 ### Получение шаблонов рассылок
 
 ```go
-func GetMailingTemplates(apiClient *client.Client, page, limit int) ([]Template, error)
+func ListTemplates(ctx context.Context, apiClient *client.Client, page, limit int) ([]Template, error)
 ```
 
 Возвращает список шаблонов рассылок.
@@ -226,7 +227,7 @@ func GetMailingTemplates(apiClient *client.Client, page, limit int) ([]Template,
 - `limit` - количество элементов на странице
 
 ```go
-func GetMailingTemplate(apiClient *client.Client, id int) (*Template, error)
+func GetTemplate(ctx context.Context, apiClient *client.Client, id int) (*Template, error)
 ```
 
 Возвращает информацию о конкретном шаблоне рассылки.
@@ -235,10 +236,22 @@ func GetMailingTemplate(apiClient *client.Client, id int) (*Template, error)
 - `apiClient` - клиент API amoCRM
 - `id` - ID шаблона рассылки
 
+### Получение статистики рассылки
+
+```go
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*Stats, error)
+```
+
+Возвращает статистику рассылки.
+
+**Параметры:**
+- `apiClient` - клиент API amoCRM
+- `id` - ID рассылки
+
 ### Управление получателями рассылки
 
 ```go
-func AddMailingRecipients(apiClient *client.Client, id int, contactIDs []int) error
+func AddRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
 ```
 
 Добавляет получателей в рассылку.
@@ -249,7 +262,7 @@ func AddMailingRecipients(apiClient *client.Client, id int, contactIDs []int) er
 - `contactIDs` - массив ID контактов для добавления в рассылку
 
 ```go
-func RemoveMailingRecipients(apiClient *client.Client, id int, contactIDs []int) error
+func RemoveRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
 ```
 
 Удаляет получателей из рассылки.
@@ -267,44 +280,32 @@ func RemoveMailingRecipients(apiClient *client.Client, id int, contactIDs []int)
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // Создаем новую рассылку
     newMailing := &mailing.Mailing{
         Name:       "Новогодняя акция",
         Subject:    "Скидки к Новому году",
         Frequency:  mailing.MailingFrequencyOnce,
         FromName:   "Компания",
         FromEmail:  "marketing@example.com",
-        SegmentIDs: []int{101, 102}, // ID сегментов контактов для рассылки
+        SegmentIDs: []int{101, 102},
     }
 
-    // Отправляем запрос на создание
-    createdMailing, err := mailing.CreateMailing(apiClient, newMailing)
+    createdMailing, err := mailing.Create(ctx, apiClient, newMailing)
     if err != nil {
         log.Fatalf("Ошибка при создании рассылки: %v", err)
     }
 
-    // Выводим информацию о созданной рассылке
     fmt.Printf("Создана рассылка: %s (ID: %d)\n", createdMailing.Name, createdMailing.ID)
     fmt.Printf("Статус: %s\n", createdMailing.Status)
 }
@@ -316,40 +317,28 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // ID рассылки
     mailingID := 1001
 
-    // Запускаем рассылку
-    updatedMailing, err := mailing.ChangeMailingStatus(apiClient, mailingID, mailing.MailingStatusActive)
+    updatedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusActive)
     if err != nil {
         log.Fatalf("Ошибка при изменении статуса рассылки: %v", err)
     }
 
     fmt.Printf("Статус рассылки изменен на: %s\n", updatedMailing.Status)
 
-    // Позже приостанавливаем рассылку
-    pausedMailing, err := mailing.ChangeMailingStatus(apiClient, mailingID, mailing.MailingStatusPaused)
+    pausedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusPaused)
     if err != nil {
         log.Fatalf("Ошибка при приостановке рассылки: %v", err)
     }
@@ -364,45 +353,32 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
-    "time"
 
-    "github.com/chudno/amo_crm_sdk/auth"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/mailing"
 )
 
 func main() {
-    // Создаем клиент API
-    apiClient, err := client.NewClientWithAuth(auth.NewOAuthConfig(
-        "ваш_домен.amocrm.ru",
-        "client_id",
-        "client_secret",
-        "redirect_uri",
-        "code",
-    ))
-    if err != nil {
-        log.Fatalf("Ошибка аутентификации: %v", err)
-    }
+    apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+    ctx := context.Background()
 
-    // Получаем список активных рассылок
-    mailings, err := mailing.GetMailings(apiClient, 1, 10, mailing.WithStatus(mailing.MailingStatusActive))
+    mailings, err := mailing.List(ctx, apiClient, 1, 10, mailing.WithStatus(mailing.MailingStatusActive))
     if err != nil {
         log.Fatalf("Ошибка при получении списка рассылок: %v", err)
     }
 
-    // Выводим информацию о рассылках и их статистике
     for _, m := range mailings {
         fmt.Printf("Рассылка: %s (ID: %d)\n", m.Name, m.ID)
-        
-        // Получаем детальную статистику для каждой рассылки
-        stats, err := mailing.GetMailingStats(apiClient, m.ID)
+
+        stats, err := mailing.GetStats(ctx, apiClient, m.ID)
         if err != nil {
             log.Printf("Ошибка при получении статистики для рассылки %d: %v", m.ID, err)
             continue
         }
-        
+
         fmt.Printf("  Всего получателей: %d\n", stats.TotalRecipients)
         fmt.Printf("  Доставлено: %d\n", stats.Delivered)
         fmt.Printf("  Открыто: %d\n", stats.Opened)
@@ -410,7 +386,6 @@ func main() {
         fmt.Printf("  Отказы доставки: %d\n", stats.Bounced)
         fmt.Printf("  Отписки: %d\n", stats.Unsubscribed)
         fmt.Printf("  Жалобы: %d\n", stats.Complaints)
-        
         fmt.Println()
     }
 }

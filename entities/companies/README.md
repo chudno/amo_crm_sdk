@@ -10,28 +10,28 @@
 - [Получение списка компаний](#получение-списка-компаний)
 - [Обновление компании](#обновление-компании)
 - [Пользовательские поля](#пользовательские-поля)
-- [Связывание компаний с другими сущностями](#связывание-компаний-с-другими-сущностями)
 
 ## Основные функции
 
 | Функция | Описание |
 |---------|----------|
-| `CreateCompany` | Создание новой компании |
-| `GetCompany` | Получение компании по ID |
-| `GetCompanies` | Получение списка компаний с фильтрацией |
-| `UpdateCompany` | Обновление существующей компании |
-| `DeleteCompany` | Удаление компании |
+| `Create` | Создание новой компании |
+| `Get` | Получение компании по ID |
+| `List` | Получение списка компаний с пагинацией |
+| `Update` | Обновление существующей компании |
 
 ## Создание компании
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/companies"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание новой компании
 newCompany := &companies.Company{
@@ -39,30 +39,8 @@ newCompany := &companies.Company{
     ResponsibleUserID: 12345, // ID ответственного менеджера
 }
 
-// Добавление номера телефона
-newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.CustomFieldValue{
-        {
-            Value: "+79001234567",
-            Enum: "WORK", // Тип телефона (рабочий)
-        },
-    },
-})
-
-// Добавление email
-newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
-    FieldID: 5678, // ID поля "Email"
-    Values: []companies.CustomFieldValue{
-        {
-            Value: "info@romashka.ru",
-            Enum: "WORK", // Тип email (рабочий)
-        },
-    },
-})
-
 // Сохранение компании
-createdCompany, err := companies.CreateCompany(apiClient, newCompany)
+createdCompany, err := companies.Create(ctx, apiClient, newCompany)
 if err != nil {
     // Обработка ошибки
 }
@@ -73,7 +51,7 @@ if err != nil {
 ```go
 // Получение компании по ID
 companyID := 12345
-company, err := companies.GetCompany(apiClient, companyID)
+company, err := companies.Get(ctx, apiClient, companyID)
 if err != nil {
     // Обработка ошибки
 }
@@ -83,17 +61,13 @@ if err != nil {
 
 ```go
 // Получение первых 50 компаний
-companiesList, err := companies.GetCompanies(apiClient, 1, 50)
+companiesList, err := companies.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
 
-// Получение компаний с фильтрацией
-filter := map[string]string{
-    "query": "Ромашка", // Поиск по названию
-    "created_at": "1609459200", // Компании, созданные после указанной даты (timestamp)
-}
-filteredCompanies, err := companies.GetCompanies(apiClient, 1, 50, filter)
+// Получение компаний со связанными контактами
+companiesWithContacts, err := companies.List(ctx, apiClient, 1, 50, companies.WithContacts)
 ```
 
 ## Обновление компании
@@ -102,18 +76,7 @@ filteredCompanies, err := companies.GetCompanies(apiClient, 1, 50, filter)
 // Обновление существующей компании
 company.Name = "ООО Ромашка Технологии"
 
-// Добавление нового номера телефона
-company.CustomFields = append(company.CustomFields, companies.CustomField{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.CustomFieldValue{
-        {
-            Value: "+79009876543",
-            Enum: "WORK2", // Тип телефона (второй рабочий)
-        },
-    },
-})
-
-updatedCompany, err := companies.UpdateCompany(apiClient, company)
+updatedCompany, err := companies.Update(ctx, apiClient, company)
 if err != nil {
     // Обработка ошибки
 }
@@ -121,34 +84,15 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями компаний используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями компаний используйте структуры из пакета `custom_fields`:
 
 ```go
-// Добавление пользовательского поля
-company.CustomFields = append(company.CustomFields, companies.CustomField{
-    FieldID: 9876, // ID пользовательского поля
-    Values: []companies.CustomFieldValue{
-        {
-            Value: "Значение поля",
-        },
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
+
+company.CustomFieldsValues = append(company.CustomFieldsValues, custom_fields.Value{
+    FieldID: 9876,
+    Values: []custom_fields.FieldValue{
+        {Value: "Значение поля"},
     },
 })
-```
-
-## Связывание компаний с другими сущностями
-
-Для связывания компаний с другими сущностями используйте соответствующие методы из модулей leads и contacts:
-
-```go
-// Связывание компании со сделкой
-import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(apiClient, leadID, companyID)
-
-// Связывание компании с контактом
-import "github.com/chudno/amo_crm_sdk/entities/contacts"
-err := companies.LinkCompanyWithContact(apiClient, companyID, contactID)
-
-// Связывание компании с лидом
-import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithCompany(apiClient, leadID, companyID)
 ```

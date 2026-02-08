@@ -9,7 +9,6 @@
 - [Получение лида](#получение-лида)
 - [Получение списка лидов](#получение-списка-лидов)
 - [Обновление лида](#обновление-лида)
-- [Работа со связанными сущностями](#работа-со-связанными-сущностями)
 - [Пользовательские поля](#пользовательские-поля)
 - [Перемещение по воронке](#перемещение-по-воронке)
 
@@ -17,22 +16,24 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateLead` | Создание нового лида |
-| `GetLead` | Получение лида по ID |
-| `GetLeads` | Получение списка лидов с фильтрацией |
-| `UpdateLead` | Обновление существующего лида |
-| `DeleteLead` | Удаление лида |
+| `Create` | Создание нового лида |
+| `Get` | Получение лида по ID |
+| `List` | Получение списка лидов с фильтрацией |
+| `Update` | Обновление существующего лида |
+| `Delete` | Удаление лида |
 
 ## Создание лида
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/leads"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание нового лида
 newLead := &leads.Lead{
@@ -44,7 +45,7 @@ newLead := &leads.Lead{
 }
 
 // Сохранение лида
-createdLead, err := leads.CreateLead(apiClient, newLead)
+createdLead, err := leads.Create(ctx, apiClient, newLead)
 if err != nil {
     // Обработка ошибки
 }
@@ -55,13 +56,13 @@ if err != nil {
 ```go
 // Получение лида по ID
 leadID := 12345
-lead, err := leads.GetLead(apiClient, leadID)
+lead, err := leads.Get(ctx, apiClient, leadID)
 if err != nil {
     // Обработка ошибки
 }
 
 // Получение лида со связанными контактами и компаниями
-leadWithRelations, err := leads.GetLead(apiClient, leadID, leads.WithContacts, leads.WithCompanies)
+leadWithRelations, err := leads.Get(ctx, apiClient, leadID, leads.WithContacts, leads.WithCompanies)
 if err != nil {
     // Обработка ошибки
 }
@@ -71,7 +72,7 @@ if leadWithRelations.Embedded != nil {
     for _, contact := range leadWithRelations.Embedded.Contacts {
         // Работа с контактом
     }
-    
+
     for _, company := range leadWithRelations.Embedded.Companies {
         // Работа с компанией
     }
@@ -82,7 +83,7 @@ if leadWithRelations.Embedded != nil {
 
 ```go
 // Получение первых 50 лидов
-leadsList, err := leads.GetLeads(apiClient, 1, 50)
+leadsList, err := leads.List(ctx, apiClient, 1, 50, nil)
 if err != nil {
     // Обработка ошибки
 }
@@ -93,10 +94,10 @@ filter := map[string]string{
     "pipeline_id": "3778", // Фильтр по ID воронки
     "created_at": "1609459200", // Лиды, созданные после указанной даты (timestamp)
 }
-filteredLeads, err := leads.GetLeads(apiClient, 1, 50, filter)
+filteredLeads, err := leads.List(ctx, apiClient, 1, 50, filter)
 
 // Получение лидов со связанными сущностями
-leadsWithRelations, err := leads.GetLeads(apiClient, 1, 50, filter, leads.WithContacts, leads.WithCompanies)
+leadsWithRelations, err := leads.List(ctx, apiClient, 1, 50, filter, leads.WithContacts, leads.WithCompanies)
 ```
 
 ## Обновление лида
@@ -107,27 +108,7 @@ lead.Name = "Заявка с сайта - Уточненная"
 lead.Price = 15000
 lead.StatusID = 143 // Перемещение на следующий этап
 
-updatedLead, err := leads.UpdateLead(apiClient, lead)
-if err != nil {
-    // Обработка ошибки
-}
-```
-
-## Работа со связанными сущностями
-
-```go
-// Связывание лида с контактом
-import "github.com/chudno/amo_crm_sdk/entities/contacts"
-contactID := 67890
-err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
-if err != nil {
-    // Обработка ошибки
-}
-
-// Связывание лида с компанией
-import "github.com/chudno/amo_crm_sdk/entities/companies"
-companyID := 54321
-err = leads.LinkLeadWithCompany(apiClient, leadID, companyID)
+updatedLead, err := leads.Update(ctx, apiClient, lead)
 if err != nil {
     // Обработка ошибки
 }
@@ -135,16 +116,15 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями лидов используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями лидов используйте структуры из пакета `custom_fields`:
 
 ```go
-// Добавление пользовательского поля
-lead.CustomFields = append(lead.CustomFields, leads.CustomField{
-    FieldID: 9876, // ID пользовательского поля
-    Values: []leads.CustomFieldValue{
-        {
-            Value: "Значение поля",
-        },
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
+
+lead.CustomFieldsValues = append(lead.CustomFieldsValues, custom_fields.Value{
+    FieldID: 9876,
+    Values: []custom_fields.FieldValue{
+        {Value: "Значение поля"},
     },
 })
 ```
@@ -156,7 +136,7 @@ lead.CustomFields = append(lead.CustomFields, leads.CustomField{
 lead.StatusID = 143 // ID нового статуса
 lead.PipelineID = 3778 // ID воронки (если меняется)
 
-updatedLead, err := leads.UpdateLead(apiClient, lead)
+updatedLead, err := leads.Update(ctx, apiClient, lead)
 if err != nil {
     // Обработка ошибки
 }

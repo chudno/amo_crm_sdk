@@ -1,6 +1,7 @@
 package pipelines
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,20 +11,16 @@ import (
 )
 
 func TestGetPipeline(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -56,13 +53,10 @@ func TestGetPipeline(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	pipeline, err := GetPipeline(apiClient, 123)
+	pipeline, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении воронки: %v", err)
 	}
@@ -92,47 +86,48 @@ func TestGetPipeline(t *testing.T) {
 }
 
 func TestCreatePipeline(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Декодируем тело запроса
-		var requestPipeline Pipeline
-		if err := json.NewDecoder(r.Body).Decode(&requestPipeline); err != nil {
+		var requestPipelines []Pipeline
+		if err := json.NewDecoder(r.Body).Decode(&requestPipelines); err != nil {
 			t.Fatalf("Ошибка при декодировании тела запроса: %v", err)
 		}
-
-		// Проверяем содержимое запроса
-		if requestPipeline.Name != "Новая воронка" {
-			t.Errorf("Ожидалось имя воронки 'Новая воронка', получено '%s'", requestPipeline.Name)
+		if len(requestPipelines) == 0 {
+			t.Fatal("Ожидался массив с одной воронкой")
 		}
 
-		// Отправляем ответ
+		if requestPipelines[0].Name != "Новая воронка" {
+			t.Errorf("Ожидалось имя воронки 'Новая воронка', получено '%s'", requestPipelines[0].Name)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
-			"id": 456,
-			"name": "Новая воронка",
-			"sort": 2,
-			"is_main": false,
-			"is_active": true
+			"_embedded": {
+				"pipelines": [
+					{
+						"id": 456,
+						"name": "Новая воронка",
+						"sort": 2,
+						"is_main": false,
+						"is_active": true
+					}
+				]
+			}
 		}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем воронку для теста
 	pipelineToCreate := &Pipeline{
 		Name:     "Новая воронка",
 		Sort:     2,
@@ -140,10 +135,8 @@ func TestCreatePipeline(t *testing.T) {
 		IsActive: true,
 	}
 
-	// Вызываем тестируемый метод
-	createdPipeline, err := CreatePipeline(apiClient, pipelineToCreate)
+	createdPipeline, err := Create(context.Background(), apiClient, pipelineToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании воронки: %v", err)
 	}
@@ -162,31 +155,25 @@ func TestCreatePipeline(t *testing.T) {
 }
 
 func TestUpdatePipeline(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines/789"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Декодируем тело запроса
 		var requestPipeline Pipeline
 		if err := json.NewDecoder(r.Body).Decode(&requestPipeline); err != nil {
 			t.Fatalf("Ошибка при декодировании тела запроса: %v", err)
 		}
 
-		// Проверяем содержимое запроса
 		if requestPipeline.Name != "Обновленная воронка" {
 			t.Errorf("Ожидалось имя воронки 'Обновленная воронка', получено '%s'", requestPipeline.Name)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -199,10 +186,8 @@ func TestUpdatePipeline(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем воронку для обновления
 	pipelineToUpdate := &Pipeline{
 		ID:       789,
 		Name:     "Обновленная воронка",
@@ -211,10 +196,8 @@ func TestUpdatePipeline(t *testing.T) {
 		IsActive: true,
 	}
 
-	// Вызываем тестируемый метод
-	updatedPipeline, err := UpdatePipeline(apiClient, pipelineToUpdate)
+	updatedPipeline, err := Update(context.Background(), apiClient, pipelineToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении воронки: %v", err)
 	}
@@ -233,25 +216,21 @@ func TestUpdatePipeline(t *testing.T) {
 }
 
 func TestListPipelines(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
 			"_embedded": {
-				"items": [
+				"pipelines": [
 					{
 						"id": 123,
 						"name": "Основная воронка",
@@ -272,13 +251,10 @@ func TestListPipelines(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	pipelines, err := ListPipelines(apiClient)
+	pipelines, err := List(context.Background(), apiClient)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении списка воронок: %v", err)
 	}
@@ -296,51 +272,40 @@ func TestListPipelines(t *testing.T) {
 }
 
 func TestDeletePipeline(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем успешный ответ без тела
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	err := DeletePipeline(apiClient, 123)
+	err := Delete(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при удалении воронки: %v", err)
 	}
 }
 
 func TestGetStatus(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines/123/statuses/456"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -355,13 +320,10 @@ func TestGetStatus(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	status, err := GetStatus(apiClient, 123, 456)
+	status, err := GetStatus(context.Background(), apiClient, 123, 456)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении статуса: %v", err)
 	}
@@ -384,31 +346,25 @@ func TestGetStatus(t *testing.T) {
 }
 
 func TestCreateStatus(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/pipelines/123/statuses"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Декодируем тело запроса
 		var requestStatus Status
 		if err := json.NewDecoder(r.Body).Decode(&requestStatus); err != nil {
 			t.Fatalf("Ошибка при декодировании тела запроса: %v", err)
 		}
 
-		// Проверяем содержимое запроса
 		if requestStatus.Name != "Новый статус" {
 			t.Errorf("Ожидалось имя статуса 'Новый статус', получено '%s'", requestStatus.Name)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -423,21 +379,17 @@ func TestCreateStatus(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем статус для теста
 	statusToCreate := &Status{
 		Name:  "Новый статус",
 		Sort:  3,
 		Color: "#ff9999",
-		Type:  2,
+		Type:  StatusTypeNormal,
 	}
 
-	// Вызываем тестируемый метод
-	createdStatus, err := CreateStatus(apiClient, 123, statusToCreate)
+	createdStatus, err := CreateStatus(context.Background(), apiClient, 123, statusToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании статуса: %v", err)
 	}

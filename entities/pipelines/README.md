@@ -16,19 +16,20 @@
 
 | Функция | Описание |
 |---------|----------|
-| `GetPipeline` | Получение воронки по ID |
-| `GetPipelines` | Получение списка воронок |
-| `CreatePipeline` | Создание новой воронки |
-| `UpdatePipeline` | Обновление существующей воронки |
-| `DeletePipeline` | Удаление воронки |
+| `Get` | Получение воронки по ID |
+| `List` | Получение списка воронок |
+| `Create` | Создание новой воронки |
+| `Update` | Обновление существующей воронки |
+| `Delete` | Удаление воронки |
+| `GetStatus` | Получение статуса воронки по ID |
 | `CreateStatus` | Создание нового статуса в воронке |
-| `UpdateStatus` | Обновление существующего статуса |
-| `DeleteStatus` | Удаление статуса |
 
 ## Получение воронки
 
 ```go
 import (
+    "context"
+
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/pipelines"
 )
@@ -36,9 +37,12 @@ import (
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
 
+// Создаем контекст
+ctx := context.Background()
+
 // Получение воронки по ID
 pipelineID := 12345
-pipeline, err := pipelines.GetPipeline(apiClient, pipelineID)
+pipeline, err := pipelines.Get(ctx, apiClient, pipelineID)
 if err != nil {
     // Обработка ошибки
 }
@@ -57,7 +61,7 @@ for _, status := range pipeline.Statuses {
 
 ```go
 // Получение всех воронок
-pipelinesList, err := pipelines.GetPipelines(apiClient)
+pipelinesList, err := pipelines.List(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -110,12 +114,11 @@ newPipeline.Statuses = []pipelines.Status{
         Name: "Успешно реализовано",
         Sort: 50,
         Color: "#00cc00",
-        IsSuccess: true, // Статус успешного завершения сделки
     },
 }
 
 // Сохранение воронки
-createdPipeline, err := pipelines.CreatePipeline(apiClient, newPipeline)
+createdPipeline, err := pipelines.Create(ctx, apiClient, newPipeline)
 if err != nil {
     // Обработка ошибки
 }
@@ -135,7 +138,7 @@ pipeline.Statuses = append(pipeline.Statuses, pipelines.Status{
 })
 
 // Сохранение изменений
-updatedPipeline, err := pipelines.UpdatePipeline(apiClient, pipeline)
+updatedPipeline, err := pipelines.Update(ctx, apiClient, pipeline)
 if err != nil {
     // Обработка ошибки
 }
@@ -145,41 +148,20 @@ if err != nil {
 
 ```go
 // Получение статуса по ID
-var targetStatus *pipelines.Status
-for _, status := range pipeline.Statuses {
-    if status.ID == 12345 {
-        targetStatus = &status
-        break
-    }
+status, err := pipelines.GetStatus(ctx, apiClient, pipeline.ID, 12345)
+if err != nil {
+    // Обработка ошибки
 }
-
-// Обновление статуса
-if targetStatus != nil {
-    targetStatus.Name = "Новое название статуса"
-    targetStatus.Color = "#ff9900"
-    
-    // Обновление статуса в воронке
-    updatedStatus, err := pipelines.UpdateStatus(apiClient, pipeline.ID, targetStatus)
-    if err != nil {
-        // Обработка ошибки
-    }
-}
+fmt.Printf("Статус: %s (ID: %d)\n", status.Name, status.ID)
 
 // Создание нового статуса в существующей воронке
 newStatus := &pipelines.Status{
     Name: "Новый статус",
-    Sort: 45, // Позиция в воронке
+    Sort: 45,
     Color: "#9966ff",
 }
 
-createdStatus, err := pipelines.CreateStatus(apiClient, pipeline.ID, newStatus)
-if err != nil {
-    // Обработка ошибки
-}
-
-// Удаление статуса
-statusID := 67890
-err = pipelines.DeleteStatus(apiClient, pipeline.ID, statusID)
+createdStatus, err := pipelines.CreateStatus(ctx, apiClient, pipeline.ID, newStatus)
 if err != nil {
     // Обработка ошибки
 }
@@ -199,13 +181,13 @@ newLead := &leads.Lead{
 	// Другие поля лида
 }
 
-createdLead, err := leads.CreateLead(apiClient, newLead)
+createdLead, err := leads.Create(ctx, apiClient, newLead)
 if err != nil {
     // Обработка ошибки
 }
 
 // Перемещение лида в другой статус
-existingLead, err := leads.GetLead(apiClient, leadID)
+existingLead, err := leads.Get(ctx, apiClient, leadID)
 if err != nil {
     // Обработка ошибки
 }
@@ -214,7 +196,7 @@ existingLead.StatusID = 54321 // ID нового статуса
 // При необходимости можно сменить и воронку
 // existingLead.PipelineID = 98765
 
-updatedLead, err := leads.UpdateLead(apiClient, existingLead)
+updatedLead, err := leads.Update(ctx, apiClient, existingLead)
 if err != nil {
     // Обработка ошибки
 }

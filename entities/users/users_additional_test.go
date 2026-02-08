@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +12,6 @@ import (
 // TestGetUserErrors проверяет обработку ошибок при получении пользователя
 func TestGetUserErrors(t *testing.T) {
 	t.Run("Пользователь не найден", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет ошибку 404
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
@@ -21,20 +21,16 @@ func TestGetUserErrors(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 999) // несуществующий ID
+		_, err := Get(context.Background(), apiClient, 999)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка, но она не возникла")
 		}
 	})
 
 	t.Run("Некорректный JSON", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет некорректный JSON
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -44,33 +40,26 @@ func TestGetUserErrors(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := Get(context.Background(), apiClient, 123)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за некорректного JSON, но она не возникла")
 		}
 	})
 
 	t.Run("Ошибка HTTP", func(t *testing.T) {
-		// Используем несуществующий домен для вызова ошибки
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := Get(context.Background(), apiClient, 123)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка HTTP, но она не возникла")
 		}
 	})
 
 	t.Run("Ошибка сервера (500)", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет ошибку 500
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -80,13 +69,10 @@ func TestGetUserErrors(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := GetUser(apiClient, 123)
+		_, err := Get(context.Background(), apiClient, 123)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за статуса 500, но она не возникла")
 		}
@@ -95,44 +81,32 @@ func TestGetUserErrors(t *testing.T) {
 
 // TestGetCurrentUserErrors проверяет обработку ошибок при получении информации о текущем пользователе
 func TestGetCurrentUserErrors(t *testing.T) {
-	t.Run("Некорректный JSON", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет некорректный JSON
+	t.Run("Некорректный JSON от account", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"id": 456, "name": "Петр Петров", "rights": {`)); err != nil {
+			if _, err := w.Write([]byte(`{"id": 1, "current_user_id":`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
-
-		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
-
-		// Проверяем, что вернулась ошибка
+		_, err := GetCurrent(context.Background(), apiClient)
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за некорректного JSON, но она не возникла")
 		}
 	})
 
 	t.Run("Ошибка HTTP", func(t *testing.T) {
-		// Используем несуществующий домен для вызова ошибки
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
-
-		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
-
-		// Проверяем, что вернулась ошибка
+		_, err := GetCurrent(context.Background(), apiClient)
 		if err == nil {
 			t.Error("Ожидалась ошибка HTTP, но она не возникла")
 		}
 	})
 
 	t.Run("Ошибка авторизации (401)", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет ошибку 401
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
@@ -142,15 +116,27 @@ func TestGetCurrentUserErrors(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "invalid_api_key")
-
-		// Вызываем тестируемую функцию
-		_, err := GetCurrentUser(apiClient)
-
-		// Проверяем, что вернулась ошибка
+		_, err := GetCurrent(context.Background(), apiClient)
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за неверного API-ключа, но она не возникла")
+		}
+	})
+
+	t.Run("current_user_id равен 0", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if _, err := w.Write([]byte(`{"id": 1, "name": "Test", "subdomain": "test", "current_user_id": 0}`)); err != nil {
+				t.Fatalf("Ошибка при записи ответа: %v", err)
+			}
+		}))
+		defer server.Close()
+
+		apiClient := client.NewClient(server.URL, "test_api_key")
+		_, err := GetCurrent(context.Background(), apiClient)
+		if err == nil {
+			t.Error("Ожидалась ошибка при current_user_id=0, но она не возникла")
 		}
 	})
 }
@@ -158,23 +144,19 @@ func TestGetCurrentUserErrors(t *testing.T) {
 // TestListUsersErrors проверяет обработку ошибок при получении списка пользователей
 func TestListUsersErrors(t *testing.T) {
 	t.Run("Пустой список пользователей", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет пустой список
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": []}}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию
-		users, err := ListUsers(apiClient, 50, 1)
+		users, err := List(context.Background(), apiClient, 50, 1)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Не ожидалась ошибка, но получена: %v", err)
 		}
@@ -185,43 +167,35 @@ func TestListUsersErrors(t *testing.T) {
 	})
 
 	t.Run("Некорректный JSON", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет некорректный JSON
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": [{`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": [{`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := ListUsers(apiClient, 50, 1)
+		_, err := List(context.Background(), apiClient, 50, 1)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за некорректного JSON, но она не возникла")
 		}
 	})
 
 	t.Run("Ошибка HTTP", func(t *testing.T) {
-		// Используем несуществующий домен для вызова ошибки
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
-		// Вызываем тестируемую функцию
-		_, err := ListUsers(apiClient, 50, 1)
+		_, err := List(context.Background(), apiClient, 50, 1)
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка HTTP, но она не возникла")
 		}
 	})
 
 	t.Run("Некорректные параметры страницы", func(t *testing.T) {
-		// Создаем тестовый сервер, который вернет ошибку 400
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 			page := query.Get("page")
@@ -238,19 +212,16 @@ func TestListUsersErrors(t *testing.T) {
 
 			// Успешный ответ для корректных параметров
 			w.WriteHeader(http.StatusOK)
-			if _, err := w.Write([]byte(`{"_embedded": {"items": []}}`)); err != nil {
+			if _, err := w.Write([]byte(`{"_embedded": {"users": []}}`)); err != nil {
 				t.Fatalf("Ошибка при записи ответа: %v", err)
 			}
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемую функцию с некорректными параметрами
-		_, err := ListUsers(apiClient, 50, 0) // page=0 - некорректный параметр
+		_, err := List(context.Background(), apiClient, 50, 0) // page=0 - некорректный параметр
 
-		// Проверяем, что вернулась ошибка
 		if err == nil {
 			t.Error("Ожидалась ошибка из-за некорректных параметров, но она не возникла")
 		}

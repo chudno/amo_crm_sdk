@@ -1,4 +1,4 @@
-// Пакет auth предоставляет методы для аутентификации в API amoCRM.
+// Package auth предоставляет методы для аутентификации в API amoCRM.
 //
 // Этот пакет содержит все необходимые инструменты для OAuth2-авторизации,
 // получения токенов доступа и их обновления. Процесс авторизации соответствует
@@ -7,6 +7,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -56,7 +57,7 @@ type AuthRequest struct {
 //   - redirectURI: URI перенаправления, указанный при регистрации интеграции
 //
 // Возвращает структуру AuthResponse с токенами доступа или ошибку.
-func GetAccessToken(baseURL, clientID, clientSecret, code, redirectURI string) (*AuthResponse, error) {
+func GetAccessToken(ctx context.Context, baseURL, clientID, clientSecret, code, redirectURI string) (*AuthResponse, error) {
 	url := baseURL + "/oauth2/access_token"
 
 	authReq := AuthRequest{
@@ -72,7 +73,7 @@ func GetAccessToken(baseURL, clientID, clientSecret, code, redirectURI string) (
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(authJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(authJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func GetAccessToken(baseURL, clientID, clientSecret, code, redirectURI string) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -131,7 +132,7 @@ func GetAuthURL(baseURL, clientID, redirectURI, state, mode string) string {
 //
 // Возвращает новую структуру AuthResponse с обновленными токенами или ошибку.
 // Этот метод следует использовать, когда срок действия текущего токена истекает.
-func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*AuthResponse, error) {
+func RefreshAccessToken(ctx context.Context, baseURL, clientID, clientSecret, refreshToken string) (*AuthResponse, error) {
 	url := baseURL + "/oauth2/access_token"
 
 	authReq := AuthRequest{
@@ -146,7 +147,7 @@ func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(authJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(authJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +162,7 @@ func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -184,7 +185,7 @@ func RefreshAccessToken(baseURL, clientID, clientSecret, refreshToken string) (*
 //
 // Возвращает структуру AuthResponse с долгоживущим токеном доступа или ошибку.
 // Долгоживущие токены не требуют обновления и могут использоваться длительное время.
-func GetLongLivedToken(baseURL, clientID, clientSecret string) (*AuthResponse, error) {
+func GetLongLivedToken(ctx context.Context, baseURL, clientID, clientSecret string) (*AuthResponse, error) {
 	url := baseURL + "/oauth2/access_token"
 
 	authReq := AuthRequest{
@@ -198,7 +199,7 @@ func GetLongLivedToken(baseURL, clientID, clientSecret string) (*AuthResponse, e
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(authJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(authJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func GetLongLivedToken(baseURL, clientID, clientSecret string) (*AuthResponse, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)

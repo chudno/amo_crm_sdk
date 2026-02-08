@@ -6,9 +6,9 @@ import "fmt"
 // Версия SDK
 const (
 	// VersionMajor - мажорный номер версии
-	VersionMajor = 1
+	VersionMajor = 0
 	// VersionMinor - минорный номер версии
-	VersionMinor = 0
+	VersionMinor = 2
 	// VersionPatch - патч версии
 	VersionPatch = 0
 	// VersionSuffix - суффикс версии (например, beta, rc)

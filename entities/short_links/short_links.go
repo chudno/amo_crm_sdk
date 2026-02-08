@@ -1,8 +1,9 @@
-// Пакет short_links предоставляет методы для работы с короткими ссылками в amoCRM.
+// Package short_links предоставляет методы для работы с короткими ссылками в amoCRM.
 package short_links
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 
 // Requester - интерфейс для выполнения HTTP-запросов, используется для тестирования.
 type Requester interface {
-	DoRequest(req *http.Request) (*http.Response, error)
+	DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 	GetBaseURL() string
 }
 
@@ -42,8 +43,8 @@ type ShortLink struct {
 	UseInEmbedded bool   `json:"use_in_embedded,omitempty"`
 }
 
-// ShortLinkFilter представляет параметры фильтрации для списка коротких ссылок.
-type ShortLinkFilter struct {
+// Filter представляет параметры фильтрации для списка коротких ссылок.
+type Filter struct {
 	EntityID   int    `json:"filter[entity_id],omitempty"`
 	EntityType string `json:"filter[entity_type],omitempty"`
 	CreatedBy  int    `json:"filter[created_by],omitempty"`
@@ -61,7 +62,7 @@ func WithFilter(filter map[string]string) WithOption {
 	}
 }
 
-// GetShortLinks получает список коротких ссылок с поддержкой фильтрации и пагинации.
+// List получает список коротких ссылок с поддержкой фильтрации и пагинации.
 //
 // Пример использования:
 //
@@ -69,53 +70,45 @@ func WithFilter(filter map[string]string) WithOption {
 //		"filter[entity_type]": "leads",
 //		"filter[entity_id]": "123",
 //	}
-//	shortLinks, err := short_links.GetShortLinks(apiClient, 1, 50, short_links.WithFilter(filter))
-func GetShortLinks(apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error) {
-	return GetShortLinksWithRequester(apiClient, page, limit, options...)
+//	shortLinks, err := short_links.List(ctx, apiClient, 1, 50, short_links.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetShortLinksWithRequester получает список коротких ссылок с использованием интерфейса Requester.
-func GetShortLinksWithRequester(requester Requester, page, limit int, options ...WithOption) ([]ShortLink, error) {
-	// Формируем URL для запроса
+// ListWithRequester получает список коротких ссылок с использованием интерфейса Requester.
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]ShortLink, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/short_links", requester.GetBaseURL())
 
-	// Формируем параметры запроса
 	params := map[string]string{
 		"page":  strconv.Itoa(page),
 		"limit": strconv.Itoa(limit),
 	}
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL с параметрами
 	queryParams := url.Values{}
 	for key, value := range params {
 		queryParams.Add(key, value)
 	}
 	requestURL := fmt.Sprintf("%s?%s", baseURL, queryParams.Encode())
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", requestURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", requestURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			ShortLinks []ShortLink `json:"short_links"`
@@ -128,39 +121,34 @@ func GetShortLinksWithRequester(requester Requester, page, limit int, options ..
 	return response.Embedded.ShortLinks, nil
 }
 
-// GetShortLink получает информацию о конкретной короткой ссылке по ID.
+// Get получает информацию о конкретной короткой ссылке по ID.
 //
 // Пример использования:
 //
-//	shortLink, err := short_links.GetShortLink(apiClient, 123)
-func GetShortLink(apiClient *client.Client, id int) (*ShortLink, error) {
-	return GetShortLinkWithRequester(apiClient, id)
+//	shortLink, err := short_links.Get(ctx, apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
+	return GetWithRequester(ctx, apiClient, id)
 }
 
-// GetShortLinkWithRequester получает информацию о конкретной короткой ссылке с использованием интерфейса Requester.
-func GetShortLinkWithRequester(requester Requester, id int) (*ShortLink, error) {
-	// Формируем URL для запроса
+// GetWithRequester получает информацию о конкретной короткой ссылке с использованием интерфейса Requester.
+func GetWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
 	url := fmt.Sprintf("%s/api/v4/short_links/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var shortLink ShortLink
 	if err := json.NewDecoder(resp.Body).Decode(&shortLink); err != nil {
 		return nil, err
@@ -169,7 +157,7 @@ func GetShortLinkWithRequester(requester Requester, id int) (*ShortLink, error) 
 	return &shortLink, nil
 }
 
-// CreateShortLink создает новую короткую ссылку.
+// Create создает новую короткую ссылку.
 //
 // Пример использования:
 //
@@ -178,42 +166,36 @@ func GetShortLinkWithRequester(requester Requester, id int) (*ShortLink, error) 
 //		EntityType: "leads",
 //		EntityID: 123,
 //	}
-//	createdLink, err := short_links.CreateShortLink(apiClient, newLink)
-func CreateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
-	return CreateShortLinkWithRequester(apiClient, shortLink)
+//	createdLink, err := short_links.Create(ctx, apiClient, newLink)
+func Create(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
+	return CreateWithRequester(ctx, apiClient, shortLink)
 }
 
-// CreateShortLinkWithRequester создает новую короткую ссылку с использованием интерфейса Requester.
-func CreateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*ShortLink, error) {
-	// Формируем URL для запроса
+// CreateWithRequester создает новую короткую ссылку с использованием интерфейса Requester.
+func CreateWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
 	url := fmt.Sprintf("%s/api/v4/short_links", requester.GetBaseURL())
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(shortLink)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var response struct {
 		Embedded struct {
 			ShortLinks []ShortLink `json:"short_links"`
@@ -223,7 +205,6 @@ func CreateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*S
 		return nil, err
 	}
 
-	// Проверяем, что создана хотя бы одна ссылка
 	if len(response.Embedded.ShortLinks) == 0 {
 		return nil, fmt.Errorf("короткая ссылка не была создана")
 	}
@@ -231,7 +212,7 @@ func CreateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*S
 	return &response.Embedded.ShortLinks[0], nil
 }
 
-// UpdateShortLink обновляет существующую короткую ссылку.
+// Update обновляет существующую короткую ссылку.
 //
 // Пример использования:
 //
@@ -239,46 +220,40 @@ func CreateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*S
 //		ID: 123,
 //		URL: "https://updated-example.com",
 //	}
-//	updatedLink, err := short_links.UpdateShortLink(apiClient, link)
-func UpdateShortLink(apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
-	return UpdateShortLinkWithRequester(apiClient, shortLink)
+//	updatedLink, err := short_links.Update(ctx, apiClient, link)
+func Update(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
+	return UpdateWithRequester(ctx, apiClient, shortLink)
 }
 
-// UpdateShortLinkWithRequester обновляет существующую короткую ссылку с использованием интерфейса Requester.
-func UpdateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*ShortLink, error) {
+// UpdateWithRequester обновляет существующую короткую ссылку с использованием интерфейса Requester.
+func UpdateWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
 	if shortLink.ID == 0 {
 		return nil, fmt.Errorf("ID короткой ссылки не указан")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/short_links/%d", requester.GetBaseURL(), shortLink.ID)
 
-	// Подготавливаем данные для запроса
 	data, err := json.Marshal(shortLink)
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var updatedLink ShortLink
 	if err := json.NewDecoder(resp.Body).Decode(&updatedLink); err != nil {
 		return nil, err
@@ -287,34 +262,30 @@ func UpdateShortLinkWithRequester(requester Requester, shortLink *ShortLink) (*S
 	return &updatedLink, nil
 }
 
-// DeleteShortLink удаляет короткую ссылку по ID.
+// Delete удаляет короткую ссылку по ID.
 //
 // Пример использования:
 //
-//	err := short_links.DeleteShortLink(apiClient, 123)
-func DeleteShortLink(apiClient *client.Client, id int) error {
-	return DeleteShortLinkWithRequester(apiClient, id)
+//	err := short_links.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, id int) error {
+	return DeleteWithRequester(ctx, apiClient, id)
 }
 
-// DeleteShortLinkWithRequester удаляет короткую ссылку с использованием интерфейса Requester.
-func DeleteShortLinkWithRequester(requester Requester, id int) error {
-	// Формируем URL для запроса
+// DeleteWithRequester удаляет короткую ссылку с использованием интерфейса Requester.
+func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
 	url := fmt.Sprintf("%s/api/v4/short_links/%d", requester.GetBaseURL(), id)
 
-	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -322,39 +293,34 @@ func DeleteShortLinkWithRequester(requester Requester, id int) error {
 	return nil
 }
 
-// GetShortLinkStats получает статистику использования короткой ссылки.
+// GetStats получает статистику использования короткой ссылки.
 //
 // Пример использования:
 //
-//	stats, err := short_links.GetShortLinkStats(apiClient, 123)
-func GetShortLinkStats(apiClient *client.Client, id int) (*ShortLink, error) {
-	return GetShortLinkStatsWithRequester(apiClient, id)
+//	stats, err := short_links.GetStats(ctx, apiClient, 123)
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
+	return GetStatsWithRequester(ctx, apiClient, id)
 }
 
-// GetShortLinkStatsWithRequester получает статистику короткой ссылки с использованием интерфейса Requester.
-func GetShortLinkStatsWithRequester(requester Requester, id int) (*ShortLink, error) {
-	// Формируем URL для запроса
+// GetStatsWithRequester получает статистику короткой ссылки с использованием интерфейса Requester.
+func GetStatsWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
 	url := fmt.Sprintf("%s/api/v4/short_links/%d/statistics", requester.GetBaseURL(), id)
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	// Выполняем запрос
-	resp, err := requester.DoRequest(req)
+	resp, err := requester.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Декодируем ответ
 	var stats ShortLink
 	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
 		return nil, err

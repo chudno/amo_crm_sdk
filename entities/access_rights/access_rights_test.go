@@ -1,6 +1,7 @@
 package access_rights
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -8,7 +9,6 @@ import (
 
 // TestGetAccessRights проверяет получение списка прав доступа
 func TestGetAccessRights(t *testing.T) {
-	// Подготавливаем ответ для успешного сценария
 	successResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -76,7 +76,6 @@ func TestGetAccessRights(t *testing.T) {
 		}
 	}`
 
-	// Ответ для ситуации, когда прав доступа нет
 	emptyResponse := `{
 		"page": 1,
 		"per_page": 50,
@@ -85,19 +84,14 @@ func TestGetAccessRights(t *testing.T) {
 		}
 	}`
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/access_rights", http.StatusOK, successResponse, nil)
 
-		// Создаем фильтр по типу права доступа
 		accessType := TypeGroup
 
-		// Вызываем тестируемый метод
-		rights, err := GetAccessRightsWithRequester(mockClient, 1, 50, WithType(accessType))
+		rights, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithType(accessType))
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении прав доступа: %v", err)
 		}
@@ -139,16 +133,12 @@ func TestGetAccessRights(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с пустым ответом
 	t.Run("Empty", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/access_rights", http.StatusOK, emptyResponse, nil)
 
-		// Вызываем тестируемый метод
-		rights, err := GetAccessRightsWithRequester(mockClient, 1, 50)
+		rights, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении прав доступа: %v", err)
 		}
@@ -158,16 +148,12 @@ func TestGetAccessRights(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой сервера
 	t.Run("ServerError", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", "/api/v4/access_rights", http.StatusInternalServerError, `{"error": "Internal server error"}`, nil)
 
-		// Вызываем тестируемый метод
-		_, err := GetAccessRightsWithRequester(mockClient, 1, 50)
+		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}
@@ -176,10 +162,8 @@ func TestGetAccessRights(t *testing.T) {
 
 // TestGetAccessRight проверяет получение информации о конкретном праве доступа
 func TestGetAccessRight(t *testing.T) {
-	// ID права доступа для теста
 	accessRightID := 123
 
-	// Подготавливаем ответ для успешного сценария
 	successResponse := fmt.Sprintf(`{
 		"id": %d,
 		"name": "Менеджеры продаж",
@@ -208,16 +192,12 @@ func TestGetAccessRight(t *testing.T) {
 		"user_ids": [101, 102]
 	}`, accessRightID)
 
-	// Проверяем успешный сценарий
 	t.Run("Success", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, successResponse, nil)
 
-		// Вызываем тестируемый метод
-		accessRight, err := GetAccessRightWithRequester(mockClient, accessRightID)
+		accessRight, err := GetWithRequester(context.Background(), mockClient, accessRightID)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении права доступа: %v", err)
 		}
@@ -243,16 +223,12 @@ func TestGetAccessRight(t *testing.T) {
 		}
 	})
 
-	// Проверяем сценарий с ошибкой
 	t.Run("NotFound", func(t *testing.T) {
-		// Создаем мок-клиент
 		mockClient := NewAdvancedMockClient()
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
-		// Вызываем тестируемый метод
-		_, err := GetAccessRightWithRequester(mockClient, accessRightID)
+		_, err := GetWithRequester(context.Background(), mockClient, accessRightID)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Fatalf("Ожидалась ошибка, но получен nil")
 		}

@@ -11,11 +11,9 @@ import (
 
 // createUploadTestFile создает временный тестовый файл и возвращает его путь и содержимое
 func createUploadTestFile(t *testing.T, filename string, content []byte) string {
-	// Создаем временный файл для тестирования
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, filename)
 
-	// Записываем тестовые данные во временный файл
 	err := os.WriteFile(tempFile, content, 0644)
 	if err != nil {
 		t.Fatalf("Ошибка при создании временного файла: %v", err)
@@ -27,24 +25,20 @@ func createUploadTestFile(t *testing.T, filename string, content []byte) string 
 // setupUploadFileTestServer создает тестовый сервер для загрузки файла
 func setupUploadFileTestServer(t *testing.T, entityType EntityType, entityID int, fileName string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/%s/%d/files", entityType, entityID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем Content-Type
 		contentType := r.Header.Get("Content-Type")
 		if contentType == "" || len(contentType) < 10 || contentType[:10] != "multipart/" {
 			t.Errorf("Ожидался Content-Type multipart, получен %s", contentType)
 		}
 
-		// Проверяем, что файл был отправлен
 		err := r.ParseMultipartForm(10 << 20) // Максимальный размер формы 10 MB
 		if err != nil {
 			t.Errorf("Ошибка при парсинге multipart формы: %v", err)
@@ -59,10 +53,9 @@ func setupUploadFileTestServer(t *testing.T, entityType EntityType, entityID int
 			t.Errorf("Ожидалось имя файла %s, получено %s", fileName, header.Filename)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		_, _ = w.Write([]byte(fmt.Sprintf(`{
+		_, _ = fmt.Fprintf(w, `{
 			"_embedded": {
 				"id": 456,
 				"uuid": "test-file-uuid-123",
@@ -82,7 +75,7 @@ func setupUploadFileTestServer(t *testing.T, entityType EntityType, entityID int
 					}
 				}
 			}
-		}`, fileName, fileName, fileName, entityID, fileName)))
+		}`, fileName, fileName, fileName, entityID, fileName)
 	}))
 }
 
@@ -118,18 +111,15 @@ func verifyUploadedFileResult(t *testing.T, file *File, testContent []byte, file
 // setupGetFilesTestServer создает тестовый сервер для получения списка файлов
 func setupGetFilesTestServer(t *testing.T, entityType EntityType, entityID int, withQueryParams bool) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/%s/%d/files", entityType, entityID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		if withQueryParams {
 			expectedPage := "2"
 			if r.URL.Query().Get("page") != expectedPage {
@@ -142,7 +132,6 @@ func setupGetFilesTestServer(t *testing.T, entityType EntityType, entityID int, 
 			}
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -212,7 +201,6 @@ func verifyFilesList(t *testing.T, files []File) {
 		t.Fatalf("Ожидалось 2 файла, получено %d", len(files))
 	}
 
-	// Проверяем содержимое первого файла
 	if files[0].ID != 456 {
 		t.Errorf("Ожидался ID 456, получен %d", files[0].ID)
 	}
@@ -237,7 +225,6 @@ func verifyFilesList(t *testing.T, files []File) {
 		t.Errorf("Ожидалась ссылка для скачивания https://example.amocrm.ru/download/file1.txt, получена %s", files[0].Download)
 	}
 
-	// Проверяем содержимое второго файла
 	if files[1].ID != 457 {
 		t.Errorf("Ожидался ID 457, получен %d", files[1].ID)
 	}
@@ -254,18 +241,15 @@ func verifyFilesList(t *testing.T, files []File) {
 // setupGetFileTestServer создает тестовый сервер для получения информации о файле
 func setupGetFileTestServer(t *testing.T, entityType EntityType, entityID, fileID int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/%s/%d/files/%d", entityType, entityID, fileID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -297,18 +281,15 @@ func setupGetFileTestServer(t *testing.T, entityType EntityType, entityID, fileI
 // setupDeleteFileTestServer создает тестовый сервер для удаления файла
 func setupDeleteFileTestServer(t *testing.T, entityType EntityType, entityID, fileID int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/%s/%d/files/%d", entityType, entityID, fileID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 }
@@ -316,24 +297,20 @@ func setupDeleteFileTestServer(t *testing.T, entityType EntityType, entityID, fi
 // setupBatchDeleteFilesTestServer создает тестовый сервер для массового удаления файлов
 func setupBatchDeleteFilesTestServer(t *testing.T, entityType EntityType, entityID int, fileIDs []int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "DELETE" {
 			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/%s/%d/files", entityType, entityID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметр фильтра
 		expectedFilter := "456,789"
 		if r.URL.Query().Get("filter[id]") != expectedFilter {
 			t.Errorf("Ожидался параметр filter[id]=%s, получен %s", expectedFilter, r.URL.Query().Get("filter[id]"))
 		}
 
-		// Отправляем ответ
 		w.WriteHeader(http.StatusNoContent)
 	}))
 }

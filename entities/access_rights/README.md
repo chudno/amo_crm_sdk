@@ -18,15 +18,15 @@
 
 ## Типы данных
 
-### AccessRight
+### Right
 
 Основная структура для работы с правами доступа:
 
 ```go
-type AccessRight struct {
+type Right struct {
 	ID          int              `json:"id,omitempty"`
 	Name        string           `json:"name,omitempty"`
-	Type        AccessRightsType `json:"type,omitempty"`
+	Type        Type `json:"type,omitempty"`
 	Rights      Rights           `json:"rights,omitempty"`
 	CreatedBy   int              `json:"created_by,omitempty"`
 	UpdatedBy   int              `json:"updated_by,omitempty"`
@@ -38,37 +38,37 @@ type AccessRight struct {
 }
 ```
 
-### AccessRightsType
+### Type
 
 Тип права доступа определен как строковый тип с константами:
 
 ```go
-type AccessRightsType string
+type Type string
 
 const (
-	TypeGroup  AccessRightsType = "group"
-	TypeCustom AccessRightsType = "custom"
+	TypeGroup  Type = "group"
+	TypeCustom Type = "custom"
 )
 ```
 
-### AccessEntityType
+### EntityType
 
 Тип сущности для настройки прав доступа:
 
 ```go
-type AccessEntityType string
+type EntityType string
 
 const (
-	EntityLead       AccessEntityType = "leads"
-	EntityContact    AccessEntityType = "contacts"
-	EntityCompany    AccessEntityType = "companies"
-	EntityTask       AccessEntityType = "tasks"
-	EntityCustomer   AccessEntityType = "customers"
-	EntityCatalog    AccessEntityType = "catalogs"
-	EntityUnsorted   AccessEntityType = "unsorted"
-	EntityWidgets    AccessEntityType = "widgets"
-	EntityMails      AccessEntityType = "mail"
-	EntityChatWidget AccessEntityType = "chat_widget"
+	EntityLead       EntityType = "leads"
+	EntityContact    EntityType = "contacts"
+	EntityCompany    EntityType = "companies"
+	EntityTask       EntityType = "tasks"
+	EntityCustomer   EntityType = "customers"
+	EntityCatalog    EntityType = "catalogs"
+	EntityUnsorted   EntityType = "unsorted"
+	EntityWidgets    EntityType = "widgets"
+	EntityMails      EntityType = "mail"
+	EntityChatWidget EntityType = "chat_widget"
 )
 ```
 
@@ -133,10 +133,10 @@ type UserGroup struct {
 
 ### Получение списка прав доступа
 
-Метод `GetAccessRights` позволяет получить список прав доступа в аккаунте с возможностью фильтрации и пагинации.
+Метод `List` позволяет получить список прав доступа в аккаунте с возможностью фильтрации и пагинации.
 
 ```go
-func GetAccessRights(apiClient *client.Client, page, limit int, options ...WithOption) ([]AccessRight, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Right, error)
 ```
 
 #### Параметры
@@ -155,7 +155,7 @@ func GetAccessRights(apiClient *client.Client, page, limit int, options ...WithO
 
 ```go
 // Получение всех прав доступа типа group
-accessRights, err := access_rights.GetAccessRights(apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
+accessRights, err := access_rights.List(ctx, apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
 if err != nil {
     log.Fatal(err)
 }
@@ -168,10 +168,10 @@ for _, right := range accessRights {
 
 ### Получение информации о конкретном праве доступа
 
-Метод `GetAccessRight` позволяет получить подробную информацию о конкретном праве доступа по его ID.
+Метод `Get` позволяет получить подробную информацию о конкретном праве доступа по его ID.
 
 ```go
-func GetAccessRight(apiClient *client.Client, accessRightID int) (*AccessRight, error)
+func Get(ctx context.Context, apiClient *client.Client, accessRightID int) (*Right, error)
 ```
 
 #### Параметры
@@ -183,7 +183,7 @@ func GetAccessRight(apiClient *client.Client, accessRightID int) (*AccessRight, 
 
 ```go
 // Получение информации о праве доступа
-accessRight, err := access_rights.GetAccessRight(apiClient, 123)
+accessRight, err := access_rights.Get(ctx, apiClient, 123)
 if err != nil {
     log.Fatal(err)
 }
@@ -195,10 +195,10 @@ fmt.Printf("Просмотр сделок: %v, Редактирование сд
 
 ### Создание нового права доступа
 
-Метод `CreateAccessRight` позволяет создать новое право доступа в аккаунте.
+Метод `Create` позволяет создать новое право доступа в аккаунте.
 
 ```go
-func CreateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error)
+func Create(ctx context.Context, apiClient *client.Client, accessRight *Right) (*Right, error)
 ```
 
 #### Параметры
@@ -210,7 +210,7 @@ func CreateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*Acc
 
 ```go
 // Создание нового права доступа
-newRight := &access_rights.AccessRight{
+newRight := &access_rights.Right{
     Name: "Менеджеры продаж",
     Type: access_rights.TypeGroup,
     Rights: access_rights.Rights{
@@ -228,7 +228,7 @@ newRight := &access_rights.AccessRight{
     UserIDs: []int{123, 456},
 }
 
-createdRight, err := access_rights.CreateAccessRight(apiClient, newRight)
+createdRight, err := access_rights.Create(ctx, apiClient, newRight)
 if err != nil {
     log.Fatal(err)
 }
@@ -238,10 +238,10 @@ fmt.Printf("Создано право доступа: ID=%d, Название=%s
 
 ### Обновление права доступа
 
-Метод `UpdateAccessRight` позволяет обновить существующее право доступа.
+Метод `Update` позволяет обновить существующее право доступа.
 
 ```go
-func UpdateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error)
+func Update(ctx context.Context, apiClient *client.Client, accessRight *Right) (*Right, error)
 ```
 
 #### Параметры
@@ -253,7 +253,7 @@ func UpdateAccessRight(apiClient *client.Client, accessRight *AccessRight) (*Acc
 
 ```go
 // Обновление существующего права доступа
-updateRight := &access_rights.AccessRight{
+updateRight := &access_rights.Right{
     ID: 123,
     Name: "Менеджеры продаж (обновлено)",
     Rights: access_rights.Rights{
@@ -267,7 +267,7 @@ updateRight := &access_rights.AccessRight{
     UserIDs: []int{123, 456, 789}, // Добавляем нового пользователя
 }
 
-updatedRight, err := access_rights.UpdateAccessRight(apiClient, updateRight)
+updatedRight, err := access_rights.Update(ctx, apiClient, updateRight)
 if err != nil {
     log.Fatal(err)
 }
@@ -277,10 +277,10 @@ fmt.Printf("Обновлено право доступа: ID=%d, Названи�
 
 ### Удаление права доступа
 
-Метод `DeleteAccessRight` позволяет удалить право доступа из аккаунта.
+Метод `Delete` позволяет удалить право доступа из аккаунта.
 
 ```go
-func DeleteAccessRight(apiClient *client.Client, accessRightID int) error
+func Delete(ctx context.Context, apiClient *client.Client, accessRightID int) error
 ```
 
 #### Параметры
@@ -292,7 +292,7 @@ func DeleteAccessRight(apiClient *client.Client, accessRightID int) error
 
 ```go
 // Удаление права доступа
-err := access_rights.DeleteAccessRight(apiClient, 123)
+err := access_rights.Delete(ctx, apiClient, 123)
 if err != nil {
     log.Fatal(err)
 }
@@ -305,7 +305,7 @@ fmt.Println("Право доступа успешно удалено")
 Метод `SetEntityRights` позволяет обновить права доступа к конкретной сущности.
 
 ```go
-func SetEntityRights(apiClient *client.Client, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error)
+func SetEntityRights(ctx context.Context, apiClient *client.Client, accessRightID int, entityType EntityType, rights EntityRights) (*Right, error)
 ```
 
 #### Параметры
@@ -327,21 +327,21 @@ entityRights := access_rights.EntityRights{
     Export: true,
 }
 
-updatedRight, err := access_rights.SetEntityRights(apiClient, 123, access_rights.EntityLead, entityRights)
+updatedRight, err := access_rights.SetEntityRights(ctx, apiClient, 123, access_rights.EntityLead, entityRights)
 if err != nil {
     log.Fatal(err)
 }
 
-fmt.Printf("Обновлены права для сделок: Просмотр=%v, Редактирование=%v, Удаление=%v\n", 
+fmt.Printf("Обновлены права для сделок: Просмотр=%v, Редактирование=%v, Удаление=%v\n",
     updatedRight.Rights.Leads.View, updatedRight.Rights.Leads.Edit, updatedRight.Rights.Leads.Delete)
 ```
 
 ### Добавление пользователей в право доступа
 
-Метод `AddUsersToAccessRight` позволяет добавить пользователей в существующее право доступа.
+Метод `AddUsers` позволяет добавить пользователей в существующее право доступа.
 
 ```go
-func AddUsersToAccessRight(apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error)
+func AddUsers(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*Right, error)
 ```
 
 #### Параметры
@@ -355,7 +355,7 @@ func AddUsersToAccessRight(apiClient *client.Client, accessRightID int, userIDs 
 ```go
 // Добавление пользователей в право доступа
 userIDs := []int{789, 101}
-updatedRight, err := access_rights.AddUsersToAccessRight(apiClient, 123, userIDs)
+updatedRight, err := access_rights.AddUsers(ctx, apiClient, 123, userIDs)
 if err != nil {
     log.Fatal(err)
 }
@@ -365,10 +365,10 @@ fmt.Printf("Пользователи добавлены. Всего пользо
 
 ### Удаление пользователей из права доступа
 
-Метод `RemoveUsersFromAccessRight` позволяет удалить пользователей из существующего права доступа.
+Метод `RemoveUsers` позволяет удалить пользователей из существующего права доступа.
 
 ```go
-func RemoveUsersFromAccessRight(apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error)
+func RemoveUsers(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*Right, error)
 ```
 
 #### Параметры
@@ -382,7 +382,7 @@ func RemoveUsersFromAccessRight(apiClient *client.Client, accessRightID int, use
 ```go
 // Удаление пользователей из права доступа
 userIDs := []int{789, 101}
-updatedRight, err := access_rights.RemoveUsersFromAccessRight(apiClient, 123, userIDs)
+updatedRight, err := access_rights.RemoveUsers(ctx, apiClient, 123, userIDs)
 if err != nil {
     log.Fatal(err)
 }
@@ -398,6 +398,7 @@ fmt.Printf("Пользователи удалены. Всего пользова
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -409,8 +410,11 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Создаем новое право доступа
-    newRight := &access_rights.AccessRight{
+    newRight := &access_rights.Right{
         Name: "Менеджеры продаж",
         Type: access_rights.TypeGroup,
         Rights: access_rights.Rights{
@@ -428,7 +432,7 @@ func main() {
         UserIDs: []int{123, 456},
     }
 
-    createdRight, err := access_rights.CreateAccessRight(apiClient, newRight)
+    createdRight, err := access_rights.Create(ctx, apiClient, newRight)
     if err != nil {
         log.Fatalf("Ошибка при создании права доступа: %v", err)
     }
@@ -444,7 +448,7 @@ func main() {
         Export: true,
     }
     
-    updatedRight, err := access_rights.SetEntityRights(apiClient, createdRight.ID, access_rights.EntityLead, leadsRights)
+    updatedRight, err := access_rights.SetEntityRights(ctx, apiClient, createdRight.ID, access_rights.EntityLead, leadsRights)
     if err != nil {
         log.Fatalf("Ошибка при обновлении прав для сделок: %v", err)
     }
@@ -453,7 +457,7 @@ func main() {
     
     // Добавляем пользователей
     userIDs := []int{789, 101}
-    updatedRight, err = access_rights.AddUsersToAccessRight(apiClient, createdRight.ID, userIDs)
+    updatedRight, err = access_rights.AddUsers(ctx, apiClient, createdRight.ID, userIDs)
     if err != nil {
         log.Fatalf("Ошибка при добавлении пользователей: %v", err)
     }
@@ -468,6 +472,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -479,8 +484,11 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Получаем права доступа типа group
-    accessRights, err := access_rights.GetAccessRights(apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
+    accessRights, err := access_rights.List(ctx, apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
     if err != nil {
         log.Fatalf("Ошибка при получении прав доступа: %v", err)
     }
@@ -510,6 +518,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -521,11 +530,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID права доступа для обновления
     accessRightID := 123
-    
+
     // Получаем информацию о праве доступа
-    accessRight, err := access_rights.GetAccessRight(apiClient, accessRightID)
+    accessRight, err := access_rights.Get(ctx, apiClient, accessRightID)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о праве доступа: %v", err)
     }
@@ -537,7 +549,7 @@ func main() {
     accessRight.Rights.Contacts.Add = true
     accessRight.Rights.Contacts.Edit = true
     
-    updatedRight, err := access_rights.UpdateAccessRight(apiClient, accessRight)
+    updatedRight, err := access_rights.Update(ctx, apiClient, accessRight)
     if err != nil {
         log.Fatalf("Ошибка при обновлении права доступа: %v", err)
     }
@@ -545,7 +557,7 @@ func main() {
     fmt.Printf("Право доступа обновлено: ID=%d, Название=%s\n", updatedRight.ID, updatedRight.Name)
     
     // Удаляем право доступа
-    err = access_rights.DeleteAccessRight(apiClient, accessRightID)
+    err = access_rights.Delete(ctx, apiClient, accessRightID)
     if err != nil {
         log.Fatalf("Ошибка при удалении права доступа: %v", err)
     }

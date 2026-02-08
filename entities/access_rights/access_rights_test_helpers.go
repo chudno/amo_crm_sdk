@@ -1,6 +1,7 @@
 package access_rights
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -52,16 +53,13 @@ func (c *AdvancedMockClient) AddResponse(method, path string, statusCode int, bo
 }
 
 // DoRequest реализует интерфейс Requester
-func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error) {
-	// Ищем подходящий ответ для метода и пути
+func (c *AdvancedMockClient) DoRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
 	resp, found := c.Responses[MockRequest{Method: req.Method, Path: req.URL.Path}]
 
-	// Если не найден, возвращаем ответ по умолчанию
 	if !found {
 		resp = c.DefaultResponse
 	}
 
-	// Формируем HTTP-ответ
 	response := &http.Response{
 		StatusCode: resp.StatusCode,
 		Body:       io.NopCloser(strings.NewReader(resp.Body)),
@@ -69,7 +67,6 @@ func (c *AdvancedMockClient) DoRequest(req *http.Request) (*http.Response, error
 		Request:    req,
 	}
 
-	// Добавляем заголовки
 	for k, v := range resp.Headers {
 		response.Header.Set(k, v)
 	}

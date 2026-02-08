@@ -46,7 +46,6 @@ func TestNewLeadFilterFromURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := NewLeadFilterFromURL(tt.url)
 
-			// Проверяем ошибку
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewLeadFilterFromURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -56,12 +55,10 @@ func TestNewLeadFilterFromURL(t *testing.T) {
 				return
 			}
 
-			// Проверяем номер страницы
 			if result.PageInt != tt.wantPage {
 				t.Errorf("NewLeadFilterFromURL() page = %v, want %v", result.PageInt, tt.wantPage)
 			}
 
-			// Проверяем лимит
 			if result.LimitInt != tt.wantLimit {
 				t.Errorf("NewLeadFilterFromURL() limit = %v, want %v", result.LimitInt, tt.wantLimit)
 			}

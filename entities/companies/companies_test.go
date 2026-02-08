@@ -1,6 +1,7 @@
 package companies
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,20 +10,16 @@ import (
 )
 
 func TestGetCompany(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/companies/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -35,13 +32,10 @@ func TestGetCompany(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	company, err := GetCompany(apiClient, 123)
+	company, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении компании: %v", err)
 	}
@@ -60,45 +54,43 @@ func TestGetCompany(t *testing.T) {
 }
 
 func TestCreateCompany(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/companies"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
-			"id": 789,
-			"name": "Новая компания",
-			"responsible_user_id": 456,
-			"created_at": 1609459200,
-			"updated_at": 1609545600
+			"_embedded": {
+				"companies": [
+					{
+						"id": 789,
+						"name": "Новая компания",
+						"responsible_user_id": 456,
+						"created_at": 1609459200,
+						"updated_at": 1609545600
+					}
+				]
+			}
 		}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем компанию для теста
 	companyToCreate := &Company{
 		Name:              "Новая компания",
 		ResponsibleUserID: 456,
 	}
 
-	// Вызываем тестируемый метод
-	createdCompany, err := CreateCompany(apiClient, companyToCreate)
+	createdCompany, err := Create(context.Background(), apiClient, companyToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании компании: %v", err)
 	}

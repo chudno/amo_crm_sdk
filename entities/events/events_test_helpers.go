@@ -10,18 +10,15 @@ import (
 // setupGetEventsTestServer создает тестовый сервер для получения списка событий
 func setupGetEventsTestServer(t *testing.T, withQueryParams bool) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/events"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		if withQueryParams {
 			expectedPage := "2"
 			if r.URL.Query().Get("page") != expectedPage {
@@ -33,7 +30,6 @@ func setupGetEventsTestServer(t *testing.T, withQueryParams bool) *httptest.Serv
 				t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 			}
 
-			// Проверяем фильтры
 			expectedFilterType := "note"
 			if r.URL.Query().Get("filter[type]") != expectedFilterType {
 				t.Errorf("Ожидался параметр filter[type]=%s, получен %s", expectedFilterType, r.URL.Query().Get("filter[type]"))
@@ -44,14 +40,12 @@ func setupGetEventsTestServer(t *testing.T, withQueryParams bool) *httptest.Serv
 				t.Errorf("Ожидался параметр filter[entity_type]=%s, получен %s", expectedFilterEntityType, r.URL.Query().Get("filter[entity_type]"))
 			}
 
-			// Проверяем сортировку
 			expectedOrderCreatedAt := "desc"
 			if r.URL.Query().Get("order[created_at]") != expectedOrderCreatedAt {
 				t.Errorf("Ожидался параметр order[created_at]=%s, получен %s", expectedOrderCreatedAt, r.URL.Query().Get("order[created_at]"))
 			}
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -67,7 +61,7 @@ func setupGetEventsTestServer(t *testing.T, withQueryParams bool) *httptest.Serv
 			"_embedded": {
 				"events": [
 					{
-						"id": 123,
+						"id": "123",
 						"type": "note",
 						"entity_id": 456,
 						"entity_type": "lead",
@@ -83,7 +77,7 @@ func setupGetEventsTestServer(t *testing.T, withQueryParams bool) *httptest.Serv
 						}
 					},
 					{
-						"id": 124,
+						"id": "124",
 						"type": "note",
 						"entity_id": 457,
 						"entity_type": "lead",
@@ -113,9 +107,8 @@ func verifyEventsList(t *testing.T, events []Event) {
 		t.Fatalf("Ожидалось 2 события, получено %d", len(events))
 	}
 
-	// Проверяем содержимое первого события
-	if events[0].ID != 123 {
-		t.Errorf("Ожидался ID 123, получен %d", events[0].ID)
+	if events[0].ID != "123" {
+		t.Errorf("Ожидался ID 123, получен %s", events[0].ID)
 	}
 
 	if events[0].Type != EventTypeNote {
@@ -134,9 +127,8 @@ func verifyEventsList(t *testing.T, events []Event) {
 		t.Errorf("Ожидалось примечание 'Это тестовое примечание', получено '%s'", events[0].ValueAfterPretty)
 	}
 
-	// Проверяем содержимое второго события
-	if events[1].ID != 124 {
-		t.Errorf("Ожидался ID 124, получен %d", events[1].ID)
+	if events[1].ID != "124" {
+		t.Errorf("Ожидался ID 124, получен %s", events[1].ID)
 	}
 
 	if events[1].ValueAfterPretty != "Еще одно тестовое примечание" {
@@ -145,20 +137,17 @@ func verifyEventsList(t *testing.T, events []Event) {
 }
 
 // setupGetEventTestServer создает тестовый сервер для получения информации о событии
-func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httptest.Server {
+func setupGetEventTestServer(t *testing.T, eventID string, withEntity bool) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
-		expectedPath := fmt.Sprintf("/api/v4/events/%d", eventID)
+		expectedPath := fmt.Sprintf("/api/v4/events/%s", eventID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметр with
 		if withEntity {
 			expectedWith := "entity"
 			if r.URL.Query().Get("with") != expectedWith {
@@ -166,14 +155,13 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 			}
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		var response string
 		if withEntity {
 			response = fmt.Sprintf(`{
-				"id": %d,
+				"id": "%s",
 				"type": "note",
 				"entity_id": 456,
 				"entity_type": "lead",
@@ -192,13 +180,13 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 				},
 				"_links": {
 					"self": {
-						"href": "/api/v4/events/%d"
+						"href": "/api/v4/events/%s"
 					}
 				}
 			}`, eventID, eventID)
 		} else {
 			response = fmt.Sprintf(`{
-				"id": %d,
+				"id": "%s",
 				"type": "note",
 				"entity_id": 456,
 				"entity_type": "lead",
@@ -209,7 +197,7 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 				"value_after_pretty": "Это тестовое примечание",
 				"_links": {
 					"self": {
-						"href": "/api/v4/events/%d"
+						"href": "/api/v4/events/%s"
 					}
 				}
 			}`, eventID, eventID)
@@ -220,9 +208,9 @@ func setupGetEventTestServer(t *testing.T, eventID int, withEntity bool) *httpte
 }
 
 // verifyEventDetails проверяет детали события
-func verifyEventDetails(t *testing.T, event *Event, eventID int, withEntity bool) {
+func verifyEventDetails(t *testing.T, event *Event, eventID string, withEntity bool) {
 	if event.ID != eventID {
-		t.Errorf("Ожидался ID %d, получен %d", eventID, event.ID)
+		t.Errorf("Ожидался ID %s, получен %s", eventID, event.ID)
 	}
 
 	if event.Type != EventTypeNote {
@@ -242,7 +230,6 @@ func verifyEventDetails(t *testing.T, event *Event, eventID int, withEntity bool
 	}
 
 	if withEntity {
-		// Проверяем вложенную сущность
 		if event.Embedded == nil {
 			t.Fatalf("Отсутствует секция _embedded")
 		}

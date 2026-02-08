@@ -8,7 +8,6 @@
 - [Создание контакта](#создание-контакта)
 - [Получение контакта](#получение-контакта)
 - [Получение списка контактов](#получение-списка-контактов)
-- [Обновление контакта](#обновление-контакта)
 - [Пользовательские поля](#пользовательские-поля)
 - [Связывание контактов с другими сущностями](#связывание-контактов-с-другими-сущностями)
 
@@ -16,22 +15,23 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateContact` | Создание нового контакта |
-| `GetContact` | Получение контакта по ID |
-| `GetContacts` | Получение списка контактов с фильтрацией |
-| `UpdateContact` | Обновление существующего контакта |
-| `DeleteContact` | Удаление контакта |
+| `Create` | Создание нового контакта |
+| `Get` | Получение контакта по ID |
+| `List` | Получение списка контактов с пагинацией |
+| `LinkWithCompany` | Привязка контакта к компании |
 
 ## Создание контакта
 
 ```go
 import (
+    "context"
     "github.com/chudno/amo_crm_sdk/client"
     "github.com/chudno/amo_crm_sdk/entities/contacts"
 )
 
 // Инициализация клиента
 apiClient := client.NewClient("https://your-domain.amocrm.ru", "your_access_token")
+ctx := context.Background()
 
 // Создание нового контакта
 newContact := &contacts.Contact{
@@ -39,30 +39,8 @@ newContact := &contacts.Contact{
     ResponsibleUserID: 12345, // ID ответственного менеджера
 }
 
-// Добавление номера телефона
-newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []contacts.CustomFieldValue{
-        {
-            Value: "+79001234567",
-            Enum: "WORK", // Тип телефона (рабочий)
-        },
-    },
-})
-
-// Добавление email
-newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
-    FieldID: 5678, // ID поля "Email"
-    Values: []contacts.CustomFieldValue{
-        {
-            Value: "ivan@example.com",
-            Enum: "WORK", // Тип email (рабочий)
-        },
-    },
-})
-
 // Сохранение контакта
-createdContact, err := contacts.CreateContact(apiClient, newContact)
+createdContact, err := contacts.Create(ctx, apiClient, newContact)
 if err != nil {
     // Обработка ошибки
 }
@@ -73,7 +51,7 @@ if err != nil {
 ```go
 // Получение контакта по ID
 contactID := 12345
-contact, err := contacts.GetContact(apiClient, contactID)
+contact, err := contacts.Get(ctx, apiClient, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -83,73 +61,49 @@ if err != nil {
 
 ```go
 // Получение первых 50 контактов
-contactsList, err := contacts.GetContacts(apiClient, 1, 50)
+contactsList, err := contacts.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
 
-// Получение контактов с фильтрацией
-filter := map[string]string{
-    "query": "Иван", // Поиск по имени
-    "created_at": "1609459200", // Контакты, созданные после указанной даты (timestamp)
-}
-filteredContacts, err := contacts.GetContacts(apiClient, 1, 50, filter)
-```
-
-## Обновление контакта
-
-```go
-// Обновление существующего контакта
-contact.Name = "Иван Петрович Иванов"
-
-// Добавление нового номера телефона
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
-    FieldID: 1234, // ID поля "Телефон"
-    Values: []contacts.CustomFieldValue{
-        {
-            Value: "+79009876543",
-            Enum: "PERSONAL", // Тип телефона (личный)
-        },
-    },
-})
-
-updatedContact, err := contacts.UpdateContact(apiClient, contact)
-if err != nil {
-    // Обработка ошибки
-}
+// Получение контактов со связанными компаниями
+contactsWithCompanies, err := contacts.List(ctx, apiClient, 1, 50, contacts.WithCompanies)
 ```
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями контактов используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями контактов используйте структуры из пакета `custom_fields`:
 
 ```go
-// Добавление пользовательского поля
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
-    FieldID: 9876, // ID пользовательского поля
-    Values: []contacts.CustomFieldValue{
-        {
-            Value: "Значение поля",
-        },
+import "github.com/chudno/amo_crm_sdk/utils/custom_fields"
+
+contact.CustomFieldsValues = append(contact.CustomFieldsValues, custom_fields.Value{
+    FieldID: 9876,
+    Values: []custom_fields.FieldValue{
+        {Value: "Значение поля"},
     },
 })
 ```
 
 ## Связывание контактов с другими сущностями
 
-Для связывания контактов с другими сущностями используйте соответствующие методы из модулей leads и companies:
+### Привязка контакта к компании
+
+Для привязки контакта к компании используйте функцию `LinkWithCompany`:
 
 ```go
-// Связывание контакта со сделкой
-import "github.com/chudno/amo_crm_sdk/entities/leads"
+// Привязка контакта к компании
+err := contacts.LinkWithCompany(ctx, apiClient, contactID, companyID)
+if err != nil {
+    // Обработка ошибки
+}
+```
 
-err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
+### Получение контакта с компаниями
 
-// Связывание контакта с компанией
-import "github.com/chudno/amo_crm_sdk/entities/companies"
-err := companies.LinkCompanyWithContact(apiClient, companyID, contactID)
+Для получения контакта вместе с привязанными компаниями используйте опцию `WithCompanies`:
 
-// Связывание контакта с лидом
-import "github.com/chudno/amo_crm_sdk/entities/leads"
-err := leads.LinkLeadWithContact(apiClient, leadID, contactID)
+```go
+// Получение контакта с привязанными компаниями
+contact, err := contacts.Get(ctx, apiClient, contactID, contacts.WithCompanies)
 ```

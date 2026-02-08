@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -11,20 +12,16 @@ import (
 )
 
 func TestGetTags(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/contacts/tags"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		expectedPage := "1"
 		if r.URL.Query().Get("page") != expectedPage {
 			t.Errorf("Ожидался параметр page=%s, получен %s", expectedPage, r.URL.Query().Get("page"))
@@ -35,7 +32,6 @@ func TestGetTags(t *testing.T) {
 			t.Errorf("Ожидался параметр limit=%s, получен %s", expectedLimit, r.URL.Query().Get("limit"))
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -60,13 +56,10 @@ func TestGetTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	tags, err := GetTags(apiClient, EntityTypeContact, 1, 50)
+	tags, err := List(context.Background(), apiClient, EntityTypeContact, 1, 50)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении тегов: %v", err)
 	}
@@ -75,7 +68,6 @@ func TestGetTags(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 тегов, получено %d", len(tags))
 	}
 
-	// Проверяем содержимое первого тега
 	expectedTag1 := Tag{
 		ID:    123,
 		Name:  "Важный клиент",
@@ -85,7 +77,6 @@ func TestGetTags(t *testing.T) {
 		t.Errorf("Ожидался тег %+v, получен %+v", expectedTag1, tags[0])
 	}
 
-	// Проверяем содержимое второго тега
 	expectedTag2 := Tag{
 		ID:    456,
 		Name:  "Потенциальный клиент",
@@ -97,50 +88,45 @@ func TestGetTags(t *testing.T) {
 }
 
 func TestCreateTag(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/contacts/tags"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
-			"tag": {
-				"id": 789,
-				"name": "Новый тег",
-				"color": "#0000FF"
+			"_embedded": {
+				"tags": [
+					{
+						"id": 789,
+						"name": "Новый тег",
+						"color": "#0000FF"
+					}
+				]
 			}
 		}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем тег для отправки
 	newTag := &Tag{
 		Name:  "Новый тег",
 		Color: "#0000FF",
 	}
 
-	// Вызываем тестируемый метод
-	createdTag, err := CreateTag(apiClient, EntityTypeContact, newTag)
+	createdTag, err := Create(context.Background(), apiClient, EntityTypeContact, newTag)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании тега: %v", err)
 	}
 
-	// Проверяем содержимое созданного тега
 	expectedTag := &Tag{
 		ID:    789,
 		Name:  "Новый тег",
@@ -154,42 +140,49 @@ func TestCreateTag(t *testing.T) {
 func TestGetTag(t *testing.T) {
 	tagID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
-		expectedPath := fmt.Sprintf("/api/v4/contacts/tags/%d", tagID)
+		expectedPath := "/api/v4/contacts/tags"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
+		expectedFilterID := fmt.Sprintf("%d", tagID)
+		filterIDs := r.URL.Query()["filter[id][]"]
+		if len(filterIDs) == 0 || filterIDs[0] != expectedFilterID {
+			t.Errorf("Ожидался параметр filter[id][]=%s, получен %v", expectedFilterID, filterIDs)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
-			"id": 123,
-			"name": "Важный клиент",
-			"color": "#FF0000"
+			"page": 1,
+			"per_page": 50,
+			"total": 1,
+			"_embedded": {
+				"tags": [
+					{
+						"id": 123,
+						"name": "Важный клиент",
+						"color": "#FF0000"
+					}
+				]
+			}
 		}`))
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	tag, err := GetTag(apiClient, EntityTypeContact, tagID)
+	tag, err := Get(context.Background(), apiClient, EntityTypeContact, tagID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении тега: %v", err)
 	}
 
-	// Проверяем содержимое тега
 	expectedTag := &Tag{
 		ID:    123,
 		Name:  "Важный клиент",
@@ -203,20 +196,16 @@ func TestGetTag(t *testing.T) {
 func TestUpdateTag(t *testing.T) {
 	tagID := 123
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/contacts/tags/%d", tagID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -227,25 +216,20 @@ func TestUpdateTag(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем тег для обновления
 	tagToUpdate := &Tag{
 		ID:    tagID,
 		Name:  "Очень важный клиент",
 		Color: "#FF0000",
 	}
 
-	// Вызываем тестируемый метод
-	updatedTag, err := UpdateTag(apiClient, EntityTypeContact, tagToUpdate)
+	updatedTag, err := Update(context.Background(), apiClient, EntityTypeContact, tagToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении тега: %v", err)
 	}
 
-	// Проверяем содержимое обновленного тега
 	expectedTag := &Tag{
 		ID:    123,
 		Name:  "Очень важный клиент",
@@ -256,56 +240,19 @@ func TestUpdateTag(t *testing.T) {
 	}
 }
 
-func TestDeleteTag(t *testing.T) {
-	tagID := 123
-
-	// Создаем тестовый сервер
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
-		if r.Method != "DELETE" {
-			t.Errorf("Ожидался метод DELETE, получен %s", r.Method)
-		}
-
-		// Проверяем путь запроса
-		expectedPath := fmt.Sprintf("/api/v4/contacts/tags/%d", tagID)
-		if r.URL.Path != expectedPath {
-			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
-		}
-
-		// Отправляем ответ
-		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer server.Close()
-
-	// Создаем клиент API
-	apiClient := client.NewClient(server.URL, "test_api_key")
-
-	// Вызываем тестируемый метод
-	err := DeleteTag(apiClient, EntityTypeContact, tagID)
-
-	// Проверяем результаты
-	if err != nil {
-		t.Fatalf("Ошибка при удалении тега: %v", err)
-	}
-}
-
 func TestLinkEntityWithTags(t *testing.T) {
 	entityID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/contacts/%d/tags", entityID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -327,10 +274,8 @@ func TestLinkEntityWithTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем теги для связывания
 	tags := []Tag{
 		{
 			Name:  "Важный клиент",
@@ -342,10 +287,8 @@ func TestLinkEntityWithTags(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	err := LinkEntityWithTags(apiClient, EntityTypeContact, entityID, tags)
+	err := LinkEntity(context.Background(), apiClient, EntityTypeContact, entityID, tags)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при связывании сущности с тегами: %v", err)
 	}
@@ -354,20 +297,16 @@ func TestLinkEntityWithTags(t *testing.T) {
 func TestGetEntityTags(t *testing.T) {
 	entityID := 456
 
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := fmt.Sprintf("/api/v4/contacts/%d/tags", entityID)
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -389,13 +328,10 @@ func TestGetEntityTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	tags, err := GetEntityTags(apiClient, EntityTypeContact, entityID)
+	tags, err := ListForEntity(context.Background(), apiClient, EntityTypeContact, entityID)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении тегов сущности: %v", err)
 	}
@@ -404,7 +340,6 @@ func TestGetEntityTags(t *testing.T) {
 		t.Fatalf("Ожидалось получение 2 тегов, получено %d", len(tags))
 	}
 
-	// Проверяем содержимое первого тега
 	expectedTag1 := Tag{
 		ID:    123,
 		Name:  "Важный клиент",
@@ -414,7 +349,6 @@ func TestGetEntityTags(t *testing.T) {
 		t.Errorf("Ожидался тег %+v, получен %+v", expectedTag1, tags[0])
 	}
 
-	// Проверяем содержимое второго тега
 	expectedTag2 := Tag{
 		ID:    456,
 		Name:  "Потенциальный клиент",
@@ -426,20 +360,16 @@ func TestGetEntityTags(t *testing.T) {
 }
 
 func TestCreateTags(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/contacts/tags"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(`{
@@ -461,10 +391,8 @@ func TestCreateTags(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем теги для отправки
 	tagsToCreate := []Tag{
 		{
 			Name:  "Тег 1",
@@ -476,10 +404,8 @@ func TestCreateTags(t *testing.T) {
 		},
 	}
 
-	// Вызываем тестируемый метод
-	createdTags, err := CreateTags(apiClient, EntityTypeContact, tagsToCreate)
+	createdTags, err := CreateBatch(context.Background(), apiClient, EntityTypeContact, tagsToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании тегов: %v", err)
 	}
@@ -488,7 +414,6 @@ func TestCreateTags(t *testing.T) {
 		t.Fatalf("Ожидалось создание 2 тегов, создано %d", len(createdTags))
 	}
 
-	// Проверяем содержимое первого тега
 	expectedTag1 := Tag{
 		ID:    123,
 		Name:  "Тег 1",
@@ -498,7 +423,6 @@ func TestCreateTags(t *testing.T) {
 		t.Errorf("Ожидался тег %+v, получен %+v", expectedTag1, createdTags[0])
 	}
 
-	// Проверяем содержимое второго тега
 	expectedTag2 := Tag{
 		ID:    456,
 		Name:  "Тег 2",

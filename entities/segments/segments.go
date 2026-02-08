@@ -1,7 +1,9 @@
+// Package segments предоставляет методы для работы с сегментами покупателей в amoCRM.
 package segments
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -82,8 +84,8 @@ type Links struct {
 	} `json:"self"`
 }
 
-// SegmentsResponse ответ при получении списка сегментов
-type SegmentsResponse struct {
+// ListResponse ответ при получении списка сегментов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Embedded struct {
@@ -129,7 +131,7 @@ func WithFilter(filter map[string]string) WithOption {
 	}
 }
 
-// AddSegment создает новый сегмент в amoCRM.
+// Create создает новый сегмент в amoCRM.
 //
 // Пример использования:
 //
@@ -147,38 +149,32 @@ func WithFilter(filter map[string]string) WithOption {
 //			},
 //		},
 //	}
-//	createdSegment, err := segments.AddSegment(apiClient, segment)
-func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
-	// Формируем URL для запроса
+//	createdSegment, err := segments.Create(ctx, apiClient, segment)
+func Create(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	url := fmt.Sprintf("%s/api/v4/segments", apiClient.GetBaseURL())
 
-	// Сериализуем сегмент в JSON
 	segmentJSON, err := json.Marshal(segment)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при сериализации сегмента: %w", err)
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(segmentJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(segmentJSON))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var result struct {
 		Embedded struct {
 			Segments []Segment `json:"segments"`
@@ -196,26 +192,23 @@ func AddSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
 	return &result.Embedded.Segments[0], nil
 }
 
-// GetSegments получает список сегментов с возможностью фильтрации и пагинации.
+// List получает список сегментов с возможностью фильтрации и пагинации.
 //
 // Пример использования:
 //
 //	filter := map[string]string{
 //		"filter[name]": "Активные клиенты",
 //	}
-//	segments, err := segments.GetSegments(apiClient, 1, 50, segments.WithFilter(filter))
-func GetSegments(apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
-	// Формируем параметры запроса
+//	segments, err := segments.List(ctx, apiClient, 1, 50, segments.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
 	params["limit"] = strconv.Itoa(limit)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments", apiClient.GetBaseURL())
 	if len(params) > 0 {
 		var queryParams []string
@@ -225,26 +218,22 @@ func GetSegments(apiClient *client.Client, page, limit int, options ...WithOptio
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
-	var segmentsResponse SegmentsResponse
+	var segmentsResponse ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&segmentsResponse); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -252,21 +241,18 @@ func GetSegments(apiClient *client.Client, page, limit int, options ...WithOptio
 	return segmentsResponse.Embedded.Segments, nil
 }
 
-// GetSegment получает информацию о конкретном сегменте по его ID.
+// Get получает информацию о конкретном сегменте по его ID.
 //
 // Пример использования:
 //
-//	segment, err := segments.GetSegment(apiClient, 123, segments.WithContacts())
-func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
-	// Формируем параметры запроса
+//	segment, err := segments.Get(ctx, apiClient, 123, segments.WithContacts())
+func Get(ctx context.Context, apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
 	params := make(map[string]string)
 
-	// Применяем опции
 	for _, option := range options {
 		option(params)
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d", apiClient.GetBaseURL(), segmentID)
 	if len(params) > 0 {
 		var queryParams []string
@@ -276,25 +262,21 @@ func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) 
 		url += "?" + strings.Join(queryParams, "&")
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var segment Segment
 	if err := json.NewDecoder(resp.Body).Decode(&segment); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -303,7 +285,7 @@ func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) 
 	return &segment, nil
 }
 
-// UpdateSegment обновляет информацию о сегменте.
+// Update обновляет информацию о сегменте.
 //
 // Пример использования:
 //
@@ -312,42 +294,36 @@ func GetSegment(apiClient *client.Client, segmentID int, options ...WithOption) 
 //		Name: "Обновленный сегмент",
 //		Color: "#FF5555",
 //	}
-//	updatedSegment, err := segments.UpdateSegment(apiClient, segment)
-func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error) {
+//	updatedSegment, err := segments.Update(ctx, apiClient, segment)
+func Update(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	if segment.ID == 0 {
 		return nil, fmt.Errorf("ID сегмента не указан")
 	}
 
-	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d", apiClient.GetBaseURL(), segment.ID)
 
-	// Сериализуем сегмент в JSON
 	segmentJSON, err := json.Marshal(segment)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при сериализации сегмента: %w", err)
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(segmentJSON))
+	req, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(segmentJSON))
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var updatedSegment Segment
 	if err := json.NewDecoder(resp.Body).Decode(&updatedSegment); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -356,29 +332,25 @@ func UpdateSegment(apiClient *client.Client, segment *Segment) (*Segment, error)
 	return &updatedSegment, nil
 }
 
-// DeleteSegment удаляет сегмент по его ID.
+// Delete удаляет сегмент по его ID.
 //
 // Пример использования:
 //
-//	err := segments.DeleteSegment(apiClient, 123)
-func DeleteSegment(apiClient *client.Client, segmentID int) error {
-	// Формируем URL для запроса
+//	err := segments.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, segmentID int) error {
 	url := fmt.Sprintf("%s/api/v4/segments/%d", apiClient.GetBaseURL(), segmentID)
 
-	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -386,45 +358,39 @@ func DeleteSegment(apiClient *client.Client, segmentID int) error {
 	return nil
 }
 
-// AddContactsToSegment добавляет контакты в сегмент.
+// AddContacts добавляет контакты в сегмент.
 //
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.AddContactsToSegment(apiClient, 42, contactIDs)
-func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []int) error {
-	// Формируем URL для запроса
+//	err := segments.AddContacts(ctx, apiClient, 42, contactIDs)
+func AddContacts(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts", apiClient.GetBaseURL(), segmentID)
 
-	// Создаем тело запроса
 	requestBody := struct {
 		Contacts []int `json:"contacts"`
 	}{
 		Contacts: contactIDs,
 	}
 
-	// Сериализуем тело запроса в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("ошибка при сериализации запроса: %w", err)
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -432,45 +398,39 @@ func AddContactsToSegment(apiClient *client.Client, segmentID int, contactIDs []
 	return nil
 }
 
-// RemoveContactsFromSegment удаляет контакты из сегмента.
+// RemoveContacts удаляет контакты из сегмента.
 //
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.RemoveContactsFromSegment(apiClient, 42, contactIDs)
-func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactIDs []int) error {
-	// Формируем URL для запроса
+//	err := segments.RemoveContacts(ctx, apiClient, 42, contactIDs)
+func RemoveContacts(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts/delete", apiClient.GetBaseURL(), segmentID)
 
-	// Создаем тело запроса
 	requestBody := struct {
 		Contacts []int `json:"contacts"`
 	}{
 		Contacts: contactIDs,
 	}
 
-	// Сериализуем тело запроса в JSON
 	requestJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		return fmt.Errorf("ошибка при сериализации запроса: %w", err)
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
@@ -478,35 +438,30 @@ func RemoveContactsFromSegment(apiClient *client.Client, segmentID int, contactI
 	return nil
 }
 
-// GetSegmentContacts получает список контактов в сегменте.
+// ListContacts получает список контактов в сегменте.
 //
 // Пример использования:
 //
-//	contactIDs, err := segments.GetSegmentContacts(apiClient, 42, 1, 50)
-func GetSegmentContacts(apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
-	// Формируем URL для запроса
+//	contactIDs, err := segments.ListContacts(ctx, apiClient, 42, 1, 50)
+func ListContacts(ctx context.Context, apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts?page=%d&limit=%d",
 		apiClient.GetBaseURL(), segmentID, page, limit)
 
-	// Создаем запрос
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при создании запроса: %w", err)
 	}
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при выполнении запроса: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	// Разбираем ответ
 	var response struct {
 		Embedded struct {
 			Contacts []struct {
@@ -519,7 +474,6 @@ func GetSegmentContacts(apiClient *client.Client, segmentID, page, limit int) ([
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
 
-	// Извлекаем ID контактов
 	contactIDs := make([]int, len(response.Embedded.Contacts))
 	for i, contact := range response.Embedded.Contacts {
 		contactIDs[i] = contact.ID

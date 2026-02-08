@@ -106,6 +106,7 @@ type FilterNode struct {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -116,6 +117,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // Создаем новый динамический сегмент для контактов с почтой на example.com
     segment := &segments.Segment{
@@ -135,7 +139,7 @@ func main() {
     }
 
     // Отправляем запрос на создание сегмента
-    createdSegment, err := segments.AddSegment(apiClient, segment)
+    createdSegment, err := segments.Create(ctx, apiClient, segment)
     if err != nil {
         log.Fatalf("Ошибка при создании сегмента: %v", err)
     }
@@ -154,6 +158,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -166,17 +171,20 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // Параметры запроса
     page := 1
     limit := 50
-    
+
     // Фильтр по названию сегмента
     filter := map[string]string{
         "filter[name]": "Клиенты",  // ищем сегменты, в названии которых есть слово "Клиенты"
     }
 
     // Получаем список сегментов с фильтрацией
-    segmentsList, err := segments.GetSegments(apiClient, page, limit, segments.WithFilter(filter))
+    segmentsList, err := segments.List(ctx, apiClient, page, limit, segments.WithFilter(filter))
     if err != nil {
         log.Fatalf("Ошибка при получении списка сегментов: %v", err)
     }
@@ -199,6 +207,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
     "time"
@@ -211,11 +220,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID сегмента
     segmentID := 123
 
     // Получаем информацию о сегменте с контактами
-    segment, err := segments.GetSegment(apiClient, segmentID, segments.WithContacts())
+    segment, err := segments.Get(ctx, apiClient, segmentID, segments.WithContacts())
     if err != nil {
         log.Fatalf("Ошибка при получении информации о сегменте: %v", err)
     }
@@ -245,6 +257,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -255,6 +268,9 @@ import (
 func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
+
+    // Создаем контекст
+    ctx := context.Background()
 
     // ID сегмента для обновления
     segmentID := 123
@@ -267,7 +283,7 @@ func main() {
     }
 
     // Отправляем запрос на обновление сегмента
-    updatedSegment, err := segments.UpdateSegment(apiClient, segment)
+    updatedSegment, err := segments.Update(ctx, apiClient, segment)
     if err != nil {
         log.Fatalf("Ошибка при обновлении сегмента: %v", err)
     }
@@ -285,6 +301,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -296,11 +313,14 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID сегмента для удаления
     segmentID := 123
 
     // Удаляем сегмент
-    err := segments.DeleteSegment(apiClient, segmentID)
+    err := segments.Delete(ctx, apiClient, segmentID)
     if err != nil {
         log.Fatalf("Ошибка при удалении сегмента: %v", err)
     }
@@ -315,6 +335,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -326,14 +347,17 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID сегмента
     segmentID := 123
-    
+
     // ID контактов для добавления
     contactIDs := []int{1001, 1002, 1003}
 
     // Добавляем контакты в сегмент
-    err := segments.AddContactsToSegment(apiClient, segmentID, contactIDs)
+    err := segments.AddContacts(ctx, apiClient, segmentID, contactIDs)
     if err != nil {
         log.Fatalf("Ошибка при добавлении контактов в сегмент: %v", err)
     }
@@ -348,6 +372,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -359,14 +384,17 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID сегмента
     segmentID := 123
-    
+
     // ID контактов для удаления
     contactIDs := []int{1001, 1002, 1003}
 
     // Удаляем контакты из сегмента
-    err := segments.RemoveContactsFromSegment(apiClient, segmentID, contactIDs)
+    err := segments.RemoveContacts(ctx, apiClient, segmentID, contactIDs)
     if err != nil {
         log.Fatalf("Ошибка при удалении контактов из сегмента: %v", err)
     }
@@ -381,6 +409,7 @@ func main() {
 package main
 
 import (
+    "context"
     "fmt"
     "log"
 
@@ -392,15 +421,18 @@ func main() {
     // Создаем клиент API
     apiClient := client.NewClient("https://example.amocrm.ru", "TOKEN")
 
+    // Создаем контекст
+    ctx := context.Background()
+
     // ID сегмента
     segmentID := 123
-    
+
     // Параметры пагинации
     page := 1
     limit := 50
 
     // Получаем ID контактов в сегменте
-    contactIDs, err := segments.GetSegmentContacts(apiClient, segmentID, page, limit)
+    contactIDs, err := segments.ListContacts(ctx, apiClient, segmentID, page, limit)
     if err != nil {
         log.Fatalf("Ошибка при получении контактов сегмента: %v", err)
     }

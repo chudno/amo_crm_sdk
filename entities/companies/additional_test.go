@@ -1,6 +1,7 @@
 package companies
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,20 +11,16 @@ import (
 
 // TestUpdateCompany проверяет функцию обновления компании
 func TestUpdateCompany(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "PATCH" {
 			t.Errorf("Ожидался метод PATCH, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/companies/456"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -36,20 +33,16 @@ func TestUpdateCompany(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем компанию для обновления
 	companyToUpdate := &Company{
 		ID:                456,
 		Name:              "Обновленная компания",
 		ResponsibleUserID: 789,
 	}
 
-	// Вызываем тестируемый метод
-	updatedCompany, err := UpdateCompany(apiClient, companyToUpdate)
+	updatedCompany, err := Update(context.Background(), apiClient, companyToUpdate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при обновлении компании: %v", err)
 	}
@@ -70,20 +63,16 @@ func TestUpdateCompany(t *testing.T) {
 // TestGetCompanies проверяет функцию получения списка компаний
 func TestGetCompanies(t *testing.T) {
 	t.Run("Базовый запрос", func(t *testing.T) {
-		// Создаем тестовый сервер
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "GET" {
 				t.Errorf("Ожидался метод GET, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/companies"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем параметры запроса
 			query := r.URL.Query()
 			if query.Get("page") != "1" {
 				t.Errorf("Ожидался параметр page=1, получен %s", query.Get("page"))
@@ -92,7 +81,6 @@ func TestGetCompanies(t *testing.T) {
 				t.Errorf("Ожидался параметр limit=50, получен %s", query.Get("limit"))
 			}
 
-			// Отправляем ответ
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{
@@ -100,7 +88,7 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 2,
 				"_embedded": {
-					"items": [
+					"companies": [
 						{
 							"id": 123,
 							"name": "Компания 1",
@@ -117,13 +105,10 @@ func TestGetCompanies(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
-		companies, err := GetCompanies(apiClient, 1, 50)
+		companies, err := List(context.Background(), apiClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении списка компаний: %v", err)
 		}
@@ -132,7 +117,6 @@ func TestGetCompanies(t *testing.T) {
 			t.Errorf("Ожидалось 2 компании, получено %d", len(companies))
 		}
 
-		// Проверяем первую компанию
 		if companies[0].ID != 123 {
 			t.Errorf("Ожидался ID компании 123, получен %d", companies[0].ID)
 		}
@@ -140,7 +124,6 @@ func TestGetCompanies(t *testing.T) {
 			t.Errorf("Ожидалось название компании 'Компания 1', получено '%s'", companies[0].Name)
 		}
 
-		// Проверяем вторую компанию
 		if companies[1].ID != 789 {
 			t.Errorf("Ожидался ID компании 789, получен %d", companies[1].ID)
 		}
@@ -150,26 +133,21 @@ func TestGetCompanies(t *testing.T) {
 	})
 
 	t.Run("С опцией WithContacts", func(t *testing.T) {
-		// Создаем тестовый сервер
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Проверяем метод запроса
 			if r.Method != "GET" {
 				t.Errorf("Ожидался метод GET, получен %s", r.Method)
 			}
 
-			// Проверяем путь запроса
 			expectedPath := "/api/v4/companies"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 			}
 
-			// Проверяем параметры запроса
 			query := r.URL.Query()
 			if query.Get("with") != "contacts" {
 				t.Errorf("Ожидался параметр with=contacts, получен %s", query.Get("with"))
 			}
 
-			// Отправляем ответ с вложенными контактами
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{
@@ -177,7 +155,7 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 1,
 				"_embedded": {
-					"items": [
+					"companies": [
 						{
 							"id": 123,
 							"name": "Компания с контактами",
@@ -200,13 +178,10 @@ func TestGetCompanies(t *testing.T) {
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод с опцией WithContacts
-		companies, err := GetCompanies(apiClient, 1, 50, WithContacts)
+		companies, err := List(context.Background(), apiClient, 1, 50, WithContacts)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении списка компаний: %v", err)
 		}
@@ -215,7 +190,6 @@ func TestGetCompanies(t *testing.T) {
 			t.Errorf("Ожидалась 1 компания, получено %d", len(companies))
 		}
 
-		// Проверяем компанию и ее контакты
 		if companies[0].ID != 123 {
 			t.Errorf("Ожидался ID компании 123, получен %d", companies[0].ID)
 		}
@@ -223,7 +197,6 @@ func TestGetCompanies(t *testing.T) {
 			t.Errorf("Ожидалось название компании 'Компания с контактами', получено '%s'", companies[0].Name)
 		}
 
-		// Проверяем наличие и содержимое контактов
 		if companies[0].Embedded == nil {
 			t.Errorf("Ожидалось наличие вложенных данных, но Embedded == nil")
 		} else if len(companies[0].Embedded.Contacts) != 2 {
@@ -239,9 +212,7 @@ func TestGetCompanies(t *testing.T) {
 	})
 
 	t.Run("Пустой ответ", func(t *testing.T) {
-		// Создаем тестовый сервер
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Отправляем пустой список компаний
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{
@@ -249,19 +220,16 @@ func TestGetCompanies(t *testing.T) {
 				"per_page": 50,
 				"total": 0,
 				"_embedded": {
-					"items": []
+					"companies": []
 				}
 			}`))
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
-		companies, err := GetCompanies(apiClient, 1, 50)
+		companies, err := List(context.Background(), apiClient, 1, 50)
 
-		// Проверяем результаты
 		if err != nil {
 			t.Fatalf("Ошибка при получении пустого списка компаний: %v", err)
 		}
@@ -272,25 +240,20 @@ func TestGetCompanies(t *testing.T) {
 	})
 
 	t.Run("Ошибка сервера", func(t *testing.T) {
-		// Создаем тестовый сервер, который НЕ отвечает (сетевая ошибка)
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Закрываем соединение без ответа
 			hj, ok := w.(http.Hijacker)
 			if !ok {
 				t.Fatalf("Не удалось преобразовать ResponseWriter в Hijacker")
 			}
 			conn, _, _ := hj.Hijack()
-			conn.Close()
+			_ = conn.Close()
 		}))
 		defer server.Close()
 
-		// Создаем клиент API
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
-		// Вызываем тестируемый метод
-		_, err := GetCompanies(apiClient, 1, 50)
+		_, err := List(context.Background(), apiClient, 1, 50)
 
-		// Проверяем результаты
 		if err == nil {
 			t.Errorf("Ожидалась ошибка, получен nil")
 		}
@@ -299,26 +262,21 @@ func TestGetCompanies(t *testing.T) {
 
 // TestGetCompanyWithOptions проверяет функцию получения компании со связанными сущностями
 func TestGetCompanyWithOptions(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/companies/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Проверяем параметры запроса
 		query := r.URL.Query()
 		if query.Get("with") != "contacts" {
 			t.Errorf("Ожидался параметр with=contacts, получен %s", query.Get("with"))
 		}
 
-		// Отправляем ответ с вложенными контактами
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -340,13 +298,10 @@ func TestGetCompanyWithOptions(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод с опцией WithContacts
-	company, err := GetCompany(apiClient, 123, WithContacts)
+	company, err := Get(context.Background(), apiClient, 123, WithContacts)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении компании: %v", err)
 	}
@@ -355,7 +310,6 @@ func TestGetCompanyWithOptions(t *testing.T) {
 		t.Errorf("Ожидался ID компании 123, получен %d", company.ID)
 	}
 
-	// Проверяем наличие и содержимое контактов
 	if company.Embedded == nil {
 		t.Errorf("Ожидалось наличие вложенных данных, но Embedded == nil")
 	} else if len(company.Embedded.Contacts) != 2 {

@@ -1,13 +1,13 @@
-// Пакет calls предоставляет методы для работы со звонками в amoCRM.
+// Package calls предоставляет методы для работы со звонками в amoCRM.
 package calls
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/chudno/amo_crm_sdk/client"
@@ -39,6 +39,24 @@ const (
 	CallStatusBusy CallStatus = "busy"
 )
 
+// Числовые коды статусов звонков для API v4
+const (
+	// CallStatusCodeLeftMessage — оставлено сообщение
+	CallStatusCodeLeftMessage = 1
+	// CallStatusCodeInterrupted — разговор прерван
+	CallStatusCodeInterrupted = 2
+	// CallStatusCodeNoAnswer — нет ответа
+	CallStatusCodeNoAnswer = 3
+	// CallStatusCodeSuccess — успешный звонок
+	CallStatusCodeSuccess = 4
+	// CallStatusCodeWrongNumber — неверный номер
+	CallStatusCodeWrongNumber = 5
+	// CallStatusCodeBusy — занято
+	CallStatusCodeBusy = 6
+	// CallStatusCodeVoicemail — голосовая почта
+	CallStatusCodeVoicemail = 7
+)
+
 // EntityType определяет тип сущности, с которой связан звонок
 type EntityType string
 
@@ -57,7 +75,8 @@ const (
 type Call struct {
 	ID                int           `json:"id,omitempty"`
 	Direction         CallDirection `json:"direction"`
-	Status            CallStatus    `json:"status"`
+	Status            CallStatus    `json:"status,omitempty"`
+	CallStatusCode    int           `json:"call_status,omitempty"`
 	ResponsibleUserID int           `json:"responsible_user_id,omitempty"`
 	CreatedBy         int           `json:"created_by,omitempty"`
 	UpdatedBy         int           `json:"updated_by,omitempty"`
@@ -87,8 +106,8 @@ type Call struct {
 	CallStartTime     string        `json:"call_start_time,omitempty"`
 	CallEndTime       string        `json:"call_end_time,omitempty"`
 	Version           int           `json:"version,omitempty"`
-	Embedded          *CallEmbedded `json:"_embedded,omitempty"`
-	Links             *CallLinks    `json:"_links,omitempty"`
+	Embedded          *Embedded     `json:"_embedded,omitempty"`
+	Links             *Links        `json:"_links,omitempty"`
 	EntityType        *EntityType   `json:"entity_type,omitempty"`
 	EntityID          int           `json:"entity_id,omitempty"`
 }
@@ -99,8 +118,8 @@ type Voice struct {
 	TranscriptionURL string `json:"transcription_url,omitempty"`
 }
 
-// CallEmbedded содержит вложенные сущности
-type CallEmbedded struct {
+// Embedded содержит вложенные сущности
+type Embedded struct {
 	Tags []struct {
 		ID    int    `json:"id"`
 		Name  string `json:"name"`
@@ -108,76 +127,72 @@ type CallEmbedded struct {
 	} `json:"tags,omitempty"`
 }
 
-// CallLinks содержит ссылки
-type CallLinks struct {
+// Links содержит ссылки
+type Links struct {
 	Self struct {
 		Href string `json:"href"`
 	} `json:"self"`
 }
 
-// CallsResponse представляет ответ от API при получении списка звонков
-type CallsResponse struct {
-	Page     int `json:"page"`
-	PerPage  int `json:"per_page"`
-	Total    int `json:"total"`
-	Embedded struct {
-		Calls []Call `json:"calls"`
-	} `json:"_embedded"`
-}
-
-// WithOption представляет опцию для запроса с добавлением связанных сущностей
-type WithOption string
-
-const (
-	// WithTags - получить теги звонков
-	WithTags WithOption = "tags"
-)
-
-// AddCall добавляет новый звонок в amoCRM.
-func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
-	// Проверяем обязательные поля
+// Add добавляет новый звонок в amoCRM.
+func Add(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
 	if call.Direction == "" {
 		return nil, fmt.Errorf("direction is required")
-	}
-	if call.Status == "" {
-		return nil, fmt.Errorf("status is required")
 	}
 	if call.Phone == "" {
 		return nil, fmt.Errorf("phone is required")
 	}
 
-	// Устанавливаем время создания, если не указано
+	if call.CallStatusCode == 0 {
+		switch call.Status {
+		case CallStatusSuccess:
+			call.CallStatusCode = CallStatusCodeSuccess
+		case CallStatusMissed:
+			call.CallStatusCode = CallStatusCodeNoAnswer
+		case CallStatusVoicemail:
+			call.CallStatusCode = CallStatusCodeVoicemail
+		case CallStatusHungup:
+			call.CallStatusCode = CallStatusCodeInterrupted
+		case CallStatusBusy:
+			call.CallStatusCode = CallStatusCodeBusy
+		}
+	}
+
 	if call.CreatedAt == 0 {
 		call.CreatedAt = time.Now().Unix()
 	}
 
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/calls", apiClient.GetBaseURL())
+	if call.Uniq == "" {
+		call.Uniq = fmt.Sprintf("%d-%d", call.CreatedAt, time.Now().UnixNano())
+	}
 
-	// Преобразуем структуру звонка в JSON
+	// API не принимает строковое поле "status", только числовой "call_status"
+	// Очищаем status перед отправкой (omitempty не отправит пустую строку)
+	call.Status = ""
+
+	requestURL := fmt.Sprintf("%s/api/v4/calls", apiClient.GetBaseURL())
+
 	callJSON, err := json.Marshal([]*Call{call})
 	if err != nil {
 		return nil, err
 	}
 
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(callJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(callJSON))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
+	resp, err := apiClient.DoRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	// Проверяем статус-код ответа
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("неожиданный статус-код: %d, ответ: %s", resp.StatusCode, body)
 	}
 
 	var response struct {
@@ -194,268 +209,4 @@ func AddCall(apiClient *client.Client, call *Call) (*Call, error) {
 	}
 
 	return &response.Embedded.Calls[0], nil
-}
-
-// GetCalls получает список звонков с возможностью фильтрации и пагинации.
-func GetCalls(apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Call, error) {
-	// Формируем URL для запроса
-	baseURL := fmt.Sprintf("%s/api/v4/calls", apiClient.GetBaseURL())
-
-	// Добавляем параметры запроса
-	params := url.Values{}
-	params.Add("page", strconv.Itoa(page))
-	params.Add("limit", strconv.Itoa(limit))
-
-	// Добавляем фильтры
-	for key, value := range filter {
-		params.Add(key, value)
-	}
-
-	// Добавляем параметр with, если указаны withOptions
-	if len(withOptions) > 0 {
-		var withValues []string
-		for _, opt := range withOptions {
-			withValues = append(withValues, string(opt))
-		}
-		params.Add("with", stringsJoin(withValues, ","))
-	}
-
-	// Добавляем параметры к URL
-	baseURL = baseURL + "?" + params.Encode()
-
-	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	var callsResponse CallsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&callsResponse); err != nil {
-		return nil, err
-	}
-
-	return callsResponse.Embedded.Calls, nil
-}
-
-// stringsJoin объединяет срез строк с указанным разделителем
-func stringsJoin(strings []string, sep string) string {
-	if len(strings) == 0 {
-		return ""
-	}
-
-	result := strings[0]
-	for i := 1; i < len(strings); i++ {
-		result += sep + strings[i]
-	}
-
-	return result
-}
-
-// GetCall получает информацию о конкретном звонке по его ID.
-func GetCall(apiClient *client.Client, callID int, withOptions ...WithOption) (*Call, error) {
-	// Формируем URL для запроса
-	baseURL := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
-
-	// Добавляем параметр with, если указаны withOptions
-	if len(withOptions) > 0 {
-		params := url.Values{}
-		var withValues []string
-		for _, opt := range withOptions {
-			withValues = append(withValues, string(opt))
-		}
-		params.Add("with", stringsJoin(withValues, ","))
-		baseURL = baseURL + "?" + params.Encode()
-	}
-
-	// Создаем запрос
-	req, err := http.NewRequest("GET", baseURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	var call Call
-	if err := json.NewDecoder(resp.Body).Decode(&call); err != nil {
-		return nil, err
-	}
-
-	return &call, nil
-}
-
-// UpdateCall обновляет информацию о звонке.
-func UpdateCall(apiClient *client.Client, call *Call) (*Call, error) {
-	if call.ID == 0 {
-		return nil, fmt.Errorf("ID звонка не может быть пустым")
-	}
-
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), call.ID)
-
-	// Преобразуем структуру звонка в JSON
-	callJSON, err := json.Marshal(call)
-	if err != nil {
-		return nil, err
-	}
-
-	// Создаем запрос
-	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(callJSON))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	var updatedCall Call
-	if err := json.NewDecoder(resp.Body).Decode(&updatedCall); err != nil {
-		return nil, err
-	}
-
-	return &updatedCall, nil
-}
-
-// DeleteCall удаляет звонок по его ID.
-func DeleteCall(apiClient *client.Client, callID int) error {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
-
-	// Создаем запрос
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-// LinkCallWithEntity связывает звонок с сущностью (сделкой, контактом, компанией).
-func LinkCallWithEntity(apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/calls/%d/link", apiClient.GetBaseURL(), callID)
-
-	// Создаем структуру для запроса
-	requestBody := struct {
-		EntityType EntityType `json:"entity_type"`
-		EntityID   int        `json:"entity_id"`
-	}{
-		EntityType: entityType,
-		EntityID:   entityID,
-	}
-
-	// Преобразуем структуру в JSON
-	requestJSON, err := json.Marshal(requestBody)
-	if err != nil {
-		return err
-	}
-
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-// UnlinkCallFromEntity отвязывает звонок от сущности.
-func UnlinkCallFromEntity(apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
-	// Формируем URL для запроса
-	url := fmt.Sprintf("%s/api/v4/calls/%d/unlink", apiClient.GetBaseURL(), callID)
-
-	// Создаем структуру для запроса
-	requestBody := struct {
-		EntityType EntityType `json:"entity_type"`
-		EntityID   int        `json:"entity_id"`
-	}{
-		EntityType: entityType,
-		EntityID:   entityID,
-	}
-
-	// Преобразуем структуру в JSON
-	requestJSON, err := json.Marshal(requestBody)
-	if err != nil {
-		return err
-	}
-
-	// Создаем запрос
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestJSON))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	// Выполняем запрос
-	resp, err := apiClient.DoRequest(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	return nil
 }

@@ -1,6 +1,7 @@
 package leads
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -10,20 +11,16 @@ import (
 )
 
 func TestGetLead(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "GET" {
 			t.Errorf("Ожидался метод GET, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads/123"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -37,13 +34,10 @@ func TestGetLead(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Вызываем тестируемый метод
-	lead, err := GetLead(apiClient, 123)
+	lead, err := Get(context.Background(), apiClient, 123)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при получении лида: %v", err)
 	}
@@ -66,20 +60,16 @@ func TestGetLead(t *testing.T) {
 }
 
 func TestCreateLead(t *testing.T) {
-	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Проверяем метод запроса
 		if r.Method != "POST" {
 			t.Errorf("Ожидался метод POST, получен %s", r.Method)
 		}
 
-		// Проверяем путь запроса
 		expectedPath := "/api/v4/leads"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 		}
 
-		// Отправляем ответ
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{
@@ -97,20 +87,16 @@ func TestCreateLead(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Создаем клиент API
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
-	// Создаем лид для теста
 	leadToCreate := &Lead{
 		Name:              "Новый лид",
 		Price:             15000,
 		ResponsibleUserID: 456,
 	}
 
-	// Вызываем тестируемый метод
-	createdLead, err := CreateLead(apiClient, leadToCreate)
+	createdLead, err := Create(context.Background(), apiClient, leadToCreate)
 
-	// Проверяем результаты
 	if err != nil {
 		t.Fatalf("Ошибка при создании лида: %v", err)
 	}
@@ -167,18 +153,15 @@ func TestListLeads(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				// Проверяем метод запроса
 				if r.Method != "GET" {
 					t.Errorf("Ожидался метод GET, получен %s", r.Method)
 				}
 
-				// Проверяем URL запроса
 				expectedPath := "/api/v4/leads"
 				if r.URL.Path != expectedPath {
 					t.Errorf("Ожидался путь %s, получен %s", expectedPath, r.URL.Path)
 				}
 
-				// Проверяем параметры запроса
 				query := r.URL.Query()
 				if query.Get("page") != fmt.Sprintf("%d", tt.page) {
 					t.Errorf("Ожидался параметр page=%d, получен %s", tt.page, query.Get("page"))
@@ -187,19 +170,15 @@ func TestListLeads(t *testing.T) {
 					t.Errorf("Ожидался параметр limit=%d, получен %s", tt.limit, query.Get("limit"))
 				}
 
-				// Устанавливаем код ответа и тело
 				w.WriteHeader(tt.responseCode)
 				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
-			// Создаем клиент
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
-			// Вызываем тестируемую функцию
-			leads, err := ListLeads(apiClient, tt.limit, tt.page, nil)
+			leads, err := List(context.Background(), apiClient, tt.page, tt.limit, nil)
 
-			// Проверяем результаты
 			if tt.expectError && err == nil {
 				t.Error("Ожидалась ошибка, но ее не было")
 			}
