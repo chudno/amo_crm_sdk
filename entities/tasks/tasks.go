@@ -40,8 +40,8 @@ const (
 	EntityTypeCustomer = "customers"
 )
 
-// GetTask получает задачу по её ID.
-func GetTask(ctx context.Context, apiClient *client.Client, taskID int) (*Task, error) {
+// Get получает задачу по её ID.
+func Get(ctx context.Context, apiClient *client.Client, taskID int) (*Task, error) {
 	url := fmt.Sprintf("%s/api/v4/tasks/%d", apiClient.GetBaseURL(), taskID)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -63,8 +63,8 @@ func GetTask(ctx context.Context, apiClient *client.Client, taskID int) (*Task, 
 	return &task, nil
 }
 
-// CreateTask создает новую задачу в amoCRM.
-func CreateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
+// Create создает новую задачу в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
 	url := fmt.Sprintf("%s/api/v4/tasks", apiClient.GetBaseURL())
 
 	taskData, err := json.Marshal([]*Task{task})
@@ -102,8 +102,8 @@ func CreateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Tas
 	return response.Embedded.Tasks[0], nil
 }
 
-// UpdateTask обновляет существующую задачу в amoCRM.
-func UpdateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
+// Update обновляет существующую задачу в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, task *Task) (*Task, error) {
 	if task.ID == 0 {
 		return nil, fmt.Errorf("ID задачи не указан")
 	}
@@ -136,19 +136,19 @@ func UpdateTask(ctx context.Context, apiClient *client.Client, task *Task) (*Tas
 	return &updatedTask, nil
 }
 
-// CompleteTask отмечает задачу как выполненную.
-func CompleteTask(ctx context.Context, apiClient *client.Client, taskID int, result string) (*Task, error) {
+// Complete отмечает задачу как выполненную.
+func Complete(ctx context.Context, apiClient *client.Client, taskID int, result string) (*Task, error) {
 	task := &Task{
 		ID:          taskID,
 		IsCompleted: true,
 		Result:      result,
 	}
 
-	return UpdateTask(ctx, apiClient, task)
+	return Update(ctx, apiClient, task)
 }
 
-// ListTasks получает список задач с возможностью фильтрации и пагинации.
-func ListTasks(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Task, error) {
+// List получает список задач с возможностью фильтрации и пагинации.
+func List(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Task, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/tasks", apiClient.GetBaseURL())
 
 	// Добавляем параметры запроса
@@ -196,8 +196,8 @@ func ListTasks(ctx context.Context, apiClient *client.Client, limit int, page in
 	return response.Embedded.Tasks, nil
 }
 
-// DeleteTask удаляет задачу по её ID.
-func DeleteTask(ctx context.Context, apiClient *client.Client, taskID int) error {
+// Delete удаляет задачу по её ID.
+func Delete(ctx context.Context, apiClient *client.Client, taskID int) error {
 	url := fmt.Sprintf("%s/api/v4/tasks/%d", apiClient.GetBaseURL(), taskID)
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
@@ -218,8 +218,8 @@ func DeleteTask(ctx context.Context, apiClient *client.Client, taskID int) error
 	return nil
 }
 
-// CreateTaskForEntity создает новую задачу, привязанную к сущности (лид, контакт, компания).
-func CreateTaskForEntity(ctx context.Context, apiClient *client.Client, entityType string, entityID int, taskTypeID int, text string, completeTill time.Time, responsibleUserID int) (*Task, error) {
+// CreateForEntity создает новую задачу, привязанную к сущности (лид, контакт, компания).
+func CreateForEntity(ctx context.Context, apiClient *client.Client, entityType string, entityID int, taskTypeID int, text string, completeTill time.Time, responsibleUserID int) (*Task, error) {
 	task := &Task{
 		EntityType:        entityType,
 		EntityID:          entityID,
@@ -229,5 +229,5 @@ func CreateTaskForEntity(ctx context.Context, apiClient *client.Client, entityTy
 		ResponsibleUserID: responsibleUserID,
 	}
 
-	return CreateTask(ctx, apiClient, task)
+	return Create(ctx, apiClient, task)
 }

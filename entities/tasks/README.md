@@ -17,12 +17,12 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateTask` | Создание новой задачи |
-| `GetTask` | Получение задачи по ID |
-| `GetTasks` | Получение списка задач с фильтрацией |
-| `UpdateTask` | Обновление существующей задачи |
-| `CompleteTask` | Завершение задачи |
-| `DeleteTask` | Удаление задачи |
+| `Create` | Создание новой задачи |
+| `Get` | Получение задачи по ID |
+| `List` | Получение списка задач с фильтрацией |
+| `Update` | Обновление существующей задачи |
+| `Complete` | Завершение задачи |
+| `Delete` | Удаление задачи |
 
 ## Создание задачи
 
@@ -50,7 +50,7 @@ newTask := &tasks.Task{
 }
 
 // Сохранение задачи
-createdTask, err := tasks.CreateTask(ctx, apiClient, newTask)
+createdTask, err := tasks.Create(ctx, apiClient, newTask)
 if err != nil {
     // Обработка ошибки
 }
@@ -61,7 +61,7 @@ if err != nil {
 ```go
 // Получение задачи по ID
 taskID := 12345
-task, err := tasks.GetTask(ctx, apiClient, taskID)
+task, err := tasks.Get(ctx, apiClient, taskID)
 if err != nil {
     // Обработка ошибки
 }
@@ -71,7 +71,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 задач
-tasksList, err := tasks.GetTasks(ctx, apiClient, 1, 50)
+tasksList, err := tasks.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -82,7 +82,7 @@ filter := map[string]string{
     "filter[is_completed]": "0", // Только незавершенные задачи
     "filter[responsible_user_id]": "12345", // Задачи конкретного менеджера
 }
-filteredTasks, err := tasks.GetTasks(ctx, apiClient, 1, 50, filter)
+filteredTasks, err := tasks.List(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление задачи
@@ -95,7 +95,7 @@ task.Text = "Срочно перезвонить клиенту"
 newCompletionTime := time.Now().Add(12 * time.Hour)
 task.CompleteTill = newCompletionTime.Unix()
 
-updatedTask, err := tasks.UpdateTask(ctx, apiClient, task)
+updatedTask, err := tasks.Update(ctx, apiClient, task)
 if err != nil {
     // Обработка ошибки
 }
@@ -106,7 +106,7 @@ if err != nil {
 ```go
 // Завершение задачи
 result := "Клиент согласился на встречу" // Результат выполнения задачи
-completedTask, err := tasks.CompleteTask(ctx, apiClient, taskID, result)
+completedTask, err := tasks.Complete(ctx, apiClient, taskID, result)
 if err != nil {
     // Обработка ошибки
 }

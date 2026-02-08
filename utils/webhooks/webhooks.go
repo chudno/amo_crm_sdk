@@ -13,17 +13,17 @@ import (
 
 // Webhook представляет собой структуру вебхука в amoCRM.
 type Webhook struct {
-	ID          int              `json:"id,omitempty"`
-	Destination string           `json:"destination"`
-	Settings    *WebhookSettings `json:"settings,omitempty"`
-	CreatedAt   int64            `json:"created_at,omitempty"`
-	UpdatedAt   int64            `json:"updated_at,omitempty"`
-	CreatedBy   int              `json:"created_by,omitempty"`
-	AccountID   int              `json:"account_id,omitempty"`
+	ID          int       `json:"id,omitempty"`
+	Destination string    `json:"destination"`
+	Settings    *Settings `json:"settings,omitempty"`
+	CreatedAt   int64     `json:"created_at,omitempty"`
+	UpdatedAt   int64     `json:"updated_at,omitempty"`
+	CreatedBy   int       `json:"created_by,omitempty"`
+	AccountID   int       `json:"account_id,omitempty"`
 }
 
-// WebhookSettings содержит настройки вебхука
-type WebhookSettings struct {
+// Settings содержит настройки вебхука
+type Settings struct {
 	Entities []string `json:"events"`
 	Actions  []string `json:"actions"`
 }
@@ -46,8 +46,8 @@ const (
 	ActionStatusChange = "status"
 )
 
-// GetWebhook получает вебхук по его ID.
-func GetWebhook(ctx context.Context, apiClient *client.Client, webhookID int) (*Webhook, error) {
+// Get получает вебхук по его ID.
+func Get(ctx context.Context, apiClient *client.Client, webhookID int) (*Webhook, error) {
 	url := fmt.Sprintf("%s/api/v4/webhooks/%d", apiClient.GetBaseURL(), webhookID)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -69,8 +69,8 @@ func GetWebhook(ctx context.Context, apiClient *client.Client, webhookID int) (*
 	return &webhook, nil
 }
 
-// CreateWebhook создает новый вебхук в amoCRM.
-func CreateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
+// Create создает новый вебхук в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
 	url := fmt.Sprintf("%s/api/v4/webhooks", apiClient.GetBaseURL())
 
 	webhookData, err := json.Marshal(webhook)
@@ -99,8 +99,8 @@ func CreateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webho
 	return &createdWebhook, nil
 }
 
-// UpdateWebhook обновляет существующий вебхук в amoCRM.
-func UpdateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
+// Update обновляет существующий вебхук в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, webhook *Webhook) (*Webhook, error) {
 	if webhook.ID == 0 {
 		return nil, fmt.Errorf("ID вебхука не указан")
 	}
@@ -133,8 +133,8 @@ func UpdateWebhook(ctx context.Context, apiClient *client.Client, webhook *Webho
 	return &updatedWebhook, nil
 }
 
-// ListWebhooks получает список вебхуков с возможностью пагинации.
-func ListWebhooks(ctx context.Context, apiClient *client.Client, limit int, page int) ([]*Webhook, error) {
+// List получает список вебхуков с возможностью пагинации.
+func List(ctx context.Context, apiClient *client.Client, limit int, page int) ([]*Webhook, error) {
 	baseURL := fmt.Sprintf("%s/api/v4/webhooks", apiClient.GetBaseURL())
 
 	// Добавляем параметры запроса
@@ -173,8 +173,8 @@ func ListWebhooks(ctx context.Context, apiClient *client.Client, limit int, page
 	return response.Embedded.Webhooks, nil
 }
 
-// DeleteWebhook удаляет вебхук по его ID.
-func DeleteWebhook(ctx context.Context, apiClient *client.Client, webhookID int) error {
+// Delete удаляет вебхук по его ID.
+func Delete(ctx context.Context, apiClient *client.Client, webhookID int) error {
 	url := fmt.Sprintf("%s/api/v4/webhooks/%d", apiClient.GetBaseURL(), webhookID)
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
@@ -196,15 +196,15 @@ func DeleteWebhook(ctx context.Context, apiClient *client.Client, webhookID int)
 	return nil
 }
 
-// CreateSimpleWebhook создает новый вебхук с указанными параметрами.
-func CreateSimpleWebhook(ctx context.Context, apiClient *client.Client, destination string, entities []string, actions []string) (*Webhook, error) {
+// CreateSimple создает новый вебхук с указанными параметрами.
+func CreateSimple(ctx context.Context, apiClient *client.Client, destination string, entities []string, actions []string) (*Webhook, error) {
 	webhook := &Webhook{
 		Destination: destination,
-		Settings: &WebhookSettings{
+		Settings: &Settings{
 			Entities: entities,
 			Actions:  actions,
 		},
 	}
 
-	return CreateWebhook(ctx, apiClient, webhook)
+	return Create(ctx, apiClient, webhook)
 }

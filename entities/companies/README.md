@@ -16,11 +16,11 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateCompany` | Создание новой компании |
-| `GetCompany` | Получение компании по ID |
-| `GetCompanies` | Получение списка компаний с фильтрацией |
-| `UpdateCompany` | Обновление существующей компании |
-| `DeleteCompany` | Удаление компании |
+| `Create` | Создание новой компании |
+| `Get` | Получение компании по ID |
+| `List` | Получение списка компаний с фильтрацией |
+| `Update` | Обновление существующей компании |
+| `Delete` | Удаление компании |
 
 ## Создание компании
 
@@ -42,9 +42,9 @@ newCompany := &companies.Company{
 }
 
 // Добавление номера телефона
-newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
+newCompany.CustomFields = append(newCompany.CustomFields, companies.Field{
     FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.CustomFieldValue{
+    Values: []companies.Value{
         {
             Value: "+79001234567",
             Enum: "WORK", // Тип телефона (рабочий)
@@ -53,9 +53,9 @@ newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
 })
 
 // Добавление email
-newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
+newCompany.CustomFields = append(newCompany.CustomFields, companies.Field{
     FieldID: 5678, // ID поля "Email"
-    Values: []companies.CustomFieldValue{
+    Values: []companies.Value{
         {
             Value: "info@romashka.ru",
             Enum: "WORK", // Тип email (рабочий)
@@ -64,7 +64,7 @@ newCompany.CustomFields = append(newCompany.CustomFields, companies.CustomField{
 })
 
 // Сохранение компании
-createdCompany, err := companies.CreateCompany(ctx, apiClient, newCompany)
+createdCompany, err := companies.Create(ctx, apiClient, newCompany)
 if err != nil {
     // Обработка ошибки
 }
@@ -75,7 +75,7 @@ if err != nil {
 ```go
 // Получение компании по ID
 companyID := 12345
-company, err := companies.GetCompany(ctx, apiClient, companyID)
+company, err := companies.Get(ctx, apiClient, companyID)
 if err != nil {
     // Обработка ошибки
 }
@@ -85,7 +85,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 компаний
-companiesList, err := companies.GetCompanies(ctx, apiClient, 1, 50)
+companiesList, err := companies.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -95,7 +95,7 @@ filter := map[string]string{
     "query": "Ромашка", // Поиск по названию
     "created_at": "1609459200", // Компании, созданные после указанной даты (timestamp)
 }
-filteredCompanies, err := companies.GetCompanies(ctx, apiClient, 1, 50, filter)
+filteredCompanies, err := companies.List(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление компании
@@ -105,9 +105,9 @@ filteredCompanies, err := companies.GetCompanies(ctx, apiClient, 1, 50, filter)
 company.Name = "ООО Ромашка Технологии"
 
 // Добавление нового номера телефона
-company.CustomFields = append(company.CustomFields, companies.CustomField{
+company.CustomFields = append(company.CustomFields, companies.Field{
     FieldID: 1234, // ID поля "Телефон"
-    Values: []companies.CustomFieldValue{
+    Values: []companies.Value{
         {
             Value: "+79009876543",
             Enum: "WORK2", // Тип телефона (второй рабочий)
@@ -115,7 +115,7 @@ company.CustomFields = append(company.CustomFields, companies.CustomField{
     },
 })
 
-updatedCompany, err := companies.UpdateCompany(ctx, apiClient, company)
+updatedCompany, err := companies.Update(ctx, apiClient, company)
 if err != nil {
     // Обработка ошибки
 }
@@ -123,13 +123,13 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями компаний используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями компаний используйте структуры `Field` и `Value`:
 
 ```go
 // Добавление пользовательского поля
-company.CustomFields = append(company.CustomFields, companies.CustomField{
+company.CustomFields = append(company.CustomFields, companies.Field{
     FieldID: 9876, // ID пользовательского поля
-    Values: []companies.CustomFieldValue{
+    Values: []companies.Value{
         {
             Value: "Значение поля",
         },

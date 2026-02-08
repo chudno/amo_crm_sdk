@@ -47,7 +47,7 @@ func main() {
 	apiClient := client.NewClient("https://example.amocrm.ru", "your_access_token")
 	
 	// Получаем лиды с фильтрами из URL
-	leadsList, err := leads.GetLeads(
+	leadsList, err := leads.List(
 		apiClient, 
 		filter.PageInt, 
 		filter.LimitInt, 

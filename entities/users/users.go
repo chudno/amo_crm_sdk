@@ -32,10 +32,10 @@ type Rights struct {
 	IsManager bool `json:"is_manager"`
 }
 
-// GetUser получает пользователя по его ID.
-func GetUser(ctx context.Context, apiClient *client.Client, userID int) (*User, error) {
+// Get получает пользователя по его ID.
+func Get(ctx context.Context, apiClient *client.Client, userID int) (*User, error) {
 	url := fmt.Sprintf("%s/api/v4/users/%d", apiClient.GetBaseURL(), userID)
-	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +59,10 @@ func GetUser(ctx context.Context, apiClient *client.Client, userID int) (*User, 
 	return &user, nil
 }
 
-// GetCurrentUser получает информацию о текущем пользователе (владельце API-ключа).
-func GetCurrentUser(ctx context.Context, apiClient *client.Client) (*User, error) {
+// GetCurrent получает информацию о текущем пользователе (владельце API-ключа).
+func GetCurrent(ctx context.Context, apiClient *client.Client) (*User, error) {
 	url := fmt.Sprintf("%s/api/v4/users/self", apiClient.GetBaseURL())
-	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +86,10 @@ func GetCurrentUser(ctx context.Context, apiClient *client.Client) (*User, error
 	return &user, nil
 }
 
-// ListUsers получает список пользователей с возможностью фильтрации и пагинации.
-func ListUsers(ctx context.Context, apiClient *client.Client, limit int, page int) ([]User, error) {
+// List получает список пользователей с возможностью фильтрации и пагинации.
+func List(ctx context.Context, apiClient *client.Client, limit int, page int) ([]User, error) {
 	url := fmt.Sprintf("%s/api/v4/users?limit=%d&page=%d", apiClient.GetBaseURL(), limit, page)
-	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

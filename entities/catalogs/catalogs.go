@@ -73,8 +73,8 @@ const (
 	CatalogTypeCompanies CatalogType = "companies"
 )
 
-// GetCatalogs получает список каталогов с возможностью пагинации и фильтрации.
-func GetCatalogs(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Catalog, error) {
+// List получает список каталогов с возможностью пагинации и фильтрации.
+func List(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Catalog, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
@@ -116,8 +116,8 @@ func GetCatalogs(ctx context.Context, apiClient *client.Client, page, limit int,
 	return catalogs.Embedded.Catalogs, nil
 }
 
-// CreateCatalog создает новый каталог.
-func CreateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
+// Create создает новый каталог.
+func Create(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs", apiClient.GetBaseURL())
 
@@ -155,8 +155,8 @@ func CreateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catal
 	return &createdCatalog, nil
 }
 
-// GetCatalog получает информацию о каталоге по его ID.
-func GetCatalog(ctx context.Context, apiClient *client.Client, catalogID int) (*Catalog, error) {
+// Get получает информацию о каталоге по его ID.
+func Get(ctx context.Context, apiClient *client.Client, catalogID int) (*Catalog, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
 
@@ -186,8 +186,8 @@ func GetCatalog(ctx context.Context, apiClient *client.Client, catalogID int) (*
 	return &catalog, nil
 }
 
-// UpdateCatalog обновляет информацию о каталоге по его ID.
-func UpdateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
+// Update обновляет информацию о каталоге по его ID.
+func Update(ctx context.Context, apiClient *client.Client, catalog *Catalog) (*Catalog, error) {
 	if catalog.ID == 0 {
 		return nil, fmt.Errorf("ID каталога не может быть пустым")
 	}
@@ -229,8 +229,8 @@ func UpdateCatalog(ctx context.Context, apiClient *client.Client, catalog *Catal
 	return &updatedCatalog, nil
 }
 
-// DeleteCatalog удаляет каталог по его ID.
-func DeleteCatalog(ctx context.Context, apiClient *client.Client, catalogID int) error {
+// Delete удаляет каталог по его ID.
+func Delete(ctx context.Context, apiClient *client.Client, catalogID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d", apiClient.GetBaseURL(), catalogID)
 
@@ -255,8 +255,8 @@ func DeleteCatalog(ctx context.Context, apiClient *client.Client, catalogID int)
 	return nil
 }
 
-// AddCustomFieldToCatalog добавляет пользовательское поле в каталог
-func AddCustomFieldToCatalog(ctx context.Context, apiClient *client.Client, catalogID int, customField *CustomField) (*CustomField, error) {
+// AddCustomField добавляет пользовательское поле в каталог
+func AddCustomField(ctx context.Context, apiClient *client.Client, catalogID int, customField *CustomField) (*CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
@@ -294,8 +294,8 @@ func AddCustomFieldToCatalog(ctx context.Context, apiClient *client.Client, cata
 	return &createdField, nil
 }
 
-// GetCatalogCustomFields получает список пользовательских полей каталога
-func GetCatalogCustomFields(ctx context.Context, apiClient *client.Client, catalogID int) ([]CustomField, error) {
+// ListCustomFields получает список пользовательских полей каталога
+func ListCustomFields(ctx context.Context, apiClient *client.Client, catalogID int) ([]CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields", apiClient.GetBaseURL(), catalogID)
 
@@ -329,8 +329,8 @@ func GetCatalogCustomFields(ctx context.Context, apiClient *client.Client, catal
 	return fieldsResponse.Embedded.CustomFields, nil
 }
 
-// GetCatalogCustomField получает информацию о пользовательском поле каталога по ID
-func GetCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) (*CustomField, error) {
+// GetCustomField получает информацию о пользовательском поле каталога по ID
+func GetCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) (*CustomField, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 
@@ -360,8 +360,8 @@ func GetCatalogCustomField(ctx context.Context, apiClient *client.Client, catalo
 	return &field, nil
 }
 
-// UpdateCatalogCustomField обновляет пользовательское поле каталога
-func UpdateCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID int, field *CustomField) (*CustomField, error) {
+// UpdateCustomField обновляет пользовательское поле каталога
+func UpdateCustomField(ctx context.Context, apiClient *client.Client, catalogID int, field *CustomField) (*CustomField, error) {
 	if field.ID == 0 {
 		return nil, fmt.Errorf("ID поля не может быть пустым")
 	}
@@ -403,8 +403,8 @@ func UpdateCatalogCustomField(ctx context.Context, apiClient *client.Client, cat
 	return &updatedField, nil
 }
 
-// DeleteCatalogCustomField удаляет пользовательское поле каталога
-func DeleteCatalogCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) error {
+// DeleteCustomField удаляет пользовательское поле каталога
+func DeleteCustomField(ctx context.Context, apiClient *client.Client, catalogID, fieldID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/catalogs/%d/custom_fields/%d", apiClient.GetBaseURL(), catalogID, fieldID)
 

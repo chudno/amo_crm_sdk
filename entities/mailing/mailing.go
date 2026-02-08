@@ -69,7 +69,7 @@ type Mailing struct {
 	SegmentFilters   []SegmentFilter   `json:"segment_filters,omitempty"`
 	SelectedContacts []int             `json:"selected_contacts,omitempty"`
 	ExcludedContacts []int             `json:"excluded_contacts,omitempty"`
-	Stats            *MailingStats     `json:"stats,omitempty"`
+	Stats            *Stats            `json:"stats,omitempty"`
 	AccountID        int               `json:"account_id,omitempty"`
 	FromEmail        string            `json:"from_email,omitempty"`
 	FromName         string            `json:"from_name,omitempty"`
@@ -94,8 +94,8 @@ type SegmentFilter struct {
 	Value     string `json:"value,omitempty"`
 }
 
-// MailingStats представляет статистику рассылки.
-type MailingStats struct {
+// Stats представляет статистику рассылки.
+type Stats struct {
 	TotalRecipients int `json:"total_recipients"`
 	Delivered       int `json:"delivered"`
 	Opened          int `json:"opened"`
@@ -138,20 +138,20 @@ func WithDateTo(to time.Time) WithOption {
 	}
 }
 
-// GetMailings получает список рассылок с поддержкой фильтрации и пагинации.
+// List получает список рассылок с поддержкой фильтрации и пагинации.
 //
 // Пример использования:
 //
 //	filter := map[string]string{
 //		"filter[status]": "active",
 //	}
-//	mailings, err := mailing.GetMailings(ctx, apiClient, 1, 50, mailing.WithFilter(filter))
-func GetMailings(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error) {
-	return GetMailingsWithRequester(ctx, apiClient, page, limit, options...)
+//	mailings, err := mailing.List(ctx, apiClient, 1, 50, mailing.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetMailingsWithRequester получает список рассылок с использованием интерфейса Requester.
-func GetMailingsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Mailing, error) {
+// ListWithRequester получает список рассылок с использованием интерфейса Requester.
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Mailing, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/mailings", requester.GetBaseURL())
 
@@ -204,17 +204,17 @@ func GetMailingsWithRequester(ctx context.Context, requester Requester, page, li
 	return response.Embedded.Mailings, nil
 }
 
-// GetMailing получает информацию о конкретной рассылке по ID.
+// Get получает информацию о конкретной рассылке по ID.
 //
 // Пример использования:
 //
-//	mailingInfo, err := mailing.GetMailing(ctx, apiClient, 123)
-func GetMailing(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error) {
-	return GetMailingWithRequester(ctx, apiClient, id)
+//	mailingInfo, err := mailing.Get(ctx, apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error) {
+	return GetWithRequester(ctx, apiClient, id)
 }
 
-// GetMailingWithRequester получает информацию о конкретной рассылке с использованием интерфейса Requester.
-func GetMailingWithRequester(ctx context.Context, requester Requester, id int) (*Mailing, error) {
+// GetWithRequester получает информацию о конкретной рассылке с использованием интерфейса Requester.
+func GetWithRequester(ctx context.Context, requester Requester, id int) (*Mailing, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d", requester.GetBaseURL(), id)
 
@@ -245,7 +245,7 @@ func GetMailingWithRequester(ctx context.Context, requester Requester, id int) (
 	return &mailingInfo, nil
 }
 
-// CreateMailing создает новую рассылку.
+// Create создает новую рассылку.
 //
 // Пример использования:
 //
@@ -254,13 +254,13 @@ func GetMailingWithRequester(ctx context.Context, requester Requester, id int) (
 //		Subject:  "Важная информация",
 //		Frequency: mailing.MailingFrequencyOnce,
 //	}
-//	createdMailing, err := mailing.CreateMailing(ctx, apiClient, newMailing)
-func CreateMailing(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error) {
-	return CreateMailingWithRequester(ctx, apiClient, mailingData)
+//	createdMailing, err := mailing.Create(ctx, apiClient, newMailing)
+func Create(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error) {
+	return CreateWithRequester(ctx, apiClient, mailingData)
 }
 
-// CreateMailingWithRequester создает новую рассылку с использованием интерфейса Requester.
-func CreateMailingWithRequester(ctx context.Context, requester Requester, mailingData *Mailing) (*Mailing, error) {
+// CreateWithRequester создает новую рассылку с использованием интерфейса Requester.
+func CreateWithRequester(ctx context.Context, requester Requester, mailingData *Mailing) (*Mailing, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings", requester.GetBaseURL())
 
@@ -298,7 +298,7 @@ func CreateMailingWithRequester(ctx context.Context, requester Requester, mailin
 	return &createdMailing, nil
 }
 
-// UpdateMailing обновляет существующую рассылку.
+// Update обновляет существующую рассылку.
 //
 // Пример использования:
 //
@@ -307,13 +307,13 @@ func CreateMailingWithRequester(ctx context.Context, requester Requester, mailin
 //		Name:     "Обновленная рассылка",
 //		Subject:  "Новая тема рассылки",
 //	}
-//	updatedMailing, err := mailing.UpdateMailing(ctx, apiClient, mailingUpdate)
-func UpdateMailing(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error) {
-	return UpdateMailingWithRequester(ctx, apiClient, mailingData)
+//	updatedMailing, err := mailing.Update(ctx, apiClient, mailingUpdate)
+func Update(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error) {
+	return UpdateWithRequester(ctx, apiClient, mailingData)
 }
 
-// UpdateMailingWithRequester обновляет существующую рассылку с использованием интерфейса Requester.
-func UpdateMailingWithRequester(ctx context.Context, requester Requester, mailingData *Mailing) (*Mailing, error) {
+// UpdateWithRequester обновляет существующую рассылку с использованием интерфейса Requester.
+func UpdateWithRequester(ctx context.Context, requester Requester, mailingData *Mailing) (*Mailing, error) {
 	if mailingData.ID == 0 {
 		return nil, fmt.Errorf("ID рассылки не указан")
 	}
@@ -355,17 +355,17 @@ func UpdateMailingWithRequester(ctx context.Context, requester Requester, mailin
 	return &updatedMailing, nil
 }
 
-// DeleteMailing удаляет рассылку по ID.
+// Delete удаляет рассылку по ID.
 //
 // Пример использования:
 //
-//	err := mailing.DeleteMailing(ctx, apiClient, 123)
-func DeleteMailing(ctx context.Context, apiClient *client.Client, id int) error {
-	return DeleteMailingWithRequester(ctx, apiClient, id)
+//	err := mailing.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, id int) error {
+	return DeleteWithRequester(ctx, apiClient, id)
 }
 
-// DeleteMailingWithRequester удаляет рассылку с использованием интерфейса Requester.
-func DeleteMailingWithRequester(ctx context.Context, requester Requester, id int) error {
+// DeleteWithRequester удаляет рассылку с использованием интерфейса Requester.
+func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d", requester.GetBaseURL(), id)
 
@@ -390,17 +390,17 @@ func DeleteMailingWithRequester(ctx context.Context, requester Requester, id int
 	return nil
 }
 
-// ChangeMailingStatus изменяет статус рассылки.
+// ChangeStatus изменяет статус рассылки.
 //
 // Пример использования:
 //
-//	updatedMailing, err := mailing.ChangeMailingStatus(ctx, apiClient, 123, mailing.MailingStatusPaused)
-func ChangeMailingStatus(ctx context.Context, apiClient *client.Client, id int, status MailingStatus) (*Mailing, error) {
-	return ChangeMailingStatusWithRequester(ctx, apiClient, id, status)
+//	updatedMailing, err := mailing.ChangeStatus(ctx, apiClient, 123, mailing.MailingStatusPaused)
+func ChangeStatus(ctx context.Context, apiClient *client.Client, id int, status MailingStatus) (*Mailing, error) {
+	return ChangeStatusWithRequester(ctx, apiClient, id, status)
 }
 
-// ChangeMailingStatusWithRequester изменяет статус рассылки с использованием интерфейса Requester.
-func ChangeMailingStatusWithRequester(ctx context.Context, requester Requester, id int, status MailingStatus) (*Mailing, error) {
+// ChangeStatusWithRequester изменяет статус рассылки с использованием интерфейса Requester.
+func ChangeStatusWithRequester(ctx context.Context, requester Requester, id int, status MailingStatus) (*Mailing, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/status", requester.GetBaseURL(), id)
 
@@ -440,17 +440,17 @@ func ChangeMailingStatusWithRequester(ctx context.Context, requester Requester, 
 	return &updatedMailing, nil
 }
 
-// GetMailingStats получает статистику рассылки.
+// GetStats получает статистику рассылки.
 //
 // Пример использования:
 //
-//	stats, err := mailing.GetMailingStats(ctx, apiClient, 123)
-func GetMailingStats(ctx context.Context, apiClient *client.Client, id int) (*MailingStats, error) {
-	return GetMailingStatsWithRequester(ctx, apiClient, id)
+//	stats, err := mailing.GetStats(ctx, apiClient, 123)
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*Stats, error) {
+	return GetStatsWithRequester(ctx, apiClient, id)
 }
 
-// GetMailingStatsWithRequester получает статистику рассылки с использованием интерфейса Requester.
-func GetMailingStatsWithRequester(ctx context.Context, requester Requester, id int) (*MailingStats, error) {
+// GetStatsWithRequester получает статистику рассылки с использованием интерфейса Requester.
+func GetStatsWithRequester(ctx context.Context, requester Requester, id int) (*Stats, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/stats", requester.GetBaseURL(), id)
 
@@ -473,7 +473,7 @@ func GetMailingStatsWithRequester(ctx context.Context, requester Requester, id i
 	}
 
 	// Декодируем ответ
-	var stats MailingStats
+	var stats Stats
 	if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
 		return nil, err
 	}
@@ -481,18 +481,18 @@ func GetMailingStatsWithRequester(ctx context.Context, requester Requester, id i
 	return &stats, nil
 }
 
-// AddMailingRecipients добавляет получателей в рассылку.
+// AddRecipients добавляет получателей в рассылку.
 //
 // Пример использования:
 //
 //	contactIDs := []int{1001, 1002, 1003}
-//	err := mailing.AddMailingRecipients(ctx, apiClient, 123, contactIDs)
-func AddMailingRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error {
-	return AddMailingRecipientsWithRequester(ctx, apiClient, id, contactIDs)
+//	err := mailing.AddRecipients(ctx, apiClient, 123, contactIDs)
+func AddRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error {
+	return AddRecipientsWithRequester(ctx, apiClient, id, contactIDs)
 }
 
-// AddMailingRecipientsWithRequester добавляет получателей в рассылку с использованием интерфейса Requester.
-func AddMailingRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
+// AddRecipientsWithRequester добавляет получателей в рассылку с использованием интерфейса Requester.
+func AddRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/recipients", requester.GetBaseURL(), id)
 
@@ -526,18 +526,18 @@ func AddMailingRecipientsWithRequester(ctx context.Context, requester Requester,
 	return nil
 }
 
-// RemoveMailingRecipients удаляет получателей из рассылки.
+// RemoveRecipients удаляет получателей из рассылки.
 //
 // Пример использования:
 //
 //	contactIDs := []int{1001, 1002}
-//	err := mailing.RemoveMailingRecipients(ctx, apiClient, 123, contactIDs)
-func RemoveMailingRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error {
-	return RemoveMailingRecipientsWithRequester(ctx, apiClient, id, contactIDs)
+//	err := mailing.RemoveRecipients(ctx, apiClient, 123, contactIDs)
+func RemoveRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error {
+	return RemoveRecipientsWithRequester(ctx, apiClient, id, contactIDs)
 }
 
-// RemoveMailingRecipientsWithRequester удаляет получателей из рассылки с использованием интерфейса Requester.
-func RemoveMailingRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
+// RemoveRecipientsWithRequester удаляет получателей из рассылки с использованием интерфейса Requester.
+func RemoveRecipientsWithRequester(ctx context.Context, requester Requester, id int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailings/%d/recipients/delete", requester.GetBaseURL(), id)
 
@@ -571,17 +571,17 @@ func RemoveMailingRecipientsWithRequester(ctx context.Context, requester Request
 	return nil
 }
 
-// GetMailingTemplates получает список шаблонов рассылок.
+// ListTemplates получает список шаблонов рассылок.
 //
 // Пример использования:
 //
-//	templates, err := mailing.GetMailingTemplates(ctx, apiClient, 1, 50)
-func GetMailingTemplates(ctx context.Context, apiClient *client.Client, page, limit int) ([]Template, error) {
-	return GetMailingTemplatesWithRequester(ctx, apiClient, page, limit)
+//	templates, err := mailing.ListTemplates(ctx, apiClient, 1, 50)
+func ListTemplates(ctx context.Context, apiClient *client.Client, page, limit int) ([]Template, error) {
+	return ListTemplatesWithRequester(ctx, apiClient, page, limit)
 }
 
-// GetMailingTemplatesWithRequester получает список шаблонов рассылок с использованием интерфейса Requester.
-func GetMailingTemplatesWithRequester(ctx context.Context, requester Requester, page, limit int) ([]Template, error) {
+// ListTemplatesWithRequester получает список шаблонов рассылок с использованием интерфейса Requester.
+func ListTemplatesWithRequester(ctx context.Context, requester Requester, page, limit int) ([]Template, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/mailing_templates", requester.GetBaseURL())
 
@@ -624,17 +624,17 @@ func GetMailingTemplatesWithRequester(ctx context.Context, requester Requester, 
 	return response.Embedded.Templates, nil
 }
 
-// GetMailingTemplate получает информацию о конкретном шаблоне рассылки.
+// GetTemplate получает информацию о конкретном шаблоне рассылки.
 //
 // Пример использования:
 //
-//	template, err := mailing.GetMailingTemplate(ctx, apiClient, 123)
-func GetMailingTemplate(ctx context.Context, apiClient *client.Client, id int) (*Template, error) {
-	return GetMailingTemplateWithRequester(ctx, apiClient, id)
+//	template, err := mailing.GetTemplate(ctx, apiClient, 123)
+func GetTemplate(ctx context.Context, apiClient *client.Client, id int) (*Template, error) {
+	return GetTemplateWithRequester(ctx, apiClient, id)
 }
 
-// GetMailingTemplateWithRequester получает информацию о конкретном шаблоне рассылки с использованием интерфейса Requester.
-func GetMailingTemplateWithRequester(ctx context.Context, requester Requester, id int) (*Template, error) {
+// GetTemplateWithRequester получает информацию о конкретном шаблоне рассылки с использованием интерфейса Requester.
+func GetTemplateWithRequester(ctx context.Context, requester Requester, id int) (*Template, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/mailing_templates/%d", requester.GetBaseURL(), id)
 

@@ -17,7 +17,7 @@ func TestGetFileErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetFile(context.Background(), apiClient, EntityTypeLead, 123, 456)
+		_, err := Get(context.Background(), apiClient, EntityTypeLead, 123, 456)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -40,7 +40,7 @@ func TestGetFileErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetFile(context.Background(), apiClient, EntityTypeLead, 123, 456)
+		_, err := Get(context.Background(), apiClient, EntityTypeLead, 123, 456)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -63,7 +63,7 @@ func TestGetFileErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetFile(context.Background(), apiClient, EntityTypeLead, 123, 456)
+		_, err := Get(context.Background(), apiClient, EntityTypeLead, 123, 456)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -79,7 +79,7 @@ func TestGetFilesErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetFiles(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
+		_, err := List(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -102,7 +102,7 @@ func TestGetFilesErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetFiles(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
+		_, err := List(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -125,7 +125,7 @@ func TestGetFilesErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		files, err := GetFiles(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
+		files, err := List(context.Background(), apiClient, EntityTypeLead, 123, 1, 50)
 
 		// Проверяем, что ошибки нет и список пустой
 		if err != nil {
@@ -145,7 +145,7 @@ func TestDeleteFileErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		err := DeleteFile(context.Background(), apiClient, EntityTypeLead, 123, 456)
+		err := Delete(context.Background(), apiClient, EntityTypeLead, 123, 456)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -180,7 +180,7 @@ func TestDeleteFileErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		err := DeleteFile(context.Background(), apiClient, EntityTypeLead, 123, 456)
+		err := Delete(context.Background(), apiClient, EntityTypeLead, 123, 456)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -196,7 +196,7 @@ func TestBatchDeleteFilesErrors(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемую функцию
-		err := BatchDeleteFiles(context.Background(), apiClient, EntityTypeLead, 123, []int{456, 789})
+		err := BatchDelete(context.Background(), apiClient, EntityTypeLead, 123, []int{456, 789})
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -230,7 +230,7 @@ func TestBatchDeleteFilesErrors(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		err := BatchDeleteFiles(context.Background(), apiClient, EntityTypeLead, 123, []int{456, 789})
+		err := BatchDelete(context.Background(), apiClient, EntityTypeLead, 123, []int{456, 789})
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -285,7 +285,7 @@ func TestGetDownloadFileURL(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		downloadURL, err := GetDownloadFileURL(context.Background(), apiClient, entityType, entityID, fileID)
+		downloadURL, err := GetDownloadURL(context.Background(), apiClient, entityType, entityID, fileID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -331,7 +331,7 @@ func TestGetDownloadFileURL(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемую функцию
-		_, err := GetDownloadFileURL(context.Background(), apiClient, entityType, entityID, fileID)
+		_, err := GetDownloadURL(context.Background(), apiClient, entityType, entityID, fileID)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {

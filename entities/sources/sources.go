@@ -21,19 +21,19 @@ type Requester interface {
 
 // Source представляет источник сделок в amoCRM.
 type Source struct {
-	ID            int         `json:"id,omitempty"`
-	Name          string      `json:"name"`
-	Type          string      `json:"type,omitempty"`
-	Default       bool        `json:"default,omitempty"`
-	CreatedAt     int64       `json:"created_at,omitempty"`
-	UpdatedAt     int64       `json:"updated_at,omitempty"`
-	Deleted       bool        `json:"deleted,omitempty"`
-	EffectiveFrom int64       `json:"effective_from,omitempty"`
-	EffectiveTo   int64       `json:"effective_to,omitempty"`
-	Pipeline      *Pipeline   `json:"pipeline,omitempty"`
-	Services      []Service   `json:"services,omitempty"`
-	External      *External   `json:"external,omitempty"`
-	Params        any `json:"params,omitempty"`
+	ID            int       `json:"id,omitempty"`
+	Name          string    `json:"name"`
+	Type          string    `json:"type,omitempty"`
+	Default       bool      `json:"default,omitempty"`
+	CreatedAt     int64     `json:"created_at,omitempty"`
+	UpdatedAt     int64     `json:"updated_at,omitempty"`
+	Deleted       bool      `json:"deleted,omitempty"`
+	EffectiveFrom int64     `json:"effective_from,omitempty"`
+	EffectiveTo   int64     `json:"effective_to,omitempty"`
+	Pipeline      *Pipeline `json:"pipeline,omitempty"`
+	Services      []Service `json:"services,omitempty"`
+	External      *External `json:"external,omitempty"`
+	Params        any       `json:"params,omitempty"`
 }
 
 // Pipeline представляет воронку, связанную с источником.
@@ -49,9 +49,9 @@ type Service struct {
 
 // External представляет внешние данные источника.
 type External struct {
-	ID             string      `json:"id,omitempty"`
-	Service        string      `json:"service,omitempty"`
-	ExternalParams any `json:"external_params,omitempty"`
+	ID             string `json:"id,omitempty"`
+	Service        string `json:"service,omitempty"`
+	ExternalParams any    `json:"external_params,omitempty"`
 }
 
 // WithOption функциональный параметр для настройки запроса.
@@ -66,20 +66,20 @@ func WithFilter(filter map[string]string) WithOption {
 	}
 }
 
-// GetSources получает список источников сделок с поддержкой фильтрации и пагинации.
+// List получает список источников сделок с поддержкой фильтрации и пагинации.
 //
 // Пример использования:
 //
 //	filter := map[string]string{
 //		"filter[name]": "Реклама",
 //	}
-//	sources, err := sources.GetSources(ctx, apiClient, 1, 50, sources.WithFilter(filter))
-func GetSources(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Source, error) {
-	return GetSourcesWithRequester(ctx, apiClient, page, limit, options...)
+//	sources, err := sources.List(ctx, apiClient, 1, 50, sources.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Source, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetSourcesWithRequester получает список источников с использованием интерфейса Requester.
-func GetSourcesWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Source, error) {
+// ListWithRequester получает список источников с использованием интерфейса Requester.
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Source, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/sources", requester.GetBaseURL())
 
@@ -132,17 +132,17 @@ func GetSourcesWithRequester(ctx context.Context, requester Requester, page, lim
 	return response.Embedded.Sources, nil
 }
 
-// GetSource получает информацию о конкретном источнике по ID.
+// Get получает информацию о конкретном источнике по ID.
 //
 // Пример использования:
 //
-//	sourceInfo, err := sources.GetSource(ctx, apiClient, 123)
-func GetSource(ctx context.Context, apiClient *client.Client, id int) (*Source, error) {
-	return GetSourceWithRequester(ctx, apiClient, id)
+//	sourceInfo, err := sources.Get(ctx, apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*Source, error) {
+	return GetWithRequester(ctx, apiClient, id)
 }
 
-// GetSourceWithRequester получает информацию о конкретном источнике с использованием интерфейса Requester.
-func GetSourceWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
+// GetWithRequester получает информацию о конкретном источнике с использованием интерфейса Requester.
+func GetWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d", requester.GetBaseURL(), id)
 
@@ -173,7 +173,7 @@ func GetSourceWithRequester(ctx context.Context, requester Requester, id int) (*
 	return &sourceInfo, nil
 }
 
-// CreateSource создает новый источник сделок.
+// Create создает новый источник сделок.
 //
 // Пример использования:
 //
@@ -181,13 +181,13 @@ func GetSourceWithRequester(ctx context.Context, requester Requester, id int) (*
 //		Name: "Новый источник",
 //		Type: "other",
 //	}
-//	createdSource, err := sources.CreateSource(ctx, apiClient, newSource)
-func CreateSource(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error) {
-	return CreateSourceWithRequester(ctx, apiClient, sourceData)
+//	createdSource, err := sources.Create(ctx, apiClient, newSource)
+func Create(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error) {
+	return CreateWithRequester(ctx, apiClient, sourceData)
 }
 
-// CreateSourceWithRequester создает новый источник с использованием интерфейса Requester.
-func CreateSourceWithRequester(ctx context.Context, requester Requester, sourceData *Source) (*Source, error) {
+// CreateWithRequester создает новый источник с использованием интерфейса Requester.
+func CreateWithRequester(ctx context.Context, requester Requester, sourceData *Source) (*Source, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources", requester.GetBaseURL())
 
@@ -225,7 +225,7 @@ func CreateSourceWithRequester(ctx context.Context, requester Requester, sourceD
 	return &createdSource, nil
 }
 
-// UpdateSource обновляет существующий источник сделок.
+// Update обновляет существующий источник сделок.
 //
 // Пример использования:
 //
@@ -233,13 +233,13 @@ func CreateSourceWithRequester(ctx context.Context, requester Requester, sourceD
 //		ID:   123,
 //		Name: "Обновленный источник",
 //	}
-//	updatedSource, err := sources.UpdateSource(ctx, apiClient, sourceUpdate)
-func UpdateSource(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error) {
-	return UpdateSourceWithRequester(ctx, apiClient, sourceData)
+//	updatedSource, err := sources.Update(ctx, apiClient, sourceUpdate)
+func Update(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error) {
+	return UpdateWithRequester(ctx, apiClient, sourceData)
 }
 
-// UpdateSourceWithRequester обновляет существующий источник с использованием интерфейса Requester.
-func UpdateSourceWithRequester(ctx context.Context, requester Requester, sourceData *Source) (*Source, error) {
+// UpdateWithRequester обновляет существующий источник с использованием интерфейса Requester.
+func UpdateWithRequester(ctx context.Context, requester Requester, sourceData *Source) (*Source, error) {
 	if sourceData.ID == 0 {
 		return nil, fmt.Errorf("ID источника не указан")
 	}
@@ -281,17 +281,17 @@ func UpdateSourceWithRequester(ctx context.Context, requester Requester, sourceD
 	return &updatedSource, nil
 }
 
-// DeleteSource удаляет источник по ID.
+// Delete удаляет источник по ID.
 //
 // Пример использования:
 //
-//	err := sources.DeleteSource(ctx, apiClient, 123)
-func DeleteSource(ctx context.Context, apiClient *client.Client, id int) error {
-	return DeleteSourceWithRequester(ctx, apiClient, id)
+//	err := sources.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, id int) error {
+	return DeleteWithRequester(ctx, apiClient, id)
 }
 
-// DeleteSourceWithRequester удаляет источник с использованием интерфейса Requester.
-func DeleteSourceWithRequester(ctx context.Context, requester Requester, id int) error {
+// DeleteWithRequester удаляет источник с использованием интерфейса Requester.
+func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d", requester.GetBaseURL(), id)
 
@@ -316,17 +316,17 @@ func DeleteSourceWithRequester(ctx context.Context, requester Requester, id int)
 	return nil
 }
 
-// SetSourceDefault устанавливает источник как используемый по умолчанию.
+// SetDefault устанавливает источник как используемый по умолчанию.
 //
 // Пример использования:
 //
-//	updatedSource, err := sources.SetSourceDefault(ctx, apiClient, 123)
-func SetSourceDefault(ctx context.Context, apiClient *client.Client, id int) (*Source, error) {
-	return SetSourceDefaultWithRequester(ctx, apiClient, id)
+//	updatedSource, err := sources.SetDefault(ctx, apiClient, 123)
+func SetDefault(ctx context.Context, apiClient *client.Client, id int) (*Source, error) {
+	return SetDefaultWithRequester(ctx, apiClient, id)
 }
 
-// SetSourceDefaultWithRequester устанавливает источник как используемый по умолчанию с использованием интерфейса Requester.
-func SetSourceDefaultWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
+// SetDefaultWithRequester устанавливает источник как используемый по умолчанию с использованием интерфейса Requester.
+func SetDefaultWithRequester(ctx context.Context, requester Requester, id int) (*Source, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/default", requester.GetBaseURL(), id)
 
@@ -357,17 +357,17 @@ func SetSourceDefaultWithRequester(ctx context.Context, requester Requester, id 
 	return &updatedSource, nil
 }
 
-// GetSourceServices получает список сервисов, доступных для источников сделок.
+// ListServices получает список сервисов, доступных для источников сделок.
 //
 // Пример использования:
 //
-//	services, err := sources.GetSourceServices(ctx, apiClient)
-func GetSourceServices(ctx context.Context, apiClient *client.Client) ([]Service, error) {
-	return GetSourceServicesWithRequester(ctx, apiClient)
+//	services, err := sources.ListServices(ctx, apiClient)
+func ListServices(ctx context.Context, apiClient *client.Client) ([]Service, error) {
+	return ListServicesWithRequester(ctx, apiClient)
 }
 
-// GetSourceServicesWithRequester получает список сервисов с использованием интерфейса Requester.
-func GetSourceServicesWithRequester(ctx context.Context, requester Requester) ([]Service, error) {
+// ListServicesWithRequester получает список сервисов с использованием интерфейса Requester.
+func ListServicesWithRequester(ctx context.Context, requester Requester) ([]Service, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/services", requester.GetBaseURL())
 
@@ -402,17 +402,17 @@ func GetSourceServicesWithRequester(ctx context.Context, requester Requester) ([
 	return response.Embedded.Services, nil
 }
 
-// LinkSourceToPipeline связывает источник с воронкой.
+// LinkToPipeline связывает источник с воронкой.
 //
 // Пример использования:
 //
-//	linkedSource, err := sources.LinkSourceToPipeline(ctx, apiClient, 123, 456)
-func LinkSourceToPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error) {
-	return LinkSourceToPipelineWithRequester(ctx, apiClient, sourceID, pipelineID)
+//	linkedSource, err := sources.LinkToPipeline(ctx, apiClient, 123, 456)
+func LinkToPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error) {
+	return LinkToPipelineWithRequester(ctx, apiClient, sourceID, pipelineID)
 }
 
-// LinkSourceToPipelineWithRequester связывает источник с воронкой с использованием интерфейса Requester.
-func LinkSourceToPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
+// LinkToPipelineWithRequester связывает источник с воронкой с использованием интерфейса Requester.
+func LinkToPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/pipeline", requester.GetBaseURL(), sourceID)
 
@@ -452,17 +452,17 @@ func LinkSourceToPipelineWithRequester(ctx context.Context, requester Requester,
 	return &linkedSource, nil
 }
 
-// UnlinkSourceFromPipeline удаляет связь источника с воронкой.
+// UnlinkFromPipeline удаляет связь источника с воронкой.
 //
 // Пример использования:
 //
-//	unlinkedSource, err := sources.UnlinkSourceFromPipeline(ctx, apiClient, 123, 456)
-func UnlinkSourceFromPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error) {
-	return UnlinkSourceFromPipelineWithRequester(ctx, apiClient, sourceID, pipelineID)
+//	unlinkedSource, err := sources.UnlinkFromPipeline(ctx, apiClient, 123, 456)
+func UnlinkFromPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error) {
+	return UnlinkFromPipelineWithRequester(ctx, apiClient, sourceID, pipelineID)
 }
 
-// UnlinkSourceFromPipelineWithRequester удаляет связь источника с воронкой с использованием интерфейса Requester.
-func UnlinkSourceFromPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
+// UnlinkFromPipelineWithRequester удаляет связь источника с воронкой с использованием интерфейса Requester.
+func UnlinkFromPipelineWithRequester(ctx context.Context, requester Requester, sourceID, pipelineID int) (*Source, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/sources/%d/pipeline/%d", requester.GetBaseURL(), sourceID, pipelineID)
 

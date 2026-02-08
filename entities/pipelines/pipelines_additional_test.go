@@ -16,7 +16,7 @@ func TestGetPipelineError(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetPipeline(context.Background(), apiClient, 999)
+		_, err := Get(context.Background(), apiClient, 999)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -38,7 +38,7 @@ func TestGetPipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetPipeline(context.Background(), apiClient, 123)
+		_, err := Get(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -54,7 +54,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := ListPipelines(context.Background(), apiClient)
+		_, err := List(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -76,7 +76,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		pipelines, err := ListPipelines(context.Background(), apiClient)
+		pipelines, err := List(context.Background(), apiClient)
 
 		// Проверяем результаты
 		if err != nil {
@@ -102,7 +102,7 @@ func TestListPipelinesError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := ListPipelines(context.Background(), apiClient)
+		_, err := List(context.Background(), apiClient)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -124,7 +124,7 @@ func TestUpdatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdatePipeline(context.Background(), apiClient, pipelineWithoutID)
+		_, err := Update(context.Background(), apiClient, pipelineWithoutID)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -144,7 +144,7 @@ func TestUpdatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdatePipeline(context.Background(), apiClient, pipelineToUpdate)
+		_, err := Update(context.Background(), apiClient, pipelineToUpdate)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -169,7 +169,7 @@ func TestDeletePipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeletePipeline(context.Background(), apiClient, 123)
+		err := Delete(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -191,7 +191,7 @@ func TestDeletePipelineError(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeletePipeline(context.Background(), apiClient, 123)
+		err := Delete(context.Background(), apiClient, 123)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {
@@ -228,7 +228,7 @@ func TestCreatePipelineError(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := CreatePipeline(context.Background(), apiClient, invalidPipeline)
+		_, err := Create(context.Background(), apiClient, invalidPipeline)
 
 		// Проверяем, что вернулась ошибка
 		if err == nil {

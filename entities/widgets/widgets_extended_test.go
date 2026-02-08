@@ -92,7 +92,7 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		categoryID := 1
 
 		// Вызываем тестируемый метод
-		widgets, err := GetMarketplaceWidgetsWithRequester(context.Background(), mockClient, 1, 50, WithCategory(categoryID))
+		widgets, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50, WithCategory(categoryID))
 
 		// Проверяем результаты
 		if err != nil {
@@ -127,7 +127,7 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/marketplace/widgets", http.StatusOK, emptyResponse, nil)
 
 		// Вызываем тестируемый метод
-		widgets, err := GetMarketplaceWidgetsWithRequester(context.Background(), mockClient, 1, 50)
+		widgets, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -146,7 +146,7 @@ func TestGetMarketplaceWidgets(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/marketplace/widgets", http.StatusInternalServerError, `{"error": "Internal Server Error"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := GetMarketplaceWidgetsWithRequester(context.Background(), mockClient, 1, 50)
+		_, err := ListMarketplaceWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -217,7 +217,7 @@ func TestSetWidgetStatus(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		widget, err := SetWidgetStatus(context.Background(), apiClient, widgetID, status)
+		widget, err := SetStatus(context.Background(), apiClient, widgetID, status)
 
 		// Проверяем результаты
 		if err != nil {
@@ -240,7 +240,7 @@ func TestSetWidgetStatus(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/widgets/%d", widgetID), http.StatusBadRequest, `{"error": "Invalid status"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := SetWidgetStatusWithRequester(context.Background(), mockClient, widgetID, status)
+		_, err := SetStatusWithRequester(context.Background(), mockClient, widgetID, status)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -327,7 +327,7 @@ func TestBulkInstallWidgets(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		widgets, err := BulkInstallWidgets(context.Background(), apiClient, codes)
+		widgets, err := BulkInstall(context.Background(), apiClient, codes)
 
 		// Проверяем результаты
 		if err != nil {
@@ -354,7 +354,7 @@ func TestBulkInstallWidgets(t *testing.T) {
 		mockClient.AddResponse("POST", "/api/v4/widgets", http.StatusBadRequest, `{"error": "Invalid widget codes"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := BulkInstallWidgetsWithRequester(context.Background(), mockClient, codes)
+		_, err := BulkInstallWithRequester(context.Background(), mockClient, codes)
 
 		// Проверяем, что есть ошибка
 		if err == nil {
@@ -405,7 +405,7 @@ func TestBulkDeleteWidgets(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := BulkDeleteWidgets(context.Background(), apiClient, widgetIDs)
+		err := BulkDelete(context.Background(), apiClient, widgetIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -420,7 +420,7 @@ func TestBulkDeleteWidgets(t *testing.T) {
 		mockClient.AddResponse("DELETE", "/api/v4/widgets", http.StatusForbidden, `{"error": "Insufficient permissions"}`, nil)
 
 		// Вызываем тестируемый метод
-		err := BulkDeleteWidgetsWithRequester(context.Background(), mockClient, widgetIDs)
+		err := BulkDeleteWithRequester(context.Background(), mockClient, widgetIDs)
 
 		// Проверяем, что есть ошибка
 		if err == nil {

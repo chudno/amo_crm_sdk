@@ -84,8 +84,8 @@ type Links struct {
 	} `json:"self"`
 }
 
-// SegmentsResponse ответ при получении списка сегментов
-type SegmentsResponse struct {
+// ListResponse ответ при получении списка сегментов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Embedded struct {
@@ -131,7 +131,7 @@ func WithFilter(filter map[string]string) WithOption {
 	}
 }
 
-// AddSegment создает новый сегмент в amoCRM.
+// Create создает новый сегмент в amoCRM.
 //
 // Пример использования:
 //
@@ -149,8 +149,8 @@ func WithFilter(filter map[string]string) WithOption {
 //			},
 //		},
 //	}
-//	createdSegment, err := segments.AddSegment(ctx, apiClient, segment)
-func AddSegment(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
+//	createdSegment, err := segments.Create(ctx, apiClient, segment)
+func Create(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments", apiClient.GetBaseURL())
 
@@ -198,15 +198,15 @@ func AddSegment(ctx context.Context, apiClient *client.Client, segment *Segment)
 	return &result.Embedded.Segments[0], nil
 }
 
-// GetSegments получает список сегментов с возможностью фильтрации и пагинации.
+// List получает список сегментов с возможностью фильтрации и пагинации.
 //
 // Пример использования:
 //
 //	filter := map[string]string{
 //		"filter[name]": "Активные клиенты",
 //	}
-//	segments, err := segments.GetSegments(ctx, apiClient, 1, 50, segments.WithFilter(filter))
-func GetSegments(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
+//	segments, err := segments.List(ctx, apiClient, 1, 50, segments.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Segment, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -246,7 +246,7 @@ func GetSegments(ctx context.Context, apiClient *client.Client, page, limit int,
 	}
 
 	// Разбираем ответ
-	var segmentsResponse SegmentsResponse
+	var segmentsResponse ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&segmentsResponse); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -254,12 +254,12 @@ func GetSegments(ctx context.Context, apiClient *client.Client, page, limit int,
 	return segmentsResponse.Embedded.Segments, nil
 }
 
-// GetSegment получает информацию о конкретном сегменте по его ID.
+// Get получает информацию о конкретном сегменте по его ID.
 //
 // Пример использования:
 //
-//	segment, err := segments.GetSegment(ctx, apiClient, 123, segments.WithContacts())
-func GetSegment(ctx context.Context, apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
+//	segment, err := segments.Get(ctx, apiClient, 123, segments.WithContacts())
+func Get(ctx context.Context, apiClient *client.Client, segmentID int, options ...WithOption) (*Segment, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 
@@ -305,7 +305,7 @@ func GetSegment(ctx context.Context, apiClient *client.Client, segmentID int, op
 	return &segment, nil
 }
 
-// UpdateSegment обновляет информацию о сегменте.
+// Update обновляет информацию о сегменте.
 //
 // Пример использования:
 //
@@ -314,8 +314,8 @@ func GetSegment(ctx context.Context, apiClient *client.Client, segmentID int, op
 //		Name: "Обновленный сегмент",
 //		Color: "#FF5555",
 //	}
-//	updatedSegment, err := segments.UpdateSegment(ctx, apiClient, segment)
-func UpdateSegment(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
+//	updatedSegment, err := segments.Update(ctx, apiClient, segment)
+func Update(ctx context.Context, apiClient *client.Client, segment *Segment) (*Segment, error) {
 	if segment.ID == 0 {
 		return nil, fmt.Errorf("ID сегмента не указан")
 	}
@@ -358,12 +358,12 @@ func UpdateSegment(ctx context.Context, apiClient *client.Client, segment *Segme
 	return &updatedSegment, nil
 }
 
-// DeleteSegment удаляет сегмент по его ID.
+// Delete удаляет сегмент по его ID.
 //
 // Пример использования:
 //
-//	err := segments.DeleteSegment(ctx, apiClient, 123)
-func DeleteSegment(ctx context.Context, apiClient *client.Client, segmentID int) error {
+//	err := segments.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, segmentID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d", apiClient.GetBaseURL(), segmentID)
 
@@ -388,13 +388,13 @@ func DeleteSegment(ctx context.Context, apiClient *client.Client, segmentID int)
 	return nil
 }
 
-// AddContactsToSegment добавляет контакты в сегмент.
+// AddContacts добавляет контакты в сегмент.
 //
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.AddContactsToSegment(ctx, apiClient, 42, contactIDs)
-func AddContactsToSegment(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
+//	err := segments.AddContacts(ctx, apiClient, 42, contactIDs)
+func AddContacts(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts", apiClient.GetBaseURL(), segmentID)
 
@@ -434,13 +434,13 @@ func AddContactsToSegment(ctx context.Context, apiClient *client.Client, segment
 	return nil
 }
 
-// RemoveContactsFromSegment удаляет контакты из сегмента.
+// RemoveContacts удаляет контакты из сегмента.
 //
 // Пример использования:
 //
 //	contactIDs := []int{123, 456, 789}
-//	err := segments.RemoveContactsFromSegment(ctx, apiClient, 42, contactIDs)
-func RemoveContactsFromSegment(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
+//	err := segments.RemoveContacts(ctx, apiClient, 42, contactIDs)
+func RemoveContacts(ctx context.Context, apiClient *client.Client, segmentID int, contactIDs []int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts/delete", apiClient.GetBaseURL(), segmentID)
 
@@ -480,12 +480,12 @@ func RemoveContactsFromSegment(ctx context.Context, apiClient *client.Client, se
 	return nil
 }
 
-// GetSegmentContacts получает список контактов в сегменте.
+// ListContacts получает список контактов в сегменте.
 //
 // Пример использования:
 //
-//	contactIDs, err := segments.GetSegmentContacts(ctx, apiClient, 42, 1, 50)
-func GetSegmentContacts(ctx context.Context, apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
+//	contactIDs, err := segments.ListContacts(ctx, apiClient, 42, 1, 50)
+func ListContacts(ctx context.Context, apiClient *client.Client, segmentID, page, limit int) ([]int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/segments/%d/contacts?page=%d&limit=%d",
 		apiClient.GetBaseURL(), segmentID, page, limit)

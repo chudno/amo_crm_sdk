@@ -78,7 +78,7 @@ func TestUpdateTask(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		updatedTask, err := UpdateTask(context.Background(), apiClient, taskToUpdate)
+		updatedTask, err := Update(context.Background(), apiClient, taskToUpdate)
 
 		// Проверяем результаты
 		if err != nil {
@@ -106,7 +106,7 @@ func TestUpdateTask(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdateTask(context.Background(), apiClient, taskWithoutID)
+		_, err := Update(context.Background(), apiClient, taskWithoutID)
 
 		// Проверяем, что возникла ошибка
 		if err == nil {
@@ -126,7 +126,7 @@ func TestUpdateTask(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		_, err := UpdateTask(context.Background(), apiClient, taskToUpdate)
+		_, err := Update(context.Background(), apiClient, taskToUpdate)
 
 		// Проверяем, что возникла ошибка
 		if err == nil {
@@ -195,7 +195,7 @@ func TestCompleteTask(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		completedTask, err := CompleteTask(context.Background(), apiClient, 123, "Задача выполнена успешно")
+		completedTask, err := Complete(context.Background(), apiClient, 123, "Задача выполнена успешно")
 
 		// Проверяем результаты
 		if err != nil {
@@ -221,7 +221,7 @@ func TestCompleteTask(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := CompleteTask(context.Background(), apiClient, 123, "Результат выполнения")
+		_, err := Complete(context.Background(), apiClient, 123, "Результат выполнения")
 
 		// Проверяем, что возникла ошибка
 		if err == nil {
@@ -256,7 +256,7 @@ func TestDeleteTask(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeleteTask(context.Background(), apiClient, 123)
+		err := Delete(context.Background(), apiClient, 123)
 
 		// Проверяем результаты
 		if err != nil {
@@ -270,7 +270,7 @@ func TestDeleteTask(t *testing.T) {
 		apiClient := client.NewClient("http://non-existent-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод с несуществующим ID
-		err := DeleteTask(context.Background(), apiClient, 999)
+		err := Delete(context.Background(), apiClient, 999)
 
 		// Проверяем, что возникла ошибка
 		if err == nil {

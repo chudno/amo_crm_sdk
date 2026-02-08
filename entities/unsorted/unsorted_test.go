@@ -45,8 +45,8 @@ func TestCreateUnsortedLead(t *testing.T) {
 
 	// Создаем неразобранную заявку
 	now := time.Now().Unix()
-	lead := &UnsortedLeadCreate{
-		UnsortedBase: UnsortedBase{
+	lead := &LeadCreate{
+		Base: Base{
 			SourceName: "API Test",
 			SourceType: SourceTypeAPI,
 			Category:   CategoryTypeForms,
@@ -55,7 +55,7 @@ func TestCreateUnsortedLead(t *testing.T) {
 		},
 		LeadName: "Тестовая заявка",
 		Price:    1000,
-		Contact: &UnsortedContact{
+		Contact: &Contact{
 			Name:  "Иван Иванов",
 			Email: "ivan@example.com",
 			Phone: "+79001234567",
@@ -65,7 +65,7 @@ func TestCreateUnsortedLead(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	response, err := CreateUnsortedLead(context.Background(), apiClient, lead)
+	response, err := CreateLead(context.Background(), apiClient, lead)
 
 	// Проверяем результаты
 	if err != nil {
@@ -115,14 +115,14 @@ func TestCreateUnsortedContact(t *testing.T) {
 
 	// Создаем неразобранную заявку контакта
 	now := time.Now().Unix()
-	contact := &UnsortedContactCreate{
-		UnsortedBase: UnsortedBase{
+	contact := &ContactCreate{
+		Base: Base{
 			SourceName: "API Test",
 			SourceType: SourceTypeAPI,
 			Category:   CategoryTypeForms,
 			CreatedAt:  now,
 		},
-		Contact: &UnsortedContact{
+		Contact: &Contact{
 			Name:  "Петр Петров",
 			Email: "petr@example.com",
 			Phone: "+79001234568",
@@ -131,7 +131,7 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	response, err := CreateUnsortedContact(context.Background(), apiClient, contact)
+	response, err := CreateContact(context.Background(), apiClient, contact)
 
 	// Проверяем результаты
 	if err != nil {
@@ -147,7 +147,7 @@ func TestCreateUnsortedContact(t *testing.T) {
 	}
 }
 
-// getUnsortedLeadsServerHandler создает обработчик запросов для тестового сервера GetUnsortedLeads
+// getUnsortedLeadsServerHandler создает обработчик запросов для тестового сервера ListLeads
 func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -214,9 +214,9 @@ func getUnsortedLeadsServerHandler(t *testing.T) http.HandlerFunc {
 	}
 }
 
-// createExpectedUnsortedItem создает ожидаемый объект UnsortedItem для тестирования
-func createExpectedUnsortedItem() UnsortedItem {
-	return UnsortedItem{
+// createExpectedUnsortedItem создает ожидаемый объект Item для тестирования
+func createExpectedUnsortedItem() Item {
+	return Item{
 		ID:           "unsorted-lead-1",
 		UID:          "unsorted-uid-1",
 		SourceUID:    "src-1",
@@ -296,8 +296,8 @@ func createExpectedUnsortedItem() UnsortedItem {
 	}
 }
 
-// verifyBasicFields проверяет основные поля UnsortedItem
-func verifyBasicFields(t *testing.T, actual, expected UnsortedItem) {
+// verifyBasicFields проверяет основные поля Item
+func verifyBasicFields(t *testing.T, actual, expected Item) {
 	if actual.ID != expected.ID ||
 		actual.UID != expected.UID ||
 		actual.SourceUID != expected.SourceUID ||
@@ -311,8 +311,8 @@ func verifyBasicFields(t *testing.T, actual, expected UnsortedItem) {
 	}
 }
 
-// verifyEmbeddedLeads проверяет вложенные сделки в UnsortedItem
-func verifyEmbeddedLeads(t *testing.T, item UnsortedItem) {
+// verifyEmbeddedLeads проверяет вложенные сделки в Item
+func verifyEmbeddedLeads(t *testing.T, item Item) {
 	if item.Embedded != nil && item.Embedded.Leads != nil && len(item.Embedded.Leads) > 0 {
 		if item.Embedded.Leads[0].ID != 456 || item.Embedded.Leads[0].Name != "Тестовая сделка" {
 			t.Errorf("Вложенная сделка не соответствует ожидаемой")
@@ -331,7 +331,7 @@ func TestGetUnsortedLeads(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	items, err := GetUnsortedLeads(context.Background(), apiClient, 1, 50, nil)
+	items, err := ListLeads(context.Background(), apiClient, 1, 50, nil)
 
 	// Проверяем результаты
 	if err != nil {
@@ -386,7 +386,7 @@ func TestAcceptUnsortedLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	leadID, err := AcceptUnsortedLead(context.Background(), apiClient, unsortedUID, 123, 456)
+	leadID, err := AcceptLead(context.Background(), apiClient, unsortedUID, 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -424,7 +424,7 @@ func TestDeclineUnsortedLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeclineUnsortedLead(context.Background(), apiClient, unsortedUID)
+	err := DeclineLead(context.Background(), apiClient, unsortedUID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -470,7 +470,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	summary, err := GetUnsortedSummary(context.Background(), apiClient)
+	summary, err := GetSummary(context.Background(), apiClient)
 
 	// Проверяем результаты
 	if err != nil {
@@ -504,7 +504,7 @@ func TestGetUnsortedSummary(t *testing.T) {
 	}
 }
 
-// getUnsortedContactsServerHandler создает обработчик запросов для тестового сервера GetUnsortedContacts
+// getUnsortedContactsServerHandler создает обработчик запросов для тестового сервера ListContacts
 func getUnsortedContactsServerHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Проверяем метод запроса
@@ -606,7 +606,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 	// Базовый тест без фильтров
 	t.Run("Базовый запрос", func(t *testing.T) {
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, nil)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, nil)
 
 		// Проверяем результаты
 		if err != nil {
@@ -635,7 +635,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, filter)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, filter)
 
 		// Проверяем результаты
 		if err != nil {
@@ -656,7 +656,7 @@ func TestGetUnsortedContacts(t *testing.T) {
 		}
 
 		// Вызываем тестируемый метод
-		contacts, err := GetUnsortedContacts(context.Background(), apiClient, 1, 50, filter)
+		contacts, err := ListContacts(context.Background(), apiClient, 1, 50, filter)
 
 		// Проверяем результаты
 		if err != nil {

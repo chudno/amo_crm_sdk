@@ -83,55 +83,55 @@ type Event struct {
 	ValueBefore        json.RawMessage `json:"value_before,omitempty"`
 	ValueBeforePretty  string          `json:"value_before_pretty,omitempty"`
 	ValueAfterPretty   string          `json:"value_after_pretty,omitempty"`
-	AdditionalEntities EventEntities   `json:"additional_entities,omitempty"`
+	AdditionalEntities Entities        `json:"additional_entities,omitempty"`
 	Link               string          `json:"link,omitempty"`
 	Ver                string          `json:"__v,omitempty"`
-	Embedded           *EventEmbedded  `json:"_embedded,omitempty"`
-	Links              *EventLinks     `json:"_links,omitempty"`
+	Embedded           *Embedded       `json:"_embedded,omitempty"`
+	Links              *Links          `json:"_links,omitempty"`
 }
 
-// EventEntities дополнительные сущности события.
-type EventEntities struct {
-	Lead    *EventEntity `json:"lead,omitempty"`
-	Contact *EventEntity `json:"contact,omitempty"`
-	Company *EventEntity `json:"company,omitempty"`
-	Task    *EventEntity `json:"task,omitempty"`
+// Entities дополнительные сущности события.
+type Entities struct {
+	Lead    *Entity `json:"lead,omitempty"`
+	Contact *Entity `json:"contact,omitempty"`
+	Company *Entity `json:"company,omitempty"`
+	Task    *Entity `json:"task,omitempty"`
 }
 
-// EventEntity сущность события.
-type EventEntity struct {
+// Entity сущность события.
+type Entity struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
 	Created int64  `json:"created_at,omitempty"`
 	Updated int64  `json:"updated_at,omitempty"`
 }
 
-// EventLinks ссылки события.
-type EventLinks struct {
+// Links ссылки события.
+type Links struct {
 	Self struct {
 		Href string `json:"href"`
 	} `json:"self"`
 }
 
-// EventEmbedded вложенные данные события.
-type EventEmbedded struct {
-	Entity *EventEntity `json:"entity,omitempty"`
+// Embedded вложенные данные события.
+type Embedded struct {
+	Entity *Entity `json:"entity,omitempty"`
 }
 
-// GetEventsResponse структура ответа при получении списка событий.
-type GetEventsResponse struct {
-	Page      int            `json:"page"`
-	PerPage   int            `json:"per_page"`
-	Total     int            `json:"total"`
-	Order     []Order        `json:"order"`
-	Embedded  EventsEmbedded `json:"_embedded"`
-	NextPage  string         `json:"_next_page"`
-	PrevPage  string         `json:"_prev_page"`
-	TotalPath string         `json:"_total_path"`
+// ListResponse структура ответа при получении списка событий.
+type ListResponse struct {
+	Page      int          `json:"page"`
+	PerPage   int          `json:"per_page"`
+	Total     int          `json:"total"`
+	Order     []Order      `json:"order"`
+	Embedded  ListEmbedded `json:"_embedded"`
+	NextPage  string       `json:"_next_page"`
+	PrevPage  string       `json:"_prev_page"`
+	TotalPath string       `json:"_total_path"`
 }
 
-// EventsEmbedded вложенные данные списка событий.
-type EventsEmbedded struct {
+// ListEmbedded вложенные данные списка событий.
+type ListEmbedded struct {
 	Events []Event `json:"events"`
 }
 
@@ -181,7 +181,7 @@ func WithOrder(field, order string) WithOption {
 	}
 }
 
-// GetEvents получает список событий с возможностью фильтрации.
+// List получает список событий с возможностью фильтрации.
 //
 // Пример использования:
 //
@@ -189,8 +189,8 @@ func WithOrder(field, order string) WithOption {
 //		"filter[type]": string(events.EventTypeNote),
 //		"filter[entity_type]": string(events.EventEntityTypeLead),
 //	}
-//	eventsList, err := events.GetEvents(apiClient, events.WithFilter(filter), events.WithLimit(50), events.WithPage(1))
-func GetEvents(ctx context.Context, apiClient *client.Client, options ...WithOption) ([]Event, error) {
+//	eventsList, err := events.List(apiClient, events.WithFilter(filter), events.WithLimit(50), events.WithPage(1))
+func List(ctx context.Context, apiClient *client.Client, options ...WithOption) ([]Event, error) {
 	params := make(map[string]string)
 
 	// Применяем опции
@@ -225,7 +225,7 @@ func GetEvents(ctx context.Context, apiClient *client.Client, options ...WithOpt
 	defer resp.Body.Close()
 
 	// Разбираем ответ
-	var eventsResponse GetEventsResponse
+	var eventsResponse ListResponse
 	err = json.NewDecoder(resp.Body).Decode(&eventsResponse)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
@@ -234,12 +234,12 @@ func GetEvents(ctx context.Context, apiClient *client.Client, options ...WithOpt
 	return eventsResponse.Embedded.Events, nil
 }
 
-// GetEvent получает информацию о конкретном событии по его ID.
+// Get получает информацию о конкретном событии по его ID.
 //
 // Пример использования:
 //
-//	event, err := events.GetEvent(apiClient, 123, events.WithEntity())
-func GetEvent(ctx context.Context, apiClient *client.Client, eventID int, options ...WithOption) (*Event, error) {
+//	event, err := events.Get(apiClient, 123, events.WithEntity())
+func Get(ctx context.Context, apiClient *client.Client, eventID int, options ...WithOption) (*Event, error) {
 	params := make(map[string]string)
 
 	// Применяем опции

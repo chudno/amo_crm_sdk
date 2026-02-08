@@ -37,11 +37,11 @@ type Event struct {
     ValueBefore        json.RawMessage `json:"value_before,omitempty"`
     ValueBeforePretty  string          `json:"value_before_pretty,omitempty"`
     ValueAfterPretty   string          `json:"value_after_pretty,omitempty"`
-    AdditionalEntities EventEntities   `json:"additional_entities,omitempty"`
+    AdditionalEntities Entities   `json:"additional_entities,omitempty"`
     Link               string          `json:"link,omitempty"`
     Ver                string          `json:"__v,omitempty"`
-    Embedded           *EventEmbedded  `json:"_embedded,omitempty"`
-    Links              *EventLinks     `json:"_links,omitempty"`
+    Embedded           *Embedded  `json:"_embedded,omitempty"`
+    Links              *Links     `json:"_links,omitempty"`
 }
 ```
 
@@ -134,7 +134,7 @@ func main() {
     ctx := context.Background()
 
     // Получаем список событий с лимитом 50 записей
-    eventsList, err := events.GetEvents(ctx, apiClient, events.WithLimit(50))
+    eventsList, err := events.List(ctx, apiClient, events.WithLimit(50))
     if err != nil {
         log.Fatalf("Ошибка при получении списка событий: %v", err)
     }
@@ -196,7 +196,7 @@ func main() {
     // filter["filter[created_at][to]"] = fmt.Sprintf("%d", endTime)
 
     // Получаем список отфильтрованных событий
-    eventsList, err := events.GetEvents(ctx, apiClient,
+    eventsList, err := events.List(ctx, apiClient,
         events.WithFilter(filter),
         events.WithLimit(30),
     )
@@ -243,7 +243,7 @@ func main() {
     eventID := 12345
 
     // Получаем информацию о событии с информацией о связанной сущности
-    event, err := events.GetEvent(ctx, apiClient, eventID, events.WithEntity())
+    event, err := events.Get(ctx, apiClient, eventID, events.WithEntity())
     if err != nil {
         log.Fatalf("Ошибка при получении информации о событии: %v", err)
     }
@@ -295,7 +295,7 @@ func main() {
     limit := 20
 
     // Указываем страницу, лимит и сортировку по дате создания в обратном порядке (сначала новые)
-    eventsList, err := events.GetEvents(ctx, apiClient,
+    eventsList, err := events.List(ctx, apiClient,
         events.WithPage(page),
         events.WithLimit(limit),
         events.WithOrder("created_at", "desc"),
@@ -316,7 +316,7 @@ func main() {
     
     // Для получения следующей страницы просто увеличиваем номер страницы
     // nextPage := page + 1
-    // eventsNextPage, err := events.GetEvents(ctx, apiClient,
+    // eventsNextPage, err := events.List(ctx, apiClient,
     //     events.WithPage(nextPage),
     //     events.WithLimit(limit),
     //     events.WithOrder("created_at", "desc"),

@@ -75,7 +75,7 @@ func TestGetCatalogs(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	catalogs, err := GetCatalogs(context.Background(), apiClient, 1, 50, nil)
+	catalogs, err := List(context.Background(), apiClient, 1, 50, nil)
 
 	// Проверяем результаты
 	if err != nil {
@@ -158,7 +158,7 @@ func TestCreateCatalog(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdCatalog, err := CreateCatalog(context.Background(), apiClient, newCatalog)
+	createdCatalog, err := Create(context.Background(), apiClient, newCatalog)
 
 	// Проверяем результаты
 	if err != nil {
@@ -217,7 +217,7 @@ func TestGetCatalog(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	catalog, err := GetCatalog(context.Background(), apiClient, catalogID)
+	catalog, err := Get(context.Background(), apiClient, catalogID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -283,7 +283,7 @@ func TestUpdateCatalog(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedCatalog, err := UpdateCatalog(context.Background(), apiClient, catalogToUpdate)
+	updatedCatalog, err := Update(context.Background(), apiClient, catalogToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -331,7 +331,7 @@ func TestDeleteCatalog(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteCatalog(context.Background(), apiClient, catalogID)
+	err := Delete(context.Background(), apiClient, catalogID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -386,7 +386,7 @@ func TestAddCustomFieldToCatalog(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdField, err := AddCustomFieldToCatalog(context.Background(), apiClient, catalogID, newField)
+	createdField, err := AddCustomField(context.Background(), apiClient, catalogID, newField)
 
 	// Проверяем результаты
 	if err != nil {
@@ -464,7 +464,7 @@ func TestGetCatalogCustomFields(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	fields, err := GetCatalogCustomFields(context.Background(), apiClient, catalogID)
+	fields, err := ListCustomFields(context.Background(), apiClient, catalogID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -546,7 +546,7 @@ func TestGetCatalogCustomField(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	field, err := GetCatalogCustomField(context.Background(), apiClient, catalogID, fieldID)
+	field, err := GetCustomField(context.Background(), apiClient, catalogID, fieldID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -617,7 +617,7 @@ func TestUpdateCatalogCustomField(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedField, err := UpdateCatalogCustomField(context.Background(), apiClient, catalogID, fieldToUpdate)
+	updatedField, err := UpdateCustomField(context.Background(), apiClient, catalogID, fieldToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -667,7 +667,7 @@ func TestDeleteCatalogCustomField(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteCatalogCustomField(context.Background(), apiClient, catalogID, fieldID)
+	err := DeleteCustomField(context.Background(), apiClient, catalogID, fieldID)
 
 	// Проверяем результаты
 	if err != nil {

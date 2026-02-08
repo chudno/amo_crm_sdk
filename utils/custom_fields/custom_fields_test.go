@@ -9,7 +9,7 @@ import (
 
 func TestCustomFieldValueJSON(t *testing.T) {
 	// Создаем тестовую структуру
-	customFieldValue := CustomFieldValue{
+	customFieldValue := Value{
 		FieldID:   12345,
 		FieldName: "Тестовое поле",
 		Values: []FieldValue{
@@ -38,7 +38,7 @@ func TestCustomFieldValueJSON(t *testing.T) {
 	}
 
 	// Демаршализуем обратно в структуру
-	var decodedValue CustomFieldValue
+	var decodedValue Value
 	if err := json.Unmarshal(jsonData, &decodedValue); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
@@ -110,7 +110,7 @@ func TestFieldValueJSON(t *testing.T) {
 
 func TestCustomFieldJSON(t *testing.T) {
 	// Создаем тестовую структуру
-	customField := CustomField{
+	customField := Field{
 		ID:           123,
 		Name:         "Тестовое поле",
 		Type:         "text",
@@ -122,7 +122,7 @@ func TestCustomFieldJSON(t *testing.T) {
 		IsRequired:   false,
 		IsDeleteable: true,
 		IsVisible:    true,
-		Enums: []CustomFieldEnum{
+		Enums: []Enum{
 			{
 				ID:    456,
 				Value: "Вариант 1",
@@ -154,7 +154,7 @@ func TestCustomFieldJSON(t *testing.T) {
 	}
 
 	// Демаршализуем обратно в структуру
-	var decodedField CustomField
+	var decodedField Field
 	if err := json.Unmarshal(jsonData, &decodedField); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestCustomFieldJSON(t *testing.T) {
 
 func TestCustomFieldEnumJSON(t *testing.T) {
 	// Создаем тестовую структуру
-	customFieldEnum := CustomFieldEnum{
+	customFieldEnum := Enum{
 		ID:    789,
 		Value: "Тестовый вариант",
 		Sort:  5,
@@ -198,7 +198,7 @@ func TestCustomFieldEnumJSON(t *testing.T) {
 	}
 
 	// Демаршализуем обратно в структуру
-	var decodedEnum CustomFieldEnum
+	var decodedEnum Enum
 	if err := json.Unmarshal(jsonData, &decodedEnum); err != nil {
 		t.Fatalf("Ошибка при демаршализации из JSON: %v", err)
 	}

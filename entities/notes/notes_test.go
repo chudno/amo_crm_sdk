@@ -45,7 +45,7 @@ func TestGetNote(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	note, err := GetNote(context.Background(), apiClient, "leads", 123, 456)
+	note, err := Get(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -127,7 +127,7 @@ func TestCreateNote(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdNote, err := CreateNote(context.Background(), apiClient, "contacts", 789, noteToCreate)
+	createdNote, err := Create(context.Background(), apiClient, "contacts", 789, noteToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -202,7 +202,7 @@ func TestUpdateNote(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedNote, err := UpdateNote(context.Background(), apiClient, "leads", 456, noteToUpdate)
+	updatedNote, err := Update(context.Background(), apiClient, "leads", 456, noteToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -277,7 +277,7 @@ func TestListNotes(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	notes, err := ListNotes(context.Background(), apiClient, "companies", 123, 10, 1)
+	notes, err := List(context.Background(), apiClient, "companies", 123, 10, 1)
 
 	// Проверяем результаты
 	if err != nil {
@@ -320,7 +320,7 @@ func TestDeleteNote(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteNote(context.Background(), apiClient, "leads", 123, 456)
+	err := Delete(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты
 	if err != nil {
@@ -341,7 +341,7 @@ func TestDeleteNoteError(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteNote(context.Background(), apiClient, "leads", 123, 456)
+	err := Delete(context.Background(), apiClient, "leads", 123, 456)
 
 	// Проверяем результаты - должна быть ошибка
 	if err == nil {

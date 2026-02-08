@@ -88,8 +88,8 @@ type Call struct {
 	CallStartTime     string        `json:"call_start_time,omitempty"`
 	CallEndTime       string        `json:"call_end_time,omitempty"`
 	Version           int           `json:"version,omitempty"`
-	Embedded          *CallEmbedded `json:"_embedded,omitempty"`
-	Links             *CallLinks    `json:"_links,omitempty"`
+	Embedded          *Embedded     `json:"_embedded,omitempty"`
+	Links             *Links        `json:"_links,omitempty"`
 	EntityType        *EntityType   `json:"entity_type,omitempty"`
 	EntityID          int           `json:"entity_id,omitempty"`
 }
@@ -100,8 +100,8 @@ type Voice struct {
 	TranscriptionURL string `json:"transcription_url,omitempty"`
 }
 
-// CallEmbedded содержит вложенные сущности
-type CallEmbedded struct {
+// Embedded содержит вложенные сущности
+type Embedded struct {
 	Tags []struct {
 		ID    int    `json:"id"`
 		Name  string `json:"name"`
@@ -109,15 +109,15 @@ type CallEmbedded struct {
 	} `json:"tags,omitempty"`
 }
 
-// CallLinks содержит ссылки
-type CallLinks struct {
+// Links содержит ссылки
+type Links struct {
 	Self struct {
 		Href string `json:"href"`
 	} `json:"self"`
 }
 
-// CallsResponse представляет ответ от API при получении списка звонков
-type CallsResponse struct {
+// ListResponse представляет ответ от API при получении списка звонков
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -134,8 +134,8 @@ const (
 	WithTags WithOption = "tags"
 )
 
-// AddCall добавляет новый звонок в amoCRM.
-func AddCall(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
+// Add добавляет новый звонок в amoCRM.
+func Add(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
 	// Проверяем обязательные поля
 	if call.Direction == "" {
 		return nil, fmt.Errorf("direction is required")
@@ -197,8 +197,8 @@ func AddCall(ctx context.Context, apiClient *client.Client, call *Call) (*Call, 
 	return &response.Embedded.Calls[0], nil
 }
 
-// GetCalls получает список звонков с возможностью фильтрации и пагинации.
-func GetCalls(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Call, error) {
+// List получает список звонков с возможностью фильтрации и пагинации.
+func List(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Call, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/calls", apiClient.GetBaseURL())
 
@@ -242,7 +242,7 @@ func GetCalls(ctx context.Context, apiClient *client.Client, page, limit int, fi
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var callsResponse CallsResponse
+	var callsResponse ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&callsResponse); err != nil {
 		return nil, err
 	}
@@ -264,8 +264,8 @@ func stringsJoin(strings []string, sep string) string {
 	return result
 }
 
-// GetCall получает информацию о конкретном звонке по его ID.
-func GetCall(ctx context.Context, apiClient *client.Client, callID int, withOptions ...WithOption) (*Call, error) {
+// Get получает информацию о конкретном звонке по его ID.
+func Get(ctx context.Context, apiClient *client.Client, callID int, withOptions ...WithOption) (*Call, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
 
@@ -306,8 +306,8 @@ func GetCall(ctx context.Context, apiClient *client.Client, callID int, withOpti
 	return &call, nil
 }
 
-// UpdateCall обновляет информацию о звонке.
-func UpdateCall(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
+// Update обновляет информацию о звонке.
+func Update(ctx context.Context, apiClient *client.Client, call *Call) (*Call, error) {
 	if call.ID == 0 {
 		return nil, fmt.Errorf("ID звонка не может быть пустым")
 	}
@@ -349,8 +349,8 @@ func UpdateCall(ctx context.Context, apiClient *client.Client, call *Call) (*Cal
 	return &updatedCall, nil
 }
 
-// DeleteCall удаляет звонок по его ID.
-func DeleteCall(ctx context.Context, apiClient *client.Client, callID int) error {
+// Delete удаляет звонок по его ID.
+func Delete(ctx context.Context, apiClient *client.Client, callID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d", apiClient.GetBaseURL(), callID)
 
@@ -375,8 +375,8 @@ func DeleteCall(ctx context.Context, apiClient *client.Client, callID int) error
 	return nil
 }
 
-// LinkCallWithEntity связывает звонок с сущностью (сделкой, контактом, компанией).
-func LinkCallWithEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
+// LinkWithEntity связывает звонок с сущностью (сделкой, контактом, компанией).
+func LinkWithEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d/link", apiClient.GetBaseURL(), callID)
 
@@ -418,8 +418,8 @@ func LinkCallWithEntity(ctx context.Context, apiClient *client.Client, callID in
 	return nil
 }
 
-// UnlinkCallFromEntity отвязывает звонок от сущности.
-func UnlinkCallFromEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
+// UnlinkFromEntity отвязывает звонок от сущности.
+func UnlinkFromEntity(ctx context.Context, apiClient *client.Client, callID int, entityType EntityType, entityID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/calls/%d/unlink", apiClient.GetBaseURL(), callID)
 

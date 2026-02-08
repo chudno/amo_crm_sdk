@@ -15,7 +15,7 @@ func TestGetSources(t *testing.T) {
 		mockClient := createGetSourcesSuccessMockClient()
 
 		// Вызываем тестируемую функцию
-		sources, err := GetSourcesWithRequester(context.Background(), mockClient, 1, 50)
+		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -31,7 +31,7 @@ func TestGetSources(t *testing.T) {
 		mockClient := createGetSourcesEmptyMockClient()
 
 		// Вызываем тестируемую функцию
-		sources, err := GetSourcesWithRequester(context.Background(), mockClient, 1, 50)
+		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -47,7 +47,7 @@ func TestGetSources(t *testing.T) {
 		mockClient := createGetSourcesErrorMockClient()
 
 		// Вызываем тестируемую функцию
-		_, err := GetSourcesWithRequester(context.Background(), mockClient, 1, 50)
+		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err == nil {
@@ -65,7 +65,7 @@ func TestGetSources(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию с фильтром
-		sources, err := GetSourcesWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
+		sources, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
 		// Проверяем результаты
 		if err != nil {
@@ -97,7 +97,7 @@ func TestGetSource(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		source, err := GetSourceWithRequester(context.Background(), mockClient, 1001)
+		source, err := GetWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -132,7 +132,7 @@ func TestGetSource(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := GetSourceWithRequester(context.Background(), mockClient, 9999)
+		_, err := GetWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -164,7 +164,7 @@ func TestCreateSource(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		createdSource, err := CreateSourceWithRequester(context.Background(), mockClient, newSource)
+		createdSource, err := CreateWithRequester(context.Background(), mockClient, newSource)
 
 		// Проверяем результаты
 		if err != nil {
@@ -220,7 +220,7 @@ func TestCreateSource(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		_, err := CreateSourceWithRequester(context.Background(), mockClient, invalidSource)
+		_, err := CreateWithRequester(context.Background(), mockClient, invalidSource)
 
 		// Проверяем результаты
 		if err == nil {
@@ -252,7 +252,7 @@ func TestUpdateSource(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		updatedSource, err := UpdateSourceWithRequester(context.Background(), mockClient, sourceToUpdate)
+		updatedSource, err := UpdateWithRequester(context.Background(), mockClient, sourceToUpdate)
 
 		// Проверяем результаты
 		if err != nil {
@@ -309,7 +309,7 @@ func TestUpdateSource(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		_, err := UpdateSourceWithRequester(context.Background(), mockClient, nonExistentSource)
+		_, err := UpdateWithRequester(context.Background(), mockClient, nonExistentSource)
 
 		// Проверяем результаты
 		if err == nil {
@@ -328,7 +328,7 @@ func TestDeleteSource(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		err := DeleteSourceWithRequester(context.Background(), mockClient, 1001)
+		err := DeleteWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -360,7 +360,7 @@ func TestDeleteSource(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		err := DeleteSourceWithRequester(context.Background(), mockClient, 9999)
+		err := DeleteWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -386,7 +386,7 @@ func TestSetSourceDefault(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		defaultSource, err := SetSourceDefaultWithRequester(context.Background(), mockClient, 1001)
+		defaultSource, err := SetDefaultWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -426,7 +426,7 @@ func TestSetSourceDefault(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := SetSourceDefaultWithRequester(context.Background(), mockClient, 9999)
+		_, err := SetDefaultWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -460,7 +460,7 @@ func TestGetSourceServices(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		services, err := GetSourceServicesWithRequester(context.Background(), mockClient)
+		services, err := ListServicesWithRequester(context.Background(), mockClient)
 
 		// Проверяем результаты
 		if err != nil {
@@ -499,7 +499,7 @@ func TestGetSourceServices(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := GetSourceServicesWithRequester(context.Background(), mockClient)
+		_, err := ListServicesWithRequester(context.Background(), mockClient)
 
 		// Проверяем результаты
 		if err == nil {
@@ -525,7 +525,7 @@ func TestLinkSourceToPipeline(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		linkedSource, err := LinkSourceToPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
+		linkedSource, err := LinkToPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -572,7 +572,7 @@ func TestLinkSourceToPipeline(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := LinkSourceToPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
+		_, err := LinkToPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -595,7 +595,7 @@ func TestUnlinkSourceFromPipeline(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		unlinkedSource, err := UnlinkSourceFromPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
+		unlinkedSource, err := UnlinkFromPipelineWithRequester(context.Background(), mockClient, 1001, 2001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -636,7 +636,7 @@ func TestUnlinkSourceFromPipeline(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := UnlinkSourceFromPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
+		_, err := UnlinkFromPipelineWithRequester(context.Background(), mockClient, 1001, 9999)
 
 		// Проверяем результаты
 		if err == nil {

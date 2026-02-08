@@ -69,7 +69,7 @@ if err != nil {
 
 ```go
 // Создание текстового поля
-newTextField := &custom_fields.CustomField{
+newTextField := &custom_fields.Field{
     Name: "Комментарий",
     FieldType: custom_fields.TypeText,
     EntityType: "contacts",
@@ -82,7 +82,7 @@ if err != nil {
 }
 
 // Создание поля-списка с предопределенными значениями
-newSelectField := &custom_fields.CustomField{
+newSelectField := &custom_fields.Field{
     Name: "Источник клиента",
     FieldType: custom_fields.TypeSelect,
     EntityType: "contacts",
@@ -102,7 +102,7 @@ if err != nil {
 }
 
 // Создание поля с телефоном (с типами телефонов)
-newPhoneField := &custom_fields.CustomField{
+newPhoneField := &custom_fields.Field{
     Name: "Телефон",
     FieldType: custom_fields.TypePhone,
     EntityType: "contacts",
@@ -177,9 +177,9 @@ contact := &contacts.Contact{
 }
 
 // Добавление текстового поля
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
+contact.CustomFields = append(contact.CustomFields, contacts.Field{
     FieldID: 12345, // ID пользовательского поля
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "Значение поля",
         },
@@ -187,9 +187,9 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 })
 
 // Добавление поля типа "Список"
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
+contact.CustomFields = append(contact.CustomFields, contacts.Field{
     FieldID: 67890, // ID поля-списка
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "Сайт", // Значение должно соответствовать одному из предопределенных значений
             EnumID: 123, // ID значения из списка (опционально)
@@ -198,9 +198,9 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 })
 
 // Добавление телефона с типом
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
+contact.CustomFields = append(contact.CustomFields, contacts.Field{
     FieldID: 54321, // ID поля типа "Телефон"
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "+79001234567",
             Enum: "WORK", // Тип телефона (код из списка)
@@ -209,7 +209,7 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
 })
 
 // Сохранение контакта с пользовательскими полями
-createdContact, err := contacts.CreateContact(ctx, apiClient, contact)
+createdContact, err := contacts.Create(ctx, apiClient, contact)
 ```
 
 Работа с пользовательскими полями в лидах аналогична:
@@ -221,9 +221,9 @@ lead := &leads.Lead{
 }
 
 // Добавление числового поля (например, "Бюджет")
-lead.CustomFields = append(lead.CustomFields, leads.CustomField{
+lead.CustomFields = append(lead.CustomFields, leads.Field{
     FieldID: 98765, // ID числового поля
-    Values: []leads.CustomFieldValue{
+    Values: []leads.Value{
         {
             Value: "50000", // Числовое значение передается в виде строки
         },
@@ -231,9 +231,9 @@ lead.CustomFields = append(lead.CustomFields, leads.CustomField{
 })
 
 // Добавление поля типа "Дата"
-lead.CustomFields = append(lead.CustomFields, leads.CustomField{
+lead.CustomFields = append(lead.CustomFields, leads.Field{
     FieldID: 45678, // ID поля типа "Дата"
-    Values: []leads.CustomFieldValue{
+    Values: []leads.Value{
         {
             Value: "1680307200", // Unix timestamp как строка
         },
@@ -241,5 +241,5 @@ lead.CustomFields = append(lead.CustomFields, leads.CustomField{
 })
 
 // Сохранение лида с пользовательскими полями
-createdLead, err := leads.CreateLead(ctx, apiClient, lead)
+createdLead, err := leads.Create(ctx, apiClient, lead)
 ```

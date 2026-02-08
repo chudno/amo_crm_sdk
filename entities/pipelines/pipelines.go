@@ -32,8 +32,8 @@ type Status struct {
 	IsEditable bool   `json:"is_editable"`
 }
 
-// GetPipeline получает воронку по её ID.
-func GetPipeline(ctx context.Context, apiClient *client.Client, pipelineID int) (*Pipeline, error) {
+// Get получает воронку по её ID.
+func Get(ctx context.Context, apiClient *client.Client, pipelineID int) (*Pipeline, error) {
 	url := fmt.Sprintf("%s/api/v4/leads/pipelines/%d", apiClient.GetBaseURL(), pipelineID)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -54,8 +54,8 @@ func GetPipeline(ctx context.Context, apiClient *client.Client, pipelineID int) 
 	return &pipeline, nil
 }
 
-// CreatePipeline создает новую воронку в amoCRM.
-func CreatePipeline(ctx context.Context, apiClient *client.Client, pipeline *Pipeline) (*Pipeline, error) {
+// Create создает новую воронку в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, pipeline *Pipeline) (*Pipeline, error) {
 	url := fmt.Sprintf("%s/api/v4/leads/pipelines", apiClient.GetBaseURL())
 	pipelineJSON, err := json.Marshal(pipeline)
 	if err != nil {
@@ -83,8 +83,8 @@ func CreatePipeline(ctx context.Context, apiClient *client.Client, pipeline *Pip
 	return &newPipeline, nil
 }
 
-// UpdatePipeline обновляет существующую воронку в amoCRM.
-func UpdatePipeline(ctx context.Context, apiClient *client.Client, pipeline *Pipeline) (*Pipeline, error) {
+// Update обновляет существующую воронку в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, pipeline *Pipeline) (*Pipeline, error) {
 	url := fmt.Sprintf("%s/api/v4/leads/pipelines/%d", apiClient.GetBaseURL(), pipeline.ID)
 	pipelineJSON, err := json.Marshal(pipeline)
 	if err != nil {
@@ -112,8 +112,8 @@ func UpdatePipeline(ctx context.Context, apiClient *client.Client, pipeline *Pip
 	return &updatedPipeline, nil
 }
 
-// ListPipelines получает список воронок.
-func ListPipelines(ctx context.Context, apiClient *client.Client) ([]Pipeline, error) {
+// List получает список воронок.
+func List(ctx context.Context, apiClient *client.Client) ([]Pipeline, error) {
 	url := fmt.Sprintf("%s/api/v4/leads/pipelines", apiClient.GetBaseURL())
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -139,8 +139,8 @@ func ListPipelines(ctx context.Context, apiClient *client.Client) ([]Pipeline, e
 	return pipelines.Embedded.Items, nil
 }
 
-// DeletePipeline удаляет воронку по её ID.
-func DeletePipeline(ctx context.Context, apiClient *client.Client, pipelineID int) error {
+// Delete удаляет воронку по её ID.
+func Delete(ctx context.Context, apiClient *client.Client, pipelineID int) error {
 	url := fmt.Sprintf("%s/api/v4/leads/pipelines/%d", apiClient.GetBaseURL(), pipelineID)
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {

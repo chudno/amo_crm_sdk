@@ -14,9 +14,9 @@
 
 | Функция | Описание |
 |---------|----------|
-| `GetUser` | Получение пользователя по ID |
-| `GetUsers` | Получение списка пользователей с фильтрацией |
-| `GetCurrentUser` | Получение информации о текущем пользователе |
+| `Get` | Получение пользователя по ID |
+| `List` | Получение списка пользователей с фильтрацией |
+| `GetCurrent` | Получение информации о текущем пользователе |
 
 ## Получение пользователя
 
@@ -36,7 +36,7 @@ ctx := context.Background()
 
 // Получение пользователя по ID
 userID := 12345
-user, err := users.GetUser(ctx, apiClient, userID)
+user, err := users.Get(ctx, apiClient, userID)
 if err != nil {
     // Обработка ошибки
 }
@@ -51,7 +51,7 @@ fmt.Printf("Роль: %s\n", user.Rights)
 
 ```go
 // Получение всех пользователей
-usersList, err := users.GetUsers(ctx, apiClient)
+usersList, err := users.List(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -66,7 +66,7 @@ filter := map[string]string{
     "with": "role,group",  // Получить информацию о ролях и группах
     "page_size": "50",     // Количество пользователей на страницу
 }
-filteredUsers, err := users.GetUsers(ctx, apiClient, filter)
+filteredUsers, err := users.List(ctx, apiClient, filter)
 ```
 
 ## Поиск пользователей
@@ -77,7 +77,7 @@ query := "Иван"
 filter := map[string]string{
     "query": query,
 }
-foundUsers, err := users.GetUsers(ctx, apiClient, filter)
+foundUsers, err := users.List(ctx, apiClient, filter)
 if err != nil {
     // Обработка ошибки
 }
@@ -123,7 +123,7 @@ task := &tasks.Task{
 
 ```go
 // Получение сущности
-contact, err := contacts.GetContact(ctx, apiClient, contactID)
+contact, err := contacts.Get(ctx, apiClient, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -132,7 +132,7 @@ if err != nil {
 contact.ResponsibleUserID = 67890 // ID нового ответственного
 
 // Сохранение изменений
-updatedContact, err := contacts.UpdateContact(ctx, apiClient, contact)
+updatedContact, err := contacts.Update(ctx, apiClient, contact)
 if err != nil {
     // Обработка ошибки
 }

@@ -59,7 +59,7 @@ type Widget struct {
 	CreatedAt      int          `json:"created_at,omitempty"`
 	UpdatedAt      int          `json:"updated_at,omitempty"`
 	AccountID      int          `json:"account_id,omitempty"`
-	Settings       any  `json:"settings,omitempty"`
+	Settings       any          `json:"settings,omitempty"`
 	Rights         *Rights      `json:"rights,omitempty"`
 	Marketplace    *Marketplace `json:"marketplace,omitempty"`
 	IsConfigured   bool         `json:"is_configured,omitempty"`
@@ -95,8 +95,8 @@ type Marketplace struct {
 	} `json:"categories"`
 }
 
-// WidgetsResponse структура ответа API amoCRM для списка виджетов
-type WidgetsResponse struct {
+// ListResponse структура ответа API amoCRM для списка виджетов
+type ListResponse struct {
 	Page       int      `json:"page"`
 	PerPage    int      `json:"per_page"`
 	TotalItems int      `json:"_total_items"`
@@ -128,19 +128,19 @@ func WithWidgetTypes(types []WidgetType) WithOption {
 	}
 }
 
-// GetWidgets получает список виджетов с возможностью фильтрации
+// List получает список виджетов с возможностью фильтрации
 //
 // Пример использования:
 //
 //	// Фильтрация по типу
 //	types := []widgets.WidgetType{widgets.WidgetTypeIntercom, widgets.WidgetTypeCallback}
-//	widgetsList, err := widgets.GetWidgets(apiClient, 1, 50, widgets.WithWidgetTypes(types))
-func GetWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error) {
-	return GetWidgetsWithRequester(ctx, apiClient, page, limit, options...)
+//	widgetsList, err := widgets.List(apiClient, 1, 50, widgets.WithWidgetTypes(types))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetWidgetsWithRequester получает список виджетов с использованием интерфейса Requester
-func GetWidgetsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Widget, error) {
+// ListWithRequester получает список виджетов с использованием интерфейса Requester
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Widget, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -205,17 +205,17 @@ func GetWidgetsWithRequester(ctx context.Context, requester Requester, page, lim
 	return widgetsResponse.Embedded.Widgets, nil
 }
 
-// GetWidget получает информацию о конкретном виджете по ID
+// Get получает информацию о конкретном виджете по ID
 //
 // Пример использования:
 //
-//	widget, err := widgets.GetWidget(apiClient, 123)
-func GetWidget(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, error) {
-	return GetWidgetWithRequester(ctx, apiClient, widgetID)
+//	widget, err := widgets.Get(apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, error) {
+	return GetWithRequester(ctx, apiClient, widgetID)
 }
 
-// GetWidgetWithRequester получает информацию о конкретном виджете по ID с использованием интерфейса Requester
-func GetWidgetWithRequester(ctx context.Context, requester Requester, widgetID int) (*Widget, error) {
+// GetWithRequester получает информацию о конкретном виджете по ID с использованием интерфейса Requester
+func GetWithRequester(ctx context.Context, requester Requester, widgetID int) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
@@ -257,17 +257,17 @@ func GetWidgetWithRequester(ctx context.Context, requester Requester, widgetID i
 	return &widget, nil
 }
 
-// InstallWidget устанавливает виджет из маркетплейса по его коду
+// Install устанавливает виджет из маркетплейса по его коду
 //
 // Пример использования:
 //
-//	widget, err := widgets.InstallWidget(apiClient, "intercom")
-func InstallWidget(ctx context.Context, apiClient *client.Client, code string) (*Widget, error) {
-	return InstallWidgetWithRequester(ctx, apiClient, code)
+//	widget, err := widgets.Install(apiClient, "intercom")
+func Install(ctx context.Context, apiClient *client.Client, code string) (*Widget, error) {
+	return InstallWithRequester(ctx, apiClient, code)
 }
 
-// InstallWidgetWithRequester устанавливает виджет из маркетплейса по его коду с использованием интерфейса Requester
-func InstallWidgetWithRequester(ctx context.Context, requester Requester, code string) (*Widget, error) {
+// InstallWithRequester устанавливает виджет из маркетплейса по его коду с использованием интерфейса Requester
+func InstallWithRequester(ctx context.Context, requester Requester, code string) (*Widget, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
@@ -323,7 +323,7 @@ func InstallWidgetWithRequester(ctx context.Context, requester Requester, code s
 	return &widget, nil
 }
 
-// UpdateWidgetSettings обновляет настройки виджета
+// UpdateSettings обновляет настройки виджета
 //
 // Пример использования:
 //
@@ -331,13 +331,13 @@ func InstallWidgetWithRequester(ctx context.Context, requester Requester, code s
 //			"api_key": "abc123",
 //			"active": true,
 //	 }
-//	 widget, err := widgets.UpdateWidgetSettings(apiClient, 123, settings)
-func UpdateWidgetSettings(ctx context.Context, apiClient *client.Client, widgetID int, settings any) (*Widget, error) {
-	return UpdateWidgetSettingsWithRequester(ctx, apiClient, widgetID, settings)
+//	 widget, err := widgets.UpdateSettings(apiClient, 123, settings)
+func UpdateSettings(ctx context.Context, apiClient *client.Client, widgetID int, settings any) (*Widget, error) {
+	return UpdateSettingsWithRequester(ctx, apiClient, widgetID, settings)
 }
 
-// UpdateWidgetSettingsWithRequester обновляет настройки виджета с использованием интерфейса Requester
-func UpdateWidgetSettingsWithRequester(ctx context.Context, requester Requester, widgetID int, settings any) (*Widget, error) {
+// UpdateSettingsWithRequester обновляет настройки виджета с использованием интерфейса Requester
+func UpdateSettingsWithRequester(ctx context.Context, requester Requester, widgetID int, settings any) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
@@ -393,17 +393,17 @@ func UpdateWidgetSettingsWithRequester(ctx context.Context, requester Requester,
 	return &widget, nil
 }
 
-// DeleteWidget удаляет виджет
+// Delete удаляет виджет
 //
 // Пример использования:
 //
-//	err := widgets.DeleteWidget(apiClient, 123)
-func DeleteWidget(ctx context.Context, apiClient *client.Client, widgetID int) error {
-	return DeleteWidgetWithRequester(ctx, apiClient, widgetID)
+//	err := widgets.Delete(apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, widgetID int) error {
+	return DeleteWithRequester(ctx, apiClient, widgetID)
 }
 
-// DeleteWidgetWithRequester удаляет виджет с использованием интерфейса Requester
-func DeleteWidgetWithRequester(ctx context.Context, requester Requester, widgetID int) error {
+// DeleteWithRequester удаляет виджет с использованием интерфейса Requester
+func DeleteWithRequester(ctx context.Context, requester Requester, widgetID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
@@ -477,18 +477,18 @@ func WithCategory(categoryID int) WithOption {
 	}
 }
 
-// GetMarketplaceWidgets получает список доступных виджетов из маркетплейса
+// ListMarketplace получает список доступных виджетов из маркетплейса
 //
 // Пример использования:
 //
 //	// Фильтрация по категории
-//	widgetsList, err := widgets.GetMarketplaceWidgets(apiClient, 1, 50, widgets.WithCategory(123))
-func GetMarketplaceWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
-	return GetMarketplaceWidgetsWithRequester(ctx, apiClient, page, limit, options...)
+//	widgetsList, err := widgets.ListMarketplace(apiClient, 1, 50, widgets.WithCategory(123))
+func ListMarketplace(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
+	return ListMarketplaceWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetMarketplaceWidgetsWithRequester получает список доступных виджетов из маркетплейса с использованием интерфейса Requester
-func GetMarketplaceWidgetsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
+// ListMarketplaceWithRequester получает список доступных виджетов из маркетплейса с использованием интерфейса Requester
+func ListMarketplaceWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]MarketplaceWidget, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -553,18 +553,18 @@ func GetMarketplaceWidgetsWithRequester(ctx context.Context, requester Requester
 	return marketplaceResponse.Embedded.Widgets, nil
 }
 
-// SetWidgetStatus активирует или деактивирует виджет
+// SetStatus активирует или деактивирует виджет
 //
 // Пример использования:
 //
 //	// Деактивация виджета
-//	widget, err := widgets.SetWidgetStatus(apiClient, 123, widgets.WidgetStatusInactive)
-func SetWidgetStatus(ctx context.Context, apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error) {
-	return SetWidgetStatusWithRequester(ctx, apiClient, widgetID, status)
+//	widget, err := widgets.SetStatus(apiClient, 123, widgets.WidgetStatusInactive)
+func SetStatus(ctx context.Context, apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error) {
+	return SetStatusWithRequester(ctx, apiClient, widgetID, status)
 }
 
-// SetWidgetStatusWithRequester активирует или деактивирует виджет с использованием интерфейса Requester
-func SetWidgetStatusWithRequester(ctx context.Context, requester Requester, widgetID int, status WidgetStatus) (*Widget, error) {
+// SetStatusWithRequester активирует или деактивирует виджет с использованием интерфейса Requester
+func SetStatusWithRequester(ctx context.Context, requester Requester, widgetID int, status WidgetStatus) (*Widget, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/widgets/%d", widgetID)
 
@@ -620,35 +620,35 @@ func SetWidgetStatusWithRequester(ctx context.Context, requester Requester, widg
 	return &widget, nil
 }
 
-// BulkWidgetInput входные данные для массовой установки/удаления виджетов
-type BulkWidgetInput struct {
-	WidgetIDs []int         `json:"widget_ids,omitempty"`
-	Codes     []string      `json:"codes,omitempty"`
-	Settings  []any `json:"settings,omitempty"`
+// BulkInput входные данные для массовой установки/удаления виджетов
+type BulkInput struct {
+	WidgetIDs []int    `json:"widget_ids,omitempty"`
+	Codes     []string `json:"codes,omitempty"`
+	Settings  []any    `json:"settings,omitempty"`
 }
 
-// BulkWidgetResponse ответ при массовых операциях с виджетами
-type BulkWidgetResponse struct {
+// BulkResponse ответ при массовых операциях с виджетами
+type BulkResponse struct {
 	Widgets []Widget `json:"_embedded.widgets"`
 }
 
-// BulkInstallWidgets массово устанавливает виджеты по их кодам
+// BulkInstall массово устанавливает виджеты по их кодам
 //
 // Пример использования:
 //
 //	codes := []string{"intercom", "callback"}
-//	widgets, err := widgets.BulkInstallWidgets(apiClient, codes)
-func BulkInstallWidgets(ctx context.Context, apiClient *client.Client, codes []string) ([]Widget, error) {
-	return BulkInstallWidgetsWithRequester(ctx, apiClient, codes)
+//	widgets, err := widgets.BulkInstall(apiClient, codes)
+func BulkInstall(ctx context.Context, apiClient *client.Client, codes []string) ([]Widget, error) {
+	return BulkInstallWithRequester(ctx, apiClient, codes)
 }
 
-// BulkInstallWidgetsWithRequester массово устанавливает виджеты по их кодам с использованием интерфейса Requester
-func BulkInstallWidgetsWithRequester(ctx context.Context, requester Requester, codes []string) ([]Widget, error) {
+// BulkInstallWithRequester массово устанавливает виджеты по их кодам с использованием интерфейса Requester
+func BulkInstallWithRequester(ctx context.Context, requester Requester, codes []string) ([]Widget, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
 	// Создаем тело запроса
-	reqBody := BulkWidgetInput{
+	reqBody := BulkInput{
 		Codes: codes,
 	}
 
@@ -701,23 +701,23 @@ func BulkInstallWidgetsWithRequester(ctx context.Context, requester Requester, c
 	return bulkResponse.Embedded.Widgets, nil
 }
 
-// BulkDeleteWidgets массово удаляет виджеты по их ID
+// BulkDelete массово удаляет виджеты по их ID
 //
 // Пример использования:
 //
 //	ids := []int{123, 456}
-//	err := widgets.BulkDeleteWidgets(apiClient, ids)
-func BulkDeleteWidgets(ctx context.Context, apiClient *client.Client, widgetIDs []int) error {
-	return BulkDeleteWidgetsWithRequester(ctx, apiClient, widgetIDs)
+//	err := widgets.BulkDelete(apiClient, ids)
+func BulkDelete(ctx context.Context, apiClient *client.Client, widgetIDs []int) error {
+	return BulkDeleteWithRequester(ctx, apiClient, widgetIDs)
 }
 
-// BulkDeleteWidgetsWithRequester массово удаляет виджеты по их ID с использованием интерфейса Requester
-func BulkDeleteWidgetsWithRequester(ctx context.Context, requester Requester, widgetIDs []int) error {
+// BulkDeleteWithRequester массово удаляет виджеты по их ID с использованием интерфейса Requester
+func BulkDeleteWithRequester(ctx context.Context, requester Requester, widgetIDs []int) error {
 	// Формируем URL для запроса
 	url := "/api/v4/widgets"
 
 	// Создаем тело запроса
-	reqBody := BulkWidgetInput{
+	reqBody := BulkInput{
 		WidgetIDs: widgetIDs,
 	}
 

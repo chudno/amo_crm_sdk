@@ -34,8 +34,8 @@ type NoteParams struct {
 	Link        string `json:"link,omitempty"`
 }
 
-// GetNote получает примечание по его ID.
-func GetNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) (*Note, error) {
+// Get получает примечание по его ID.
+func Get(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, noteID)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -56,8 +56,8 @@ func GetNote(ctx context.Context, apiClient *client.Client, entityType string, e
 	return &note, nil
 }
 
-// CreateNote создает новое примечание в amoCRM.
-func CreateNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
+// Create создает новое примечание в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes", apiClient.GetBaseURL(), entityType, entityID)
 	noteJSON, err := json.Marshal(note)
 	if err != nil {
@@ -85,8 +85,8 @@ func CreateNote(ctx context.Context, apiClient *client.Client, entityType string
 	return &newNote, nil
 }
 
-// UpdateNote обновляет существующее примечание в amoCRM.
-func UpdateNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
+// Update обновляет существующее примечание в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, entityType string, entityID int, note *Note) (*Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, note.ID)
 	noteJSON, err := json.Marshal(note)
 	if err != nil {
@@ -114,8 +114,8 @@ func UpdateNote(ctx context.Context, apiClient *client.Client, entityType string
 	return &updatedNote, nil
 }
 
-// ListNotes получает список примечаний для указанной сущности с возможностью фильтрации и пагинации.
-func ListNotes(ctx context.Context, apiClient *client.Client, entityType string, entityID int, limit int, page int) ([]Note, error) {
+// List получает список примечаний для указанной сущности с возможностью фильтрации и пагинации.
+func List(ctx context.Context, apiClient *client.Client, entityType string, entityID int, limit int, page int) ([]Note, error) {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes?limit=%d&page=%d", apiClient.GetBaseURL(), entityType, entityID, limit, page)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -141,8 +141,8 @@ func ListNotes(ctx context.Context, apiClient *client.Client, entityType string,
 	return notes.Embedded.Items, nil
 }
 
-// DeleteNote удаляет примечание по его ID.
-func DeleteNote(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) error {
+// Delete удаляет примечание по его ID.
+func Delete(ctx context.Context, apiClient *client.Client, entityType string, entityID int, noteID int) error {
 	url := fmt.Sprintf("%s/api/v4/%s/%d/notes/%d", apiClient.GetBaseURL(), entityType, entityID, noteID)
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {

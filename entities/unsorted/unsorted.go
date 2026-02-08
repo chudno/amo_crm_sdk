@@ -60,8 +60,8 @@ const (
 	PipelineTypeCustomer PipelineType = "customer"
 )
 
-// UnsortedBase базовая структура для неразобранной заявки
-type UnsortedBase struct {
+// Base базовая структура для неразобранной заявки
+type Base struct {
 	UID        string       `json:"uid,omitempty"`
 	SourceUID  string       `json:"source_uid,omitempty"`
 	CreatedAt  int64        `json:"created_at,omitempty"`
@@ -73,67 +73,67 @@ type UnsortedBase struct {
 	AccountID  int64        `json:"account_id,omitempty"`
 }
 
-// UnsortedContact представляет контакт в неразобранной заявке
-type UnsortedContact struct {
+// Contact представляет контакт в неразобранной заявке
+type Contact struct {
 	Name  string `json:"name"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
 }
 
-// UnsortedCompany представляет компанию в неразобранной заявке
-type UnsortedCompany struct {
+// Company представляет компанию в неразобранной заявке
+type Company struct {
 	Name string `json:"name"`
 }
 
-// UnsortedMetadata представляет метаданные неразобранной заявки
-type UnsortedMetadata struct {
-	IP      string      `json:"ip,omitempty"`
-	Form    any `json:"form,omitempty"`
-	From    string      `json:"from,omitempty"`
-	To      string      `json:"to,omitempty"`
-	Subject string      `json:"subject,omitempty"`
-	Thread  any `json:"thread,omitempty"`
-	Service string      `json:"service,omitempty"`
+// Metadata представляет метаданные неразобранной заявки
+type Metadata struct {
+	IP      string `json:"ip,omitempty"`
+	Form    any    `json:"form,omitempty"`
+	From    string `json:"from,omitempty"`
+	To      string `json:"to,omitempty"`
+	Subject string `json:"subject,omitempty"`
+	Thread  any    `json:"thread,omitempty"`
+	Service string `json:"service,omitempty"`
 }
 
-// UnsortedLeadCreate представляет структуру для создания сделки из неразобранной заявки
-type UnsortedLeadCreate struct {
-	UnsortedBase
-	Metadata          UnsortedMetadata `json:"metadata,omitempty"`
-	Contact           *UnsortedContact `json:"contact,omitempty"`
-	Company           *UnsortedCompany `json:"company,omitempty"`
-	LeadName          string           `json:"lead_name,omitempty"`
-	StatusID          int              `json:"status_id,omitempty"`
-	ResponsibleUserID int              `json:"responsible_user_id,omitempty"`
-	Price             int              `json:"price,omitempty"`
-	PipelineType      PipelineType     `json:"pipeline_type,omitempty"`
+// LeadCreate представляет структуру для создания сделки из неразобранной заявки
+type LeadCreate struct {
+	Base
+	Metadata          Metadata     `json:"metadata,omitempty"`
+	Contact           *Contact     `json:"contact,omitempty"`
+	Company           *Company     `json:"company,omitempty"`
+	LeadName          string       `json:"lead_name,omitempty"`
+	StatusID          int          `json:"status_id,omitempty"`
+	ResponsibleUserID int          `json:"responsible_user_id,omitempty"`
+	Price             int          `json:"price,omitempty"`
+	PipelineType      PipelineType `json:"pipeline_type,omitempty"`
 }
 
-// UnsortedContactCreate представляет структуру для создания контакта из неразобранной заявки
-type UnsortedContactCreate struct {
-	UnsortedBase
-	Metadata          UnsortedMetadata `json:"metadata,omitempty"`
-	Contact           *UnsortedContact `json:"contact,omitempty"`
-	Company           *UnsortedCompany `json:"company,omitempty"`
-	ResponsibleUserID int              `json:"responsible_user_id,omitempty"`
+// ContactCreate представляет структуру для создания контакта из неразобранной заявки
+type ContactCreate struct {
+	Base
+	Metadata          Metadata `json:"metadata,omitempty"`
+	Contact           *Contact `json:"contact,omitempty"`
+	Company           *Company `json:"company,omitempty"`
+	ResponsibleUserID int      `json:"responsible_user_id,omitempty"`
 }
 
-// UnsortedResponse представляет ответ от API при работе с неразобранными заявками
-type UnsortedResponse struct {
+// Response представляет ответ от API при работе с неразобранными заявками
+type Response struct {
 	Links *struct {
 		Self struct {
 			Href string `json:"href"`
 		} `json:"self"`
 	} `json:"_links,omitempty"`
 	Embedded *struct {
-		Unsorted []UnsortedItem `json:"unsorted"`
+		Unsorted []Item `json:"unsorted"`
 	} `json:"_embedded,omitempty"`
 	UID       string `json:"uid,omitempty"`
 	AccountID int64  `json:"account_id,omitempty"`
 }
 
-// UnsortedItem представляет элемент неразобранных заявок в списке
-type UnsortedItem struct {
+// Item представляет элемент неразобранных заявок в списке
+type Item struct {
 	ID           string       `json:"id"`
 	UID          string       `json:"uid"`
 	SourceUID    string       `json:"source_uid,omitempty"`
@@ -180,8 +180,8 @@ type UnsortedItem struct {
 	} `json:"_links"`
 }
 
-// CreateUnsortedLead создает неразобранную заявку с типом "Сделка"
-func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *UnsortedLeadCreate) (*UnsortedResponse, error) {
+// CreateLead создает неразобранную заявку с типом "Сделка"
+func CreateLead(ctx context.Context, apiClient *client.Client, lead *LeadCreate) (*Response, error) {
 	// Устанавливаем временную метку создания, если не указана
 	if lead.CreatedAt == 0 {
 		lead.CreatedAt = time.Now().Unix()
@@ -193,7 +193,7 @@ func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *Uns
 	}
 
 	// Преобразуем заявку в JSON
-	leadJSON, err := json.Marshal([]UnsortedLeadCreate{*lead})
+	leadJSON, err := json.Marshal([]LeadCreate{*lead})
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *Uns
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/api", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(leadJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(leadJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *Uns
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var response UnsortedResponse
+	var response Response
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
@@ -229,15 +229,15 @@ func CreateUnsortedLead(ctx context.Context, apiClient *client.Client, lead *Uns
 	return &response, nil
 }
 
-// CreateUnsortedContact создает неразобранную заявку с типом "Контакт"
-func CreateUnsortedContact(ctx context.Context, apiClient *client.Client, contact *UnsortedContactCreate) (*UnsortedResponse, error) {
+// CreateContact создает неразобранную заявку с типом "Контакт"
+func CreateContact(ctx context.Context, apiClient *client.Client, contact *ContactCreate) (*Response, error) {
 	// Устанавливаем временную метку создания, если не указана
 	if contact.CreatedAt == 0 {
 		contact.CreatedAt = time.Now().Unix()
 	}
 
 	// Преобразуем заявку в JSON
-	contactJSON, err := json.Marshal([]UnsortedContactCreate{*contact})
+	contactJSON, err := json.Marshal([]ContactCreate{*contact})
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func CreateUnsortedContact(ctx context.Context, apiClient *client.Client, contac
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/api", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(contactJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(contactJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +265,7 @@ func CreateUnsortedContact(ctx context.Context, apiClient *client.Client, contac
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var response UnsortedResponse
+	var response Response
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
@@ -273,8 +273,8 @@ func CreateUnsortedContact(ctx context.Context, apiClient *client.Client, contac
 	return &response, nil
 }
 
-// GetUnsortedLeads получает список неразобранных заявок с типом "Сделка"
-func GetUnsortedLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
+// ListLeads получает список неразобранных заявок с типом "Сделка"
+func ListLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Item, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/leads/unsorted", apiClient.GetBaseURL())
 
@@ -292,7 +292,7 @@ func GetUnsortedLeads(ctx context.Context, apiClient *client.Client, page, limit
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +311,7 @@ func GetUnsortedLeads(ctx context.Context, apiClient *client.Client, page, limit
 
 	var response struct {
 		Embedded struct {
-			Unsorted []UnsortedItem `json:"unsorted"`
+			Unsorted []Item `json:"unsorted"`
 		} `json:"_embedded"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
@@ -321,8 +321,8 @@ func GetUnsortedLeads(ctx context.Context, apiClient *client.Client, page, limit
 	return response.Embedded.Unsorted, nil
 }
 
-// GetUnsortedContacts получает список неразобранных заявок с типом "Контакт"
-func GetUnsortedContacts(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]UnsortedItem, error) {
+// ListContacts получает список неразобранных заявок с типом "Контакт"
+func ListContacts(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string) ([]Item, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/unsorted", apiClient.GetBaseURL())
 
@@ -340,7 +340,7 @@ func GetUnsortedContacts(ctx context.Context, apiClient *client.Client, page, li
 	baseURL = baseURL + "?" + params.Encode()
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"GET", baseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -359,7 +359,7 @@ func GetUnsortedContacts(ctx context.Context, apiClient *client.Client, page, li
 
 	var response struct {
 		Embedded struct {
-			Unsorted []UnsortedItem `json:"unsorted"`
+			Unsorted []Item `json:"unsorted"`
 		} `json:"_embedded"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
@@ -369,13 +369,13 @@ func GetUnsortedContacts(ctx context.Context, apiClient *client.Client, page, li
 	return response.Embedded.Unsorted, nil
 }
 
-// GetUnsortedSummary получает сводку по неразобранным заявкам
-func GetUnsortedSummary(ctx context.Context, apiClient *client.Client) (map[string]any, error) {
+// GetSummary получает сводку по неразобранным заявкам
+func GetSummary(ctx context.Context, apiClient *client.Client) (map[string]any, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/unsorted/summary", apiClient.GetBaseURL())
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -400,8 +400,8 @@ func GetUnsortedSummary(ctx context.Context, apiClient *client.Client) (map[stri
 	return response, nil
 }
 
-// AcceptUnsortedLead принимает неразобранную заявку сделки
-func AcceptUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedUID string, statusID, responsibleUserID int) (int, error) {
+// AcceptLead принимает неразобранную заявку сделки
+func AcceptLead(ctx context.Context, apiClient *client.Client, unsortedUID string, statusID, responsibleUserID int) (int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
@@ -421,7 +421,7 @@ func AcceptUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedU
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
 	}
@@ -454,8 +454,8 @@ func AcceptUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedU
 	return response.Links.Lead.ID, nil
 }
 
-// AcceptUnsortedContact принимает неразобранную заявку контакта
-func AcceptUnsortedContact(ctx context.Context, apiClient *client.Client, unsortedUID string, responsibleUserID int) (int, error) {
+// AcceptContact принимает неразобранную заявку контакта
+func AcceptContact(ctx context.Context, apiClient *client.Client, unsortedUID string, responsibleUserID int) (int, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/accept", apiClient.GetBaseURL(), unsortedUID)
 
@@ -473,7 +473,7 @@ func AcceptUnsortedContact(ctx context.Context, apiClient *client.Client, unsort
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return 0, err
 	}
@@ -506,13 +506,13 @@ func AcceptUnsortedContact(ctx context.Context, apiClient *client.Client, unsort
 	return response.Links.Contact.ID, nil
 }
 
-// DeclineUnsortedLead отклоняет неразобранную заявку сделки
-func DeclineUnsortedLead(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
+// DeclineLead отклоняет неразобранную заявку сделки
+func DeclineLead(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
@@ -532,13 +532,13 @@ func DeclineUnsortedLead(ctx context.Context, apiClient *client.Client, unsorted
 	return nil
 }
 
-// DeclineUnsortedContact отклоняет неразобранную заявку контакта
-func DeclineUnsortedContact(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
+// DeclineContact отклоняет неразобранную заявку контакта
+func DeclineContact(ctx context.Context, apiClient *client.Client, unsortedUID string) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/decline", apiClient.GetBaseURL(), unsortedUID)
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return err
 	}
@@ -558,8 +558,8 @@ func DeclineUnsortedContact(ctx context.Context, apiClient *client.Client, unsor
 	return nil
 }
 
-// LinkUnsortedLeadWithContact связывает неразобранную заявку сделки с контактом
-func LinkUnsortedLeadWithContact(ctx context.Context, apiClient *client.Client, unsortedUID string, contactID int) error {
+// LinkLeadWithContact связывает неразобранную заявку сделки с контактом
+func LinkLeadWithContact(ctx context.Context, apiClient *client.Client, unsortedUID string, contactID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -577,7 +577,7 @@ func LinkUnsortedLeadWithContact(ctx context.Context, apiClient *client.Client, 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -599,8 +599,8 @@ func LinkUnsortedLeadWithContact(ctx context.Context, apiClient *client.Client, 
 	return nil
 }
 
-// LinkUnsortedLeadWithCompany связывает неразобранную заявку сделки с компанией
-func LinkUnsortedLeadWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
+// LinkLeadWithCompany связывает неразобранную заявку сделки с компанией
+func LinkLeadWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/leads/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -618,7 +618,7 @@ func LinkUnsortedLeadWithCompany(ctx context.Context, apiClient *client.Client, 
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}
@@ -640,8 +640,8 @@ func LinkUnsortedLeadWithCompany(ctx context.Context, apiClient *client.Client, 
 	return nil
 }
 
-// LinkUnsortedContactWithCompany связывает неразобранную заявку контакта с компанией
-func LinkUnsortedContactWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
+// LinkContactWithCompany связывает неразобранную заявку контакта с компанией
+func LinkContactWithCompany(ctx context.Context, apiClient *client.Client, unsortedUID string, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/unsorted/%s/link", apiClient.GetBaseURL(), unsortedUID)
 
@@ -659,7 +659,7 @@ func LinkUnsortedContactWithCompany(ctx context.Context, apiClient *client.Clien
 	}
 
 	// Создаем запрос
-	req, err := http.NewRequestWithContext(ctx,"POST", url, bytes.NewBuffer(requestJSON))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		return err
 	}

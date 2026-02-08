@@ -17,11 +17,11 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateLead` | Создание нового лида |
-| `GetLead` | Получение лида по ID |
-| `GetLeads` | Получение списка лидов с фильтрацией |
-| `UpdateLead` | Обновление существующего лида |
-| `DeleteLead` | Удаление лида |
+| `Create` | Создание нового лида |
+| `Get` | Получение лида по ID |
+| `List` | Получение списка лидов с фильтрацией |
+| `Update` | Обновление существующего лида |
+| `Delete` | Удаление лида |
 
 ## Создание лида
 
@@ -46,7 +46,7 @@ newLead := &leads.Lead{
 }
 
 // Сохранение лида
-createdLead, err := leads.CreateLead(ctx, apiClient, newLead)
+createdLead, err := leads.Create(ctx, apiClient, newLead)
 if err != nil {
     // Обработка ошибки
 }
@@ -57,13 +57,13 @@ if err != nil {
 ```go
 // Получение лида по ID
 leadID := 12345
-lead, err := leads.GetLead(ctx, apiClient, leadID)
+lead, err := leads.Get(ctx, apiClient, leadID)
 if err != nil {
     // Обработка ошибки
 }
 
 // Получение лида со связанными контактами и компаниями
-leadWithRelations, err := leads.GetLead(ctx, apiClient, leadID, leads.WithContacts, leads.WithCompanies)
+leadWithRelations, err := leads.Get(ctx, apiClient, leadID, leads.WithContacts, leads.WithCompanies)
 if err != nil {
     // Обработка ошибки
 }
@@ -84,7 +84,7 @@ if leadWithRelations.Embedded != nil {
 
 ```go
 // Получение первых 50 лидов
-leadsList, err := leads.GetLeads(ctx, apiClient, 1, 50)
+leadsList, err := leads.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -95,10 +95,10 @@ filter := map[string]string{
     "pipeline_id": "3778", // Фильтр по ID воронки
     "created_at": "1609459200", // Лиды, созданные после указанной даты (timestamp)
 }
-filteredLeads, err := leads.GetLeads(ctx, apiClient, 1, 50, filter)
+filteredLeads, err := leads.List(ctx, apiClient, 1, 50, filter)
 
 // Получение лидов со связанными сущностями
-leadsWithRelations, err := leads.GetLeads(ctx, apiClient, 1, 50, filter, leads.WithContacts, leads.WithCompanies)
+leadsWithRelations, err := leads.List(ctx, apiClient, 1, 50, filter, leads.WithContacts, leads.WithCompanies)
 ```
 
 ## Обновление лида
@@ -109,7 +109,7 @@ lead.Name = "Заявка с сайта - Уточненная"
 lead.Price = 15000
 lead.StatusID = 143 // Перемещение на следующий этап
 
-updatedLead, err := leads.UpdateLead(ctx, apiClient, lead)
+updatedLead, err := leads.Update(ctx, apiClient, lead)
 if err != nil {
     // Обработка ошибки
 }
@@ -137,13 +137,13 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями лидов используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями лидов используйте структуры `Field` и `Value`:
 
 ```go
 // Добавление пользовательского поля
-lead.CustomFields = append(lead.CustomFields, leads.CustomField{
+lead.CustomFields = append(lead.CustomFields, leads.Field{
     FieldID: 9876, // ID пользовательского поля
-    Values: []leads.CustomFieldValue{
+    Values: []leads.Value{
         {
             Value: "Значение поля",
         },
@@ -158,7 +158,7 @@ lead.CustomFields = append(lead.CustomFields, leads.CustomField{
 lead.StatusID = 143 // ID нового статуса
 lead.PipelineID = 3778 // ID воронки (если меняется)
 
-updatedLead, err := leads.UpdateLead(ctx, apiClient, lead)
+updatedLead, err := leads.Update(ctx, apiClient, lead)
 if err != nil {
     // Обработка ошибки
 }

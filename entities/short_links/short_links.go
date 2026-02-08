@@ -43,8 +43,8 @@ type ShortLink struct {
 	UseInEmbedded bool   `json:"use_in_embedded,omitempty"`
 }
 
-// ShortLinkFilter представляет параметры фильтрации для списка коротких ссылок.
-type ShortLinkFilter struct {
+// Filter представляет параметры фильтрации для списка коротких ссылок.
+type Filter struct {
 	EntityID   int    `json:"filter[entity_id],omitempty"`
 	EntityType string `json:"filter[entity_type],omitempty"`
 	CreatedBy  int    `json:"filter[created_by],omitempty"`
@@ -62,7 +62,7 @@ func WithFilter(filter map[string]string) WithOption {
 	}
 }
 
-// GetShortLinks получает список коротких ссылок с поддержкой фильтрации и пагинации.
+// List получает список коротких ссылок с поддержкой фильтрации и пагинации.
 //
 // Пример использования:
 //
@@ -70,13 +70,13 @@ func WithFilter(filter map[string]string) WithOption {
 //		"filter[entity_type]": "leads",
 //		"filter[entity_id]": "123",
 //	}
-//	shortLinks, err := short_links.GetShortLinks(ctx, apiClient, 1, 50, short_links.WithFilter(filter))
-func GetShortLinks(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error) {
-	return GetShortLinksWithRequester(ctx, apiClient, page, limit, options...)
+//	shortLinks, err := short_links.List(ctx, apiClient, 1, 50, short_links.WithFilter(filter))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]ShortLink, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetShortLinksWithRequester получает список коротких ссылок с использованием интерфейса Requester.
-func GetShortLinksWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]ShortLink, error) {
+// ListWithRequester получает список коротких ссылок с использованием интерфейса Requester.
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]ShortLink, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/short_links", requester.GetBaseURL())
 
@@ -129,17 +129,17 @@ func GetShortLinksWithRequester(ctx context.Context, requester Requester, page, 
 	return response.Embedded.ShortLinks, nil
 }
 
-// GetShortLink получает информацию о конкретной короткой ссылке по ID.
+// Get получает информацию о конкретной короткой ссылке по ID.
 //
 // Пример использования:
 //
-//	shortLink, err := short_links.GetShortLink(ctx, apiClient, 123)
-func GetShortLink(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
-	return GetShortLinkWithRequester(ctx, apiClient, id)
+//	shortLink, err := short_links.Get(ctx, apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
+	return GetWithRequester(ctx, apiClient, id)
 }
 
-// GetShortLinkWithRequester получает информацию о конкретной короткой ссылке с использованием интерфейса Requester.
-func GetShortLinkWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
+// GetWithRequester получает информацию о конкретной короткой ссылке с использованием интерфейса Requester.
+func GetWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/short_links/%d", requester.GetBaseURL(), id)
 
@@ -170,7 +170,7 @@ func GetShortLinkWithRequester(ctx context.Context, requester Requester, id int)
 	return &shortLink, nil
 }
 
-// CreateShortLink создает новую короткую ссылку.
+// Create создает новую короткую ссылку.
 //
 // Пример использования:
 //
@@ -179,13 +179,13 @@ func GetShortLinkWithRequester(ctx context.Context, requester Requester, id int)
 //		EntityType: "leads",
 //		EntityID: 123,
 //	}
-//	createdLink, err := short_links.CreateShortLink(ctx, apiClient, newLink)
-func CreateShortLink(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
-	return CreateShortLinkWithRequester(ctx, apiClient, shortLink)
+//	createdLink, err := short_links.Create(ctx, apiClient, newLink)
+func Create(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
+	return CreateWithRequester(ctx, apiClient, shortLink)
 }
 
-// CreateShortLinkWithRequester создает новую короткую ссылку с использованием интерфейса Requester.
-func CreateShortLinkWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
+// CreateWithRequester создает новую короткую ссылку с использованием интерфейса Requester.
+func CreateWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/short_links", requester.GetBaseURL())
 
@@ -232,7 +232,7 @@ func CreateShortLinkWithRequester(ctx context.Context, requester Requester, shor
 	return &response.Embedded.ShortLinks[0], nil
 }
 
-// UpdateShortLink обновляет существующую короткую ссылку.
+// Update обновляет существующую короткую ссылку.
 //
 // Пример использования:
 //
@@ -240,13 +240,13 @@ func CreateShortLinkWithRequester(ctx context.Context, requester Requester, shor
 //		ID: 123,
 //		URL: "https://updated-example.com",
 //	}
-//	updatedLink, err := short_links.UpdateShortLink(ctx, apiClient, link)
-func UpdateShortLink(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
-	return UpdateShortLinkWithRequester(ctx, apiClient, shortLink)
+//	updatedLink, err := short_links.Update(ctx, apiClient, link)
+func Update(ctx context.Context, apiClient *client.Client, shortLink *ShortLink) (*ShortLink, error) {
+	return UpdateWithRequester(ctx, apiClient, shortLink)
 }
 
-// UpdateShortLinkWithRequester обновляет существующую короткую ссылку с использованием интерфейса Requester.
-func UpdateShortLinkWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
+// UpdateWithRequester обновляет существующую короткую ссылку с использованием интерфейса Requester.
+func UpdateWithRequester(ctx context.Context, requester Requester, shortLink *ShortLink) (*ShortLink, error) {
 	if shortLink.ID == 0 {
 		return nil, fmt.Errorf("ID короткой ссылки не указан")
 	}
@@ -288,17 +288,17 @@ func UpdateShortLinkWithRequester(ctx context.Context, requester Requester, shor
 	return &updatedLink, nil
 }
 
-// DeleteShortLink удаляет короткую ссылку по ID.
+// Delete удаляет короткую ссылку по ID.
 //
 // Пример использования:
 //
-//	err := short_links.DeleteShortLink(ctx, apiClient, 123)
-func DeleteShortLink(ctx context.Context, apiClient *client.Client, id int) error {
-	return DeleteShortLinkWithRequester(ctx, apiClient, id)
+//	err := short_links.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, id int) error {
+	return DeleteWithRequester(ctx, apiClient, id)
 }
 
-// DeleteShortLinkWithRequester удаляет короткую ссылку с использованием интерфейса Requester.
-func DeleteShortLinkWithRequester(ctx context.Context, requester Requester, id int) error {
+// DeleteWithRequester удаляет короткую ссылку с использованием интерфейса Requester.
+func DeleteWithRequester(ctx context.Context, requester Requester, id int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/short_links/%d", requester.GetBaseURL(), id)
 
@@ -323,17 +323,17 @@ func DeleteShortLinkWithRequester(ctx context.Context, requester Requester, id i
 	return nil
 }
 
-// GetShortLinkStats получает статистику использования короткой ссылки.
+// GetStats получает статистику использования короткой ссылки.
 //
 // Пример использования:
 //
-//	stats, err := short_links.GetShortLinkStats(ctx, apiClient, 123)
-func GetShortLinkStats(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
-	return GetShortLinkStatsWithRequester(ctx, apiClient, id)
+//	stats, err := short_links.GetStats(ctx, apiClient, 123)
+func GetStats(ctx context.Context, apiClient *client.Client, id int) (*ShortLink, error) {
+	return GetStatsWithRequester(ctx, apiClient, id)
 }
 
-// GetShortLinkStatsWithRequester получает статистику короткой ссылки с использованием интерфейса Requester.
-func GetShortLinkStatsWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
+// GetStatsWithRequester получает статистику короткой ссылки с использованием интерфейса Requester.
+func GetStatsWithRequester(ctx context.Context, requester Requester, id int) (*ShortLink, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/short_links/%d/statistics", requester.GetBaseURL(), id)
 

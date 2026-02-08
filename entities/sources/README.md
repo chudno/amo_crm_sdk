@@ -78,7 +78,7 @@ type External struct {
 ### Получение списка источников
 
 ```go
-func GetSources(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Source, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Source, error)
 ```
 
 Возвращает список источников сделок с поддержкой пагинации и фильтрации.
@@ -97,13 +97,13 @@ func GetSources(ctx context.Context, apiClient *client.Client, page, limit int, 
 filter := map[string]string{
     "filter[type]": "calls",
 }
-sources, err := sources.GetSources(ctx, apiClient, 1, 50, sources.WithFilter(filter))
+sources, err := sources.List(ctx, apiClient, 1, 50, sources.WithFilter(filter))
 ```
 
 ### Получение информации о конкретном источнике
 
 ```go
-func GetSource(ctx context.Context, apiClient *client.Client, id int) (*Source, error)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*Source, error)
 ```
 
 Возвращает информацию о конкретном источнике по ID.
@@ -115,7 +115,7 @@ func GetSource(ctx context.Context, apiClient *client.Client, id int) (*Source, 
 ### Создание источника
 
 ```go
-func CreateSource(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error)
+func Create(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error)
 ```
 
 Создаёт новый источник сделок и возвращает информацию о созданном источнике.
@@ -127,7 +127,7 @@ func CreateSource(ctx context.Context, apiClient *client.Client, sourceData *Sou
 ### Обновление источника
 
 ```go
-func UpdateSource(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error)
+func Update(ctx context.Context, apiClient *client.Client, sourceData *Source) (*Source, error)
 ```
 
 Обновляет существующий источник сделок и возвращает обновлённую информацию.
@@ -139,7 +139,7 @@ func UpdateSource(ctx context.Context, apiClient *client.Client, sourceData *Sou
 ### Удаление источника
 
 ```go
-func DeleteSource(ctx context.Context, apiClient *client.Client, id int) error
+func Delete(ctx context.Context, apiClient *client.Client, id int) error
 ```
 
 Удаляет источник по ID.
@@ -151,7 +151,7 @@ func DeleteSource(ctx context.Context, apiClient *client.Client, id int) error
 ### Установка источника по умолчанию
 
 ```go
-func SetSourceDefault(ctx context.Context, apiClient *client.Client, id int) (*Source, error)
+func SetDefault(ctx context.Context, apiClient *client.Client, id int) (*Source, error)
 ```
 
 Устанавливает источник как используемый по умолчанию.
@@ -163,7 +163,7 @@ func SetSourceDefault(ctx context.Context, apiClient *client.Client, id int) (*S
 ### Получение доступных сервисов
 
 ```go
-func GetSourceServices(ctx context.Context, apiClient *client.Client) ([]Service, error)
+func ListServices(ctx context.Context, apiClient *client.Client) ([]Service, error)
 ```
 
 Возвращает список сервисов, доступных для источников сделок.
@@ -174,7 +174,7 @@ func GetSourceServices(ctx context.Context, apiClient *client.Client) ([]Service
 ### Связывание источника с воронкой
 
 ```go
-func LinkSourceToPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error)
+func LinkToPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error)
 ```
 
 Связывает источник с воронкой.
@@ -185,7 +185,7 @@ func LinkSourceToPipeline(ctx context.Context, apiClient *client.Client, sourceI
 - `pipelineID` - ID воронки
 
 ```go
-func UnlinkSourceFromPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error)
+func UnlinkFromPipeline(ctx context.Context, apiClient *client.Client, sourceID, pipelineID int) (*Source, error)
 ```
 
 Удаляет связь источника с воронкой.
@@ -229,7 +229,7 @@ func main() {
     ctx := context.Background()
 
     // Получаем список источников
-    sourcesList, err := sources.GetSources(ctx, apiClient, 1, 100)
+    sourcesList, err := sources.List(ctx, apiClient, 1, 100)
     if err != nil {
         log.Fatalf("Ошибка при получении списка источников: %v", err)
     }
@@ -294,7 +294,7 @@ func main() {
         Type: "form",
     }
 
-    createdSource, err := sources.CreateSource(ctx, apiClient, newSource)
+    createdSource, err := sources.Create(ctx, apiClient, newSource)
     if err != nil {
         log.Fatalf("Ошибка при создании источника: %v", err)
     }
@@ -303,7 +303,7 @@ func main() {
 
     // Связываем источник с воронкой
     pipelineID := 12345 // ID вашей воронки
-    linkedSource, err := sources.LinkSourceToPipeline(ctx, apiClient, createdSource.ID, pipelineID)
+    linkedSource, err := sources.LinkToPipeline(ctx, apiClient, createdSource.ID, pipelineID)
     if err != nil {
         log.Fatalf("Ошибка при связывании источника с воронкой: %v", err)
     }
@@ -311,7 +311,7 @@ func main() {
     fmt.Printf("Источник %s связан с воронкой ID: %d\n", linkedSource.Name, linkedSource.Pipeline.ID)
     
     // Устанавливаем источник по умолчанию
-    defaultSource, err := sources.SetSourceDefault(ctx, apiClient, createdSource.ID)
+    defaultSource, err := sources.SetDefault(ctx, apiClient, createdSource.ID)
     if err != nil {
         log.Fatalf("Ошибка при установке источника по умолчанию: %v", err)
     }
@@ -352,7 +352,7 @@ func main() {
     ctx := context.Background()
 
     // Получаем список доступных сервисов
-    servicesList, err := sources.GetSourceServices(ctx, apiClient)
+    servicesList, err := sources.ListServices(ctx, apiClient)
     if err != nil {
         log.Fatalf("Ошибка при получении списка сервисов: %v", err)
     }
@@ -375,7 +375,7 @@ func main() {
             },
         }
         
-        createdSource, err := sources.CreateSource(ctx, apiClient, newSource)
+        createdSource, err := sources.Create(ctx, apiClient, newSource)
         if err != nil {
             log.Fatalf("Ошибка при создании источника: %v", err)
         }

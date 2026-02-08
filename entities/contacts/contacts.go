@@ -16,22 +16,22 @@ import (
 
 // Contact представляет собой структуру контакта в amoCRM.
 type Contact struct {
-	ID                 int                              `json:"id"`
-	Name               string                           `json:"name"`
-	FirstName          string                           `json:"first_name,omitempty"`
-	LastName           string                           `json:"last_name,omitempty"`
-	ResponsibleUserID  int                              `json:"responsible_user_id,omitempty"`
-	GroupID            int                              `json:"group_id,omitempty"`
-	CreatedBy          int                              `json:"created_by,omitempty"`
-	UpdatedBy          int                              `json:"updated_by,omitempty"`
-	CreatedAt          int64                            `json:"created_at,omitempty"`
-	UpdatedAt          int64                            `json:"updated_at,omitempty"`
-	ClosestTaskAt      int64                            `json:"closest_task_at,omitempty"`
-	IsDeleted          bool                             `json:"is_deleted,omitempty"`
-	CustomFieldsValues []custom_fields.CustomFieldValue `json:"custom_fields_values,omitempty"`
-	AccountID          int                              `json:"account_id,omitempty"`
-	Tags               []Tag                            `json:"tags,omitempty"`
-	Embedded           *ContactEmbedded                 `json:"_embedded,omitempty"`
+	ID                 int                   `json:"id"`
+	Name               string                `json:"name"`
+	FirstName          string                `json:"first_name,omitempty"`
+	LastName           string                `json:"last_name,omitempty"`
+	ResponsibleUserID  int                   `json:"responsible_user_id,omitempty"`
+	GroupID            int                   `json:"group_id,omitempty"`
+	CreatedBy          int                   `json:"created_by,omitempty"`
+	UpdatedBy          int                   `json:"updated_by,omitempty"`
+	CreatedAt          int64                 `json:"created_at,omitempty"`
+	UpdatedAt          int64                 `json:"updated_at,omitempty"`
+	ClosestTaskAt      int64                 `json:"closest_task_at,omitempty"`
+	IsDeleted          bool                  `json:"is_deleted,omitempty"`
+	CustomFieldsValues []custom_fields.Value `json:"custom_fields_values,omitempty"`
+	AccountID          int                   `json:"account_id,omitempty"`
+	Tags               []Tag                 `json:"tags,omitempty"`
+	Embedded           *Embedded             `json:"_embedded,omitempty"`
 }
 
 // Tag представляет тег контакта
@@ -40,8 +40,8 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-// ContactEmbedded содержит связанные с контактом сущности
-type ContactEmbedded struct {
+// Embedded содержит связанные с контактом сущности
+type Embedded struct {
 	Companies []Company `json:"companies,omitempty"`
 	Tags      []Tag     `json:"tags,omitempty"`
 }
@@ -59,9 +59,9 @@ const (
 	WithCompanies WithOption = "companies"
 )
 
-// GetContact получает контакт по его ID.
+// Get получает контакт по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактом.
-func GetContact(ctx context.Context, apiClient *client.Client, contactID int, withOptions ...WithOption) (*Contact, error) {
+func Get(ctx context.Context, apiClient *client.Client, contactID int, withOptions ...WithOption) (*Contact, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts/%d", apiClient.GetBaseURL(), contactID)
 
@@ -96,8 +96,8 @@ func GetContact(ctx context.Context, apiClient *client.Client, contactID int, wi
 	return &contact, nil
 }
 
-// CreateContact создает новый контакт в amoCRM.
-func CreateContact(ctx context.Context, apiClient *client.Client, contact *Contact) (*Contact, error) {
+// Create создает новый контакт в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, contact *Contact) (*Contact, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/contacts"
 	contactJSON, err := json.Marshal(contact)
 	if err != nil {
@@ -125,15 +125,15 @@ func CreateContact(ctx context.Context, apiClient *client.Client, contact *Conta
 	return &newContact, nil
 }
 
-// DeleteContactsResponse представляет ответ от API при удалении контактов
-type DeleteContactsResponse struct {
+// DeleteResponse представляет ответ от API при удалении контактов
+type DeleteResponse struct {
 	Status  string            `json:"status"`
 	Message string            `json:"message"`
 	Errors  map[string]string `json:"errors,omitempty"`
 }
 
-// ContactsResponse представляет ответ от API при получении списка контактов
-type ContactsResponse struct {
+// ListResponse представляет ответ от API при получении списка контактов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -142,9 +142,9 @@ type ContactsResponse struct {
 	} `json:"_embedded"`
 }
 
-// GetContacts получает список контактов с возможностью фильтрации и пагинации.
+// List получает список контактов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с контактами.
-func GetContacts(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Contact, error) {
+func List(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Contact, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/contacts", apiClient.GetBaseURL())
 
@@ -182,7 +182,7 @@ func GetContacts(ctx context.Context, apiClient *client.Client, page, limit int,
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var contacts ContactsResponse
+	var contacts ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&contacts); err != nil {
 		return nil, err
 	}
@@ -190,8 +190,8 @@ func GetContacts(ctx context.Context, apiClient *client.Client, page, limit int,
 	return contacts.Embedded.Contacts, nil
 }
 
-// LinkContactWithCompany связывает контакт с компанией
-func LinkContactWithCompany(ctx context.Context, apiClient *client.Client, contactID, companyID int) error {
+// LinkWithCompany связывает контакт с компанией
+func LinkWithCompany(ctx context.Context, apiClient *client.Client, contactID, companyID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("%s/api/v4/contacts/%d/link", apiClient.GetBaseURL(), contactID)
 

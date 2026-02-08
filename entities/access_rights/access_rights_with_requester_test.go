@@ -10,7 +10,7 @@ import (
 // TestCreateAccessRightWithRequester проверяет функцию для создания прав доступа
 func TestCreateAccessRightWithRequester(t *testing.T) {
 	// Подготавливаем тестовые данные
-	newRight := &AccessRight{
+	newRight := &Right{
 		Name: "Новое право доступа",
 		Type: TypeGroup,
 		Rights: Rights{
@@ -37,7 +37,7 @@ func TestCreateAccessRightWithRequester(t *testing.T) {
 		}`, nil)
 
 		// Вызываем тестируемую функцию
-		result, err := CreateAccessRightWithRequester(context.Background(), mockClient, newRight)
+		result, err := CreateWithRequester(context.Background(), mockClient, newRight)
 
 		// Проверяем результаты
 		if err != nil {
@@ -59,7 +59,7 @@ func TestCreateAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("POST", "/api/v4/access_rights", http.StatusBadRequest, `{"error": "Bad request"}`, nil)
 
 		// Вызываем тестируемую функцию
-		_, err := CreateAccessRightWithRequester(context.Background(), mockClient, newRight)
+		_, err := CreateWithRequester(context.Background(), mockClient, newRight)
 
 		// Проверяем результаты
 		if err == nil {
@@ -72,7 +72,7 @@ func TestCreateAccessRightWithRequester(t *testing.T) {
 func TestUpdateAccessRightWithRequester(t *testing.T) {
 	// Подготавливаем тестовые данные
 	accessRightID := 456
-	updateData := &AccessRight{
+	updateData := &Right{
 		ID:   accessRightID, // Добавляем ID в объект
 		Name: "Обновленное право",
 		Rights: Rights{
@@ -96,7 +96,7 @@ func TestUpdateAccessRightWithRequester(t *testing.T) {
 		}`, accessRightID), nil)
 
 		// Вызываем тестируемую функцию с правильной сигнатурой
-		result, err := UpdateAccessRightWithRequester(context.Background(), mockClient, updateData)
+		result, err := UpdateWithRequester(context.Background(), mockClient, updateData)
 
 		// Проверяем результаты
 		if err != nil {
@@ -118,7 +118,7 @@ func TestUpdateAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
 		// Вызываем тестируемую функцию с правильной сигнатурой
-		_, err := UpdateAccessRightWithRequester(context.Background(), mockClient, updateData)
+		_, err := UpdateWithRequester(context.Background(), mockClient, updateData)
 
 		// Проверяем результаты
 		if err == nil {
@@ -138,7 +138,7 @@ func TestDeleteAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, `{"success": true}`, nil)
 
 		// Вызываем тестируемую функцию
-		err := DeleteAccessRightWithRequester(context.Background(), mockClient, accessRightID)
+		err := DeleteWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -152,7 +152,7 @@ func TestDeleteAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("DELETE", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
 		// Вызываем тестируемую функцию
-		err := DeleteAccessRightWithRequester(context.Background(), mockClient, accessRightID)
+		err := DeleteWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err == nil {
@@ -188,7 +188,7 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 		}`, accessRightID), nil)
 
 		// Вызываем тестируемую функцию
-		result, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		result, err := AddUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -212,7 +212,7 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
 		// Вызываем тестируемую функцию
-		_, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		_, err := AddUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err == nil {
@@ -235,7 +235,7 @@ func TestAddUsersToAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusInternalServerError, `{"error": "Server error"}`, nil)
 
 		// Вызываем тестируемую функцию
-		_, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		_, err := AddUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err == nil {
@@ -271,7 +271,7 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 		}`, accessRightID), nil)
 
 		// Вызываем тестируемую функцию
-		result, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		result, err := RemoveUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -295,7 +295,7 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Not found"}`, nil)
 
 		// Вызываем тестируемую функцию
-		_, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		_, err := RemoveUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err == nil {
@@ -318,7 +318,7 @@ func TestRemoveUsersFromAccessRightWithRequester(t *testing.T) {
 		mockClient.AddResponse("PATCH", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusInternalServerError, `{"error": "Server error"}`, nil)
 
 		// Вызываем тестируемую функцию
-		_, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, accessRightID, userIDs)
+		_, err := RemoveUsersWithRequester(context.Background(), mockClient, accessRightID, userIDs)
 
 		// Проверяем результаты
 		if err == nil {

@@ -101,7 +101,7 @@ func TestGetCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	elements, err := GetCatalogElements(context.Background(), apiClient, catalogID, 1, 50, nil)
+	elements, err := List(context.Background(), apiClient, catalogID, 1, 50, nil)
 
 	// Проверяем результаты
 	if err != nil {
@@ -113,7 +113,7 @@ func TestGetCatalogElements(t *testing.T) {
 	}
 
 	// Проверяем содержимое первого элемента
-	expectedElement1 := CatalogElement{
+	expectedElement1 := Element{
 		ID:        456,
 		Name:      "Тестовый элемент 1",
 		CreatedBy: 789,
@@ -194,7 +194,7 @@ func TestCreateCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Создаем элемент для отправки
-	newElement := &CatalogElement{
+	newElement := &Element{
 		Name:      "Новый элемент",
 		CatalogID: catalogID,
 		CustomFieldsValues: []CustomFieldValue{
@@ -210,7 +210,7 @@ func TestCreateCatalogElement(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdElement, err := CreateCatalogElement(context.Background(), apiClient, catalogID, newElement)
+	createdElement, err := Create(context.Background(), apiClient, catalogID, newElement)
 
 	// Проверяем результаты
 	if err != nil {
@@ -218,7 +218,7 @@ func TestCreateCatalogElement(t *testing.T) {
 	}
 
 	// Проверяем содержимое созданного элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Новый элемент",
 		CreatedBy: 789,
@@ -294,7 +294,7 @@ func TestGetCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	element, err := GetCatalogElement(context.Background(), apiClient, catalogID, elementID)
+	element, err := Get(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -302,7 +302,7 @@ func TestGetCatalogElement(t *testing.T) {
 	}
 
 	// Проверяем содержимое элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Тестовый элемент",
 		CreatedBy: 789,
@@ -378,7 +378,7 @@ func TestUpdateCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Создаем элемент для обновления
-	elementToUpdate := &CatalogElement{
+	elementToUpdate := &Element{
 		ID:        elementID,
 		Name:      "Обновленный элемент",
 		CatalogID: catalogID,
@@ -395,7 +395,7 @@ func TestUpdateCatalogElement(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedElement, err := UpdateCatalogElement(context.Background(), apiClient, catalogID, elementToUpdate)
+	updatedElement, err := Update(context.Background(), apiClient, catalogID, elementToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -403,7 +403,7 @@ func TestUpdateCatalogElement(t *testing.T) {
 	}
 
 	// Проверяем содержимое обновленного элемента
-	expectedElement := &CatalogElement{
+	expectedElement := &Element{
 		ID:        456,
 		Name:      "Обновленный элемент",
 		CreatedBy: 789,
@@ -456,7 +456,7 @@ func TestDeleteCatalogElement(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteCatalogElement(context.Background(), apiClient, catalogID, elementID)
+	err := Delete(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -519,7 +519,7 @@ func TestLinkCatalogElementWithTags(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	err := LinkCatalogElementWithTags(context.Background(), apiClient, catalogID, elementID, tags)
+	err := LinkWithTags(context.Background(), apiClient, catalogID, elementID, tags)
 
 	// Проверяем результаты
 	if err != nil {
@@ -570,7 +570,7 @@ func TestGetCatalogElementTags(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	tags, err := GetCatalogElementTags(context.Background(), apiClient, catalogID, elementID)
+	tags, err := ListTags(context.Background(), apiClient, catalogID, elementID)
 
 	// Проверяем результаты
 	if err != nil {

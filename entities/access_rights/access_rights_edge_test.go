@@ -20,7 +20,7 @@ func TestGetAccessRightsNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Вызываем тестируемую функцию
-	_, err := GetAccessRightsWithRequester(context.Background(), mockClient, 1, 50)
+	_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -34,7 +34,7 @@ func TestGetAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Вызываем тестируемую функцию
-	_, err := GetAccessRightWithRequester(context.Background(), mockClient, 123)
+	_, err := GetWithRequester(context.Background(), mockClient, 123)
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -48,7 +48,7 @@ func TestCreateAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Создаём тестовое право доступа
-	accessRight := &AccessRight{
+	accessRight := &Right{
 		Name: "Тестовое право",
 		Type: TypeGroup,
 		Rights: Rights{
@@ -60,7 +60,7 @@ func TestCreateAccessRightNetworkError(t *testing.T) {
 	}
 
 	// Вызываем тестируемую функцию
-	_, err := CreateAccessRightWithRequester(context.Background(), mockClient, accessRight)
+	_, err := CreateWithRequester(context.Background(), mockClient, accessRight)
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -74,7 +74,7 @@ func TestUpdateAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Создаём тестовое право доступа
-	accessRight := &AccessRight{
+	accessRight := &Right{
 		ID:   123,
 		Name: "Тестовое право",
 		Type: TypeGroup,
@@ -87,7 +87,7 @@ func TestUpdateAccessRightNetworkError(t *testing.T) {
 	}
 
 	// Вызываем тестируемую функцию
-	_, err := UpdateAccessRightWithRequester(context.Background(), mockClient, accessRight)
+	_, err := UpdateWithRequester(context.Background(), mockClient, accessRight)
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -101,7 +101,7 @@ func TestDeleteAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Вызываем тестируемую функцию
-	err := DeleteAccessRightWithRequester(context.Background(), mockClient, 123)
+	err := DeleteWithRequester(context.Background(), mockClient, 123)
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -136,7 +136,7 @@ func TestAddUsersToAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Вызываем тестируемую функцию
-	_, err := AddUsersToAccessRightWithRequester(context.Background(), mockClient, 123, []int{101, 102})
+	_, err := AddUsersWithRequester(context.Background(), mockClient, 123, []int{101, 102})
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -150,7 +150,7 @@ func TestRemoveUsersFromAccessRightNetworkError(t *testing.T) {
 	mockClient := &MockClientWithError{}
 
 	// Вызываем тестируемую функцию
-	_, err := RemoveUsersFromAccessRightWithRequester(context.Background(), mockClient, 123, []int{101, 102})
+	_, err := RemoveUsersWithRequester(context.Background(), mockClient, 123, []int{101, 102})
 
 	// Проверяем, что вернулась ошибка
 	if err == nil {
@@ -165,7 +165,7 @@ func TestZeroID(t *testing.T) {
 
 	// Проверяем получение права доступа с нулевым ID
 	t.Run("GetAccessRightWithZeroID", func(t *testing.T) {
-		_, err := GetAccessRightWithRequester(context.Background(), mockClient, 0)
+		_, err := GetWithRequester(context.Background(), mockClient, 0)
 		if err == nil {
 			t.Fatal("Ожидалась ошибка при нулевом ID, но получен nil")
 		}
@@ -173,7 +173,7 @@ func TestZeroID(t *testing.T) {
 
 	// Проверяем удаление права доступа с нулевым ID
 	t.Run("DeleteAccessRightWithZeroID", func(t *testing.T) {
-		err := DeleteAccessRightWithRequester(context.Background(), mockClient, 0)
+		err := DeleteWithRequester(context.Background(), mockClient, 0)
 		if err == nil {
 			t.Fatal("Ожидалась ошибка при нулевом ID, но получен nil")
 		}
@@ -181,7 +181,7 @@ func TestZeroID(t *testing.T) {
 
 	// Проверяем обновление права доступа с нулевым ID
 	t.Run("UpdateAccessRightWithZeroID", func(t *testing.T) {
-		_, err := UpdateAccessRightWithRequester(context.Background(), mockClient, &AccessRight{ID: 0})
+		_, err := UpdateWithRequester(context.Background(), mockClient, &Right{ID: 0})
 		if err == nil {
 			t.Fatal("Ожидалась ошибка при нулевом ID, но получен nil")
 		}

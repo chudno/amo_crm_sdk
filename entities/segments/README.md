@@ -139,7 +139,7 @@ func main() {
     }
 
     // Отправляем запрос на создание сегмента
-    createdSegment, err := segments.AddSegment(ctx, apiClient, segment)
+    createdSegment, err := segments.Create(ctx, apiClient, segment)
     if err != nil {
         log.Fatalf("Ошибка при создании сегмента: %v", err)
     }
@@ -184,7 +184,7 @@ func main() {
     }
 
     // Получаем список сегментов с фильтрацией
-    segmentsList, err := segments.GetSegments(ctx, apiClient, page, limit, segments.WithFilter(filter))
+    segmentsList, err := segments.List(ctx, apiClient, page, limit, segments.WithFilter(filter))
     if err != nil {
         log.Fatalf("Ошибка при получении списка сегментов: %v", err)
     }
@@ -227,7 +227,7 @@ func main() {
     segmentID := 123
 
     // Получаем информацию о сегменте с контактами
-    segment, err := segments.GetSegment(ctx, apiClient, segmentID, segments.WithContacts())
+    segment, err := segments.Get(ctx, apiClient, segmentID, segments.WithContacts())
     if err != nil {
         log.Fatalf("Ошибка при получении информации о сегменте: %v", err)
     }
@@ -283,7 +283,7 @@ func main() {
     }
 
     // Отправляем запрос на обновление сегмента
-    updatedSegment, err := segments.UpdateSegment(ctx, apiClient, segment)
+    updatedSegment, err := segments.Update(ctx, apiClient, segment)
     if err != nil {
         log.Fatalf("Ошибка при обновлении сегмента: %v", err)
     }
@@ -320,7 +320,7 @@ func main() {
     segmentID := 123
 
     // Удаляем сегмент
-    err := segments.DeleteSegment(ctx, apiClient, segmentID)
+    err := segments.Delete(ctx, apiClient, segmentID)
     if err != nil {
         log.Fatalf("Ошибка при удалении сегмента: %v", err)
     }
@@ -357,7 +357,7 @@ func main() {
     contactIDs := []int{1001, 1002, 1003}
 
     // Добавляем контакты в сегмент
-    err := segments.AddContactsToSegment(ctx, apiClient, segmentID, contactIDs)
+    err := segments.AddContacts(ctx, apiClient, segmentID, contactIDs)
     if err != nil {
         log.Fatalf("Ошибка при добавлении контактов в сегмент: %v", err)
     }
@@ -394,7 +394,7 @@ func main() {
     contactIDs := []int{1001, 1002, 1003}
 
     // Удаляем контакты из сегмента
-    err := segments.RemoveContactsFromSegment(ctx, apiClient, segmentID, contactIDs)
+    err := segments.RemoveContacts(ctx, apiClient, segmentID, contactIDs)
     if err != nil {
         log.Fatalf("Ошибка при удалении контактов из сегмента: %v", err)
     }
@@ -432,7 +432,7 @@ func main() {
     limit := 50
 
     // Получаем ID контактов в сегменте
-    contactIDs, err := segments.GetSegmentContacts(ctx, apiClient, segmentID, page, limit)
+    contactIDs, err := segments.ListContacts(ctx, apiClient, segmentID, page, limit)
     if err != nil {
         log.Fatalf("Ошибка при получении контактов сегмента: %v", err)
     }

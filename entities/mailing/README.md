@@ -37,7 +37,7 @@ type Mailing struct {
     SegmentFilters   []SegmentFilter   `json:"segment_filters,omitempty"`
     SelectedContacts []int             `json:"selected_contacts,omitempty"`
     ExcludedContacts []int             `json:"excluded_contacts,omitempty"`
-    Stats            *MailingStats     `json:"stats,omitempty"`
+    Stats            *Stats     `json:"stats,omitempty"`
     AccountID        int               `json:"account_id,omitempty"`
     FromEmail        string            `json:"from_email,omitempty"`
     FromName         string            `json:"from_name,omitempty"`
@@ -96,10 +96,10 @@ type Template struct {
 }
 ```
 
-### MailingStats
+### Stats
 
 ```go
-type MailingStats struct {
+type Stats struct {
     TotalRecipients int `json:"total_recipients"`
     Delivered       int `json:"delivered"`
     Opened          int `json:"opened"`
@@ -115,7 +115,7 @@ type MailingStats struct {
 ### Получение списка рассылок
 
 ```go
-func GetMailings(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Mailing, error)
 ```
 
 Возвращает список рассылок с поддержкой пагинации и фильтрации.
@@ -134,19 +134,19 @@ func GetMailings(ctx context.Context, apiClient *client.Client, page, limit int,
 filter := map[string]string{
     "filter[status]": "active",
 }
-mailings, err := mailing.GetMailings(ctx, apiClient, 1, 50, mailing.WithFilter(filter))
+mailings, err := mailing.List(ctx, apiClient, 1, 50, mailing.WithFilter(filter))
 ```
 
 Также доступны готовые функции для фильтрации:
 
 ```go
 // Фильтрация по статусу
-mailings, err := mailing.GetMailings(ctx, apiClient, 1, 50, mailing.WithStatus(mailing.MailingStatusActive))
+mailings, err := mailing.List(ctx, apiClient, 1, 50, mailing.WithStatus(mailing.MailingStatusActive))
 
 // Фильтрация по дате создания
 from := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 to := time.Now()
-mailings, err := mailing.GetMailings(ctx, apiClient, 1, 50,
+mailings, err := mailing.List(ctx, apiClient, 1, 50,
     mailing.WithDateFrom(from),
     mailing.WithDateTo(to))
 ```
@@ -154,7 +154,7 @@ mailings, err := mailing.GetMailings(ctx, apiClient, 1, 50,
 ### Получение информации о конкретной рассылке
 
 ```go
-func GetMailing(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error)
+func Get(ctx context.Context, apiClient *client.Client, id int) (*Mailing, error)
 ```
 
 Возвращает информацию о конкретной рассылке по её ID.
@@ -166,7 +166,7 @@ func GetMailing(ctx context.Context, apiClient *client.Client, id int) (*Mailing
 ### Создание рассылки
 
 ```go
-func CreateMailing(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
+func Create(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
 ```
 
 Создаёт новую рассылку и возвращает информацию о созданной рассылке.
@@ -178,7 +178,7 @@ func CreateMailing(ctx context.Context, apiClient *client.Client, mailingData *M
 ### Обновление рассылки
 
 ```go
-func UpdateMailing(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
+func Update(ctx context.Context, apiClient *client.Client, mailingData *Mailing) (*Mailing, error)
 ```
 
 Обновляет существующую рассылку и возвращает обновлённую информацию.
@@ -190,7 +190,7 @@ func UpdateMailing(ctx context.Context, apiClient *client.Client, mailingData *M
 ### Удаление рассылки
 
 ```go
-func DeleteMailing(ctx context.Context, apiClient *client.Client, id int) error
+func Delete(ctx context.Context, apiClient *client.Client, id int) error
 ```
 
 Удаляет рассылку по ID.
@@ -202,7 +202,7 @@ func DeleteMailing(ctx context.Context, apiClient *client.Client, id int) error
 ### Изменение статуса рассылки
 
 ```go
-func ChangeMailingStatus(ctx context.Context, apiClient *client.Client, id int, status MailingStatus) (*Mailing, error)
+func ChangeStatus(ctx context.Context, apiClient *client.Client, id int, status MailingStatus) (*Mailing, error)
 ```
 
 Изменяет статус рассылки.
@@ -215,7 +215,7 @@ func ChangeMailingStatus(ctx context.Context, apiClient *client.Client, id int, 
 ### Получение шаблонов рассылок
 
 ```go
-func GetMailingTemplates(ctx context.Context, apiClient *client.Client, page, limit int) ([]Template, error)
+func ListTemplates(ctx context.Context, apiClient *client.Client, page, limit int) ([]Template, error)
 ```
 
 Возвращает список шаблонов рассылок.
@@ -226,7 +226,7 @@ func GetMailingTemplates(ctx context.Context, apiClient *client.Client, page, li
 - `limit` - количество элементов на странице
 
 ```go
-func GetMailingTemplate(ctx context.Context, apiClient *client.Client, id int) (*Template, error)
+func GetTemplate(ctx context.Context, apiClient *client.Client, id int) (*Template, error)
 ```
 
 Возвращает информацию о конкретном шаблоне рассылки.
@@ -238,7 +238,7 @@ func GetMailingTemplate(ctx context.Context, apiClient *client.Client, id int) (
 ### Управление получателями рассылки
 
 ```go
-func AddMailingRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
+func AddRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
 ```
 
 Добавляет получателей в рассылку.
@@ -249,7 +249,7 @@ func AddMailingRecipients(ctx context.Context, apiClient *client.Client, id int,
 - `contactIDs` - массив ID контактов для добавления в рассылку
 
 ```go
-func RemoveMailingRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
+func RemoveRecipients(ctx context.Context, apiClient *client.Client, id int, contactIDs []int) error
 ```
 
 Удаляет получателей из рассылки.
@@ -303,7 +303,7 @@ func main() {
     }
 
     // Отправляем запрос на создание
-    createdMailing, err := mailing.CreateMailing(ctx, apiClient, newMailing)
+    createdMailing, err := mailing.Create(ctx, apiClient, newMailing)
     if err != nil {
         log.Fatalf("Ошибка при создании рассылки: %v", err)
     }
@@ -349,7 +349,7 @@ func main() {
     mailingID := 1001
 
     // Запускаем рассылку
-    updatedMailing, err := mailing.ChangeMailingStatus(ctx, apiClient, mailingID, mailing.MailingStatusActive)
+    updatedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusActive)
     if err != nil {
         log.Fatalf("Ошибка при изменении статуса рассылки: %v", err)
     }
@@ -357,7 +357,7 @@ func main() {
     fmt.Printf("Статус рассылки изменен на: %s\n", updatedMailing.Status)
 
     // Позже приостанавливаем рассылку
-    pausedMailing, err := mailing.ChangeMailingStatus(ctx, apiClient, mailingID, mailing.MailingStatusPaused)
+    pausedMailing, err := mailing.ChangeStatus(ctx, apiClient, mailingID, mailing.MailingStatusPaused)
     if err != nil {
         log.Fatalf("Ошибка при приостановке рассылки: %v", err)
     }
@@ -399,7 +399,7 @@ func main() {
     ctx := context.Background()
 
     // Получаем список активных рассылок
-    mailings, err := mailing.GetMailings(ctx, apiClient, 1, 10, mailing.WithStatus(mailing.MailingStatusActive))
+    mailings, err := mailing.List(ctx, apiClient, 1, 10, mailing.WithStatus(mailing.MailingStatusActive))
     if err != nil {
         log.Fatalf("Ошибка при получении списка рассылок: %v", err)
     }
@@ -409,7 +409,7 @@ func main() {
         fmt.Printf("Рассылка: %s (ID: %d)\n", m.Name, m.ID)
         
         // Получаем детальную статистику для каждой рассылки
-        stats, err := mailing.GetMailingStats(ctx, apiClient, m.ID)
+        stats, err := mailing.GetStats(ctx, apiClient, m.ID)
         if err != nil {
             log.Printf("Ошибка при получении статистики для рассылки %d: %v", m.ID, err)
             continue

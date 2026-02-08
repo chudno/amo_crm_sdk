@@ -74,7 +74,7 @@ func TestAddCall(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdCall, err := AddCall(context.Background(), apiClient, call)
+	createdCall, err := Add(context.Background(), apiClient, call)
 
 	// Проверяем результаты
 	if err != nil {
@@ -200,7 +200,7 @@ func TestGetCalls(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	calls, err := GetCalls(context.Background(), apiClient, 1, 50, filter)
+	calls, err := List(context.Background(), apiClient, 1, 50, filter)
 
 	// Проверяем результаты
 	if err != nil {
@@ -302,7 +302,7 @@ func TestGetCall(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод с параметром WithTags
-	call, err := GetCall(context.Background(), apiClient, callID, WithTags)
+	call, err := Get(context.Background(), apiClient, callID, WithTags)
 
 	// Проверяем результаты
 	if err != nil {
@@ -400,7 +400,7 @@ func TestUpdateCall(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedCall, err := UpdateCall(context.Background(), apiClient, call)
+	updatedCall, err := Update(context.Background(), apiClient, call)
 
 	// Проверяем результаты
 	if err != nil {
@@ -451,7 +451,7 @@ func TestDeleteCall(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteCall(context.Background(), apiClient, callID)
+	err := Delete(context.Background(), apiClient, callID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -487,7 +487,7 @@ func TestLinkCallWithEntity(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := LinkCallWithEntity(context.Background(), apiClient, callID, entityType, entityID)
+	err := LinkWithEntity(context.Background(), apiClient, callID, entityType, entityID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -523,7 +523,7 @@ func TestUnlinkCallFromEntity(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := UnlinkCallFromEntity(context.Background(), apiClient, callID, entityType, entityID)
+	err := UnlinkFromEntity(context.Background(), apiClient, callID, entityType, entityID)
 
 	// Проверяем результаты
 	if err != nil {

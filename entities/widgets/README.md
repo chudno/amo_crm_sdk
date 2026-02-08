@@ -88,10 +88,10 @@ const (
 
 ### Получение списка виджетов
 
-Метод `GetWidgets` позволяет получить список виджетов в аккаунте с возможностью фильтрации и пагинации.
+Метод `List` позволяет получить список виджетов в аккаунте с возможностью фильтрации и пагинации.
 
 ```go
-func GetWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error)
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Widget, error)
 ```
 
 #### Параметры
@@ -110,19 +110,19 @@ func GetWidgets(ctx context.Context, apiClient *client.Client, page, limit int, 
 
 ```go
 // Получение всех виджетов
-widgets, err := widgets.GetWidgets(ctx, apiClient, 1, 50)
+widgets, err := widgets.List(ctx, apiClient, 1, 50)
 
 // Фильтрация по типам виджетов
 types := []widgets.WidgetType{widgets.WidgetTypeIntercom, widgets.WidgetTypeCallback}
-widgets, err := widgets.GetWidgets(ctx, apiClient, 1, 50, widgets.WithWidgetTypes(types))
+widgets, err := widgets.List(ctx, apiClient, 1, 50, widgets.WithWidgetTypes(types))
 ```
 
 ### Получение информации о виджете
 
-Метод `GetWidget` позволяет получить детальную информацию о конкретном виджете по его ID.
+Метод `Get` позволяет получить детальную информацию о конкретном виджете по его ID.
 
 ```go
-func GetWidget(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, error)
+func Get(ctx context.Context, apiClient *client.Client, widgetID int) (*Widget, error)
 ```
 
 #### Параметры
@@ -134,7 +134,7 @@ func GetWidget(ctx context.Context, apiClient *client.Client, widgetID int) (*Wi
 
 ```go
 // Получение информации о виджете с ID 123
-widget, err := widgets.GetWidget(ctx, apiClient, 123)
+widget, err := widgets.Get(ctx, apiClient, 123)
 if err != nil {
     log.Fatal(err)
 }
@@ -143,10 +143,10 @@ fmt.Printf("Виджет: %s (тип: %s)\n", widget.Name, widget.Type)
 
 ### Установка виджета
 
-Метод `InstallWidget` позволяет установить виджет из маркетплейса amoCRM по его коду.
+Метод `Install` позволяет установить виджет из маркетплейса amoCRM по его коду.
 
 ```go
-func InstallWidget(ctx context.Context, apiClient *client.Client, code string) (*Widget, error)
+func Install(ctx context.Context, apiClient *client.Client, code string) (*Widget, error)
 ```
 
 #### Параметры
@@ -158,7 +158,7 @@ func InstallWidget(ctx context.Context, apiClient *client.Client, code string) (
 
 ```go
 // Установка виджета Intercom
-widget, err := widgets.InstallWidget(ctx, apiClient, "intercom")
+widget, err := widgets.Install(ctx, apiClient, "intercom")
 if err != nil {
     log.Fatal(err)
 }
@@ -167,10 +167,10 @@ fmt.Printf("Установлен виджет: %s (ID: %d)\n", widget.Name, widg
 
 ### Обновление настроек виджета
 
-Метод `UpdateWidgetSettings` позволяет обновить настройки виджета.
+Метод `UpdateSettings` позволяет обновить настройки виджета.
 
 ```go
-func UpdateWidgetSettings(ctx context.Context, apiClient *client.Client, widgetID int, settings interface{}) (*Widget, error)
+func UpdateSettings(ctx context.Context, apiClient *client.Client, widgetID int, settings interface{}) (*Widget, error)
 ```
 
 #### Параметры
@@ -187,7 +187,7 @@ settings := map[string]interface{}{
     "api_key": "abc123",
     "active": true,
 }
-widget, err := widgets.UpdateWidgetSettings(ctx, apiClient, 123, settings)
+widget, err := widgets.UpdateSettings(ctx, apiClient, 123, settings)
 if err != nil {
     log.Fatal(err)
 }
@@ -196,10 +196,10 @@ fmt.Printf("Настройки виджета обновлены: %s\n", widget.
 
 ### Удаление виджета
 
-Метод `DeleteWidget` позволяет удалить виджет из аккаунта.
+Метод `Delete` позволяет удалить виджет из аккаунта.
 
 ```go
-func DeleteWidget(ctx context.Context, apiClient *client.Client, widgetID int) error
+func Delete(ctx context.Context, apiClient *client.Client, widgetID int) error
 ```
 
 #### Параметры
@@ -211,7 +211,7 @@ func DeleteWidget(ctx context.Context, apiClient *client.Client, widgetID int) e
 
 ```go
 // Удаление виджета
-err := widgets.DeleteWidget(ctx, apiClient, 123)
+err := widgets.Delete(ctx, apiClient, 123)
 if err != nil {
     log.Fatal(err)
 }
@@ -220,10 +220,10 @@ fmt.Println("Виджет успешно удален")
 
 ### Получение списка виджетов из маркетплейса
 
-Метод `GetMarketplaceWidgets` позволяет получить список доступных виджетов в маркетплейсе amoCRM.
+Метод `ListMarketplace` позволяет получить список доступных виджетов в маркетплейсе amoCRM.
 
 ```go
-func GetMarketplaceWidgets(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error)
+func ListMarketplace(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]MarketplaceWidget, error)
 ```
 
 #### Параметры
@@ -242,7 +242,7 @@ func GetMarketplaceWidgets(ctx context.Context, apiClient *client.Client, page, 
 
 ```go
 // Получение списка виджетов из маркетплейса в категории "Коммуникации" (ID: 1)
-marketWidgets, err := widgets.GetMarketplaceWidgets(ctx, apiClient, 1, 50, widgets.WithCategory(1))
+marketWidgets, err := widgets.ListMarketplace(ctx, apiClient, 1, 50, widgets.WithCategory(1))
 if err != nil {
     log.Fatal(err)
 }
@@ -256,10 +256,10 @@ for _, widget := range marketWidgets {
 
 ### Изменение статуса виджета
 
-Метод `SetWidgetStatus` позволяет изменить статус виджета.
+Метод `SetStatus` позволяет изменить статус виджета.
 
 ```go
-func SetWidgetStatus(ctx context.Context, apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error)
+func SetStatus(ctx context.Context, apiClient *client.Client, widgetID int, status WidgetStatus) (*Widget, error)
 ```
 
 #### Параметры
@@ -272,14 +272,14 @@ func SetWidgetStatus(ctx context.Context, apiClient *client.Client, widgetID int
 
 ```go
 // Деактивация виджета
-widget, err := widgets.SetWidgetStatus(ctx, apiClient, 123, widgets.WidgetStatusInactive)
+widget, err := widgets.SetStatus(ctx, apiClient, 123, widgets.WidgetStatusInactive)
 if err != nil {
     log.Fatal(err)
 }
 fmt.Printf("Статус виджета %s изменен на: %s\n", widget.Name, widget.Status)
 
 // Активация виджета
-widget, err = widgets.SetWidgetStatus(ctx, apiClient, 123, widgets.WidgetStatusInstalled)
+widget, err = widgets.SetStatus(ctx, apiClient, 123, widgets.WidgetStatusInstalled)
 if err != nil {
     log.Fatal(err)
 }
@@ -288,10 +288,10 @@ fmt.Printf("Статус виджета %s изменен на: %s\n", widget.Na
 
 ### Массовая установка виджетов
 
-Метод `BulkInstallWidgets` позволяет установить несколько виджетов одновременно.
+Метод `BulkInstall` позволяет установить несколько виджетов одновременно.
 
 ```go
-func BulkInstallWidgets(ctx context.Context, apiClient *client.Client, codes []string) ([]Widget, error)
+func BulkInstall(ctx context.Context, apiClient *client.Client, codes []string) ([]Widget, error)
 ```
 
 #### Параметры
@@ -304,7 +304,7 @@ func BulkInstallWidgets(ctx context.Context, apiClient *client.Client, codes []s
 ```go
 // Массовая установка нескольких виджетов
 codes := []string{"intercom", "callback", "jivosite"}
-installedWidgets, err := widgets.BulkInstallWidgets(ctx, apiClient, codes)
+installedWidgets, err := widgets.BulkInstall(ctx, apiClient, codes)
 if err != nil {
     log.Fatal(err)
 }
@@ -317,10 +317,10 @@ for _, widget := range installedWidgets {
 
 ### Массовое удаление виджетов
 
-Метод `BulkDeleteWidgets` позволяет удалить несколько виджетов одновременно.
+Метод `BulkDelete` позволяет удалить несколько виджетов одновременно.
 
 ```go
-func BulkDeleteWidgets(ctx context.Context, apiClient *client.Client, widgetIDs []int) error
+func BulkDelete(ctx context.Context, apiClient *client.Client, widgetIDs []int) error
 ```
 
 #### Параметры
@@ -333,7 +333,7 @@ func BulkDeleteWidgets(ctx context.Context, apiClient *client.Client, widgetIDs 
 ```go
 // Массовое удаление ненужных виджетов
 widgetIDs := []int{123, 456, 789}
-err := widgets.BulkDeleteWidgets(ctx, apiClient, widgetIDs)
+err := widgets.BulkDelete(ctx, apiClient, widgetIDs)
 if err != nil {
     log.Fatal(err)
 }
@@ -366,7 +366,7 @@ func main() {
 
     // Получаем виджеты типа "callback" и "intercom"
     types := []widgets.WidgetType{widgets.WidgetTypeCallback, widgets.WidgetTypeIntercom}
-    widgetsList, err := widgets.GetWidgets(ctx, apiClient, 1, 50, widgets.WithWidgetTypes(types))
+    widgetsList, err := widgets.List(ctx, apiClient, 1, 50, widgets.WithWidgetTypes(types))
     if err != nil {
         log.Fatalf("Ошибка при получении виджетов: %v", err)
     }
@@ -402,7 +402,7 @@ func main() {
     ctx := context.Background()
 
     // Устанавливаем виджет
-    widget, err := widgets.InstallWidget(ctx, apiClient, "intercom")
+    widget, err := widgets.Install(ctx, apiClient, "intercom")
     if err != nil {
         log.Fatalf("Ошибка при установке виджета: %v", err)
     }
@@ -415,7 +415,7 @@ func main() {
         "workspace_id": "your-workspace-id",
     }
     
-    updatedWidget, err := widgets.UpdateWidgetSettings(ctx, apiClient, widget.ID, settings)
+    updatedWidget, err := widgets.UpdateSettings(ctx, apiClient, widget.ID, settings)
     if err != nil {
         log.Fatalf("Ошибка при настройке виджета: %v", err)
     }
@@ -450,7 +450,7 @@ func main() {
     widgetID := 123
 
     // Получаем информацию о виджете
-    widget, err := widgets.GetWidget(ctx, apiClient, widgetID)
+    widget, err := widgets.Get(ctx, apiClient, widgetID)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о виджете: %v", err)
     }
@@ -459,7 +459,7 @@ func main() {
         widget.Name, widget.ID, widget.Type)
     
     // Удаляем виджет
-    err = widgets.DeleteWidget(ctx, apiClient, widgetID)
+    err = widgets.Delete(ctx, apiClient, widgetID)
     if err != nil {
         log.Fatalf("Ошибка при удалении виджета: %v", err)
     }

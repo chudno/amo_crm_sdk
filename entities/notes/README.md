@@ -16,11 +16,11 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateNote` | Создание нового примечания |
-| `GetNote` | Получение примечания по ID |
-| `GetNotes` | Получение списка примечаний с фильтрацией |
-| `UpdateNote` | Обновление существующего примечания |
-| `DeleteNote` | Удаление примечания |
+| `Create` | Создание нового примечания |
+| `Get` | Получение примечания по ID |
+| `List` | Получение списка примечаний с фильтрацией |
+| `Update` | Обновление существующего примечания |
+| `Delete` | Удаление примечания |
 
 ## Создание примечания
 
@@ -49,7 +49,7 @@ newNote := &notes.Note{
 }
 
 // Сохранение примечания
-createdNote, err := notes.CreateNote(ctx, apiClient, newNote)
+createdNote, err := notes.Create(ctx, apiClient, newNote)
 if err != nil {
     // Обработка ошибки
 }
@@ -68,7 +68,7 @@ callNote := &notes.Note{
 }
 
 // Сохранение примечания о звонке
-createdCallNote, err := notes.CreateNote(ctx, apiClient, callNote)
+createdCallNote, err := notes.Create(ctx, apiClient, callNote)
 ```
 
 ## Получение примечания
@@ -76,7 +76,7 @@ createdCallNote, err := notes.CreateNote(ctx, apiClient, callNote)
 ```go
 // Получение примечания по ID
 noteID := 12345
-note, err := notes.GetNote(ctx, apiClient, noteID)
+note, err := notes.Get(ctx, apiClient, noteID)
 if err != nil {
     // Обработка ошибки
 }
@@ -91,7 +91,7 @@ filter := map[string]string{
     "filter[entity_id]": fmt.Sprintf("%d", contactID),
     "filter[entity_type]": notes.EntityTypeContact,
 }
-notesList, err := notes.GetNotes(ctx, apiClient, 1, 50, filter)
+notesList, err := notes.List(ctx, apiClient, 1, 50, filter)
 if err != nil {
     // Обработка ошибки
 }
@@ -102,7 +102,7 @@ typeFilter := map[string]string{
     "filter[entity_type]": notes.EntityTypeContact,
     "filter[note_type]": fmt.Sprintf("%d", notes.TypeIncomingCall), // Только примечания о входящих звонках
 }
-callNotes, err := notes.GetNotes(ctx, apiClient, 1, 50, typeFilter)
+callNotes, err := notes.List(ctx, apiClient, 1, 50, typeFilter)
 ```
 
 ## Обновление примечания
@@ -111,7 +111,7 @@ callNotes, err := notes.GetNotes(ctx, apiClient, 1, 50, typeFilter)
 // Обновление существующего примечания
 note.Params.Text = "Клиент очень заинтересован в нашем предложении"
 
-updatedNote, err := notes.UpdateNote(ctx, apiClient, note)
+updatedNote, err := notes.Update(ctx, apiClient, note)
 if err != nil {
     // Обработка ошибки
 }

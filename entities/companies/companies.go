@@ -16,20 +16,20 @@ import (
 
 // Company представляет собой структуру компании в amoCRM.
 type Company struct {
-	ID                 int                              `json:"id"`
-	Name               string                           `json:"name"`
-	ResponsibleUserID  int                              `json:"responsible_user_id,omitempty"`
-	GroupID            int                              `json:"group_id,omitempty"`
-	CreatedBy          int                              `json:"created_by,omitempty"`
-	UpdatedBy          int                              `json:"updated_by,omitempty"`
-	CreatedAt          int64                            `json:"created_at,omitempty"`
-	UpdatedAt          int64                            `json:"updated_at,omitempty"`
-	ClosestTaskAt      int64                            `json:"closest_task_at,omitempty"`
-	IsDeleted          bool                             `json:"is_deleted,omitempty"`
-	CustomFieldsValues []custom_fields.CustomFieldValue `json:"custom_fields_values,omitempty"`
-	AccountID          int                              `json:"account_id,omitempty"`
-	Tags               []Tag                            `json:"tags,omitempty"`
-	Embedded           *CompanyEmbedded                 `json:"_embedded,omitempty"`
+	ID                 int                   `json:"id"`
+	Name               string                `json:"name"`
+	ResponsibleUserID  int                   `json:"responsible_user_id,omitempty"`
+	GroupID            int                   `json:"group_id,omitempty"`
+	CreatedBy          int                   `json:"created_by,omitempty"`
+	UpdatedBy          int                   `json:"updated_by,omitempty"`
+	CreatedAt          int64                 `json:"created_at,omitempty"`
+	UpdatedAt          int64                 `json:"updated_at,omitempty"`
+	ClosestTaskAt      int64                 `json:"closest_task_at,omitempty"`
+	IsDeleted          bool                  `json:"is_deleted,omitempty"`
+	CustomFieldsValues []custom_fields.Value `json:"custom_fields_values,omitempty"`
+	AccountID          int                   `json:"account_id,omitempty"`
+	Tags               []Tag                 `json:"tags,omitempty"`
+	Embedded           *Embedded             `json:"_embedded,omitempty"`
 }
 
 // Tag представляет тег компании
@@ -38,8 +38,8 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-// CompanyEmbedded содержит связанные с компанией сущности
-type CompanyEmbedded struct {
+// Embedded содержит связанные с компанией сущности
+type Embedded struct {
 	Contacts []Contact `json:"contacts,omitempty"`
 	Tags     []Tag     `json:"tags,omitempty"`
 }
@@ -57,9 +57,9 @@ const (
 	WithContacts WithOption = "contacts"
 )
 
-// GetCompany получает компанию по её ID.
+// Get получает компанию по её ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компанией.
-func GetCompany(ctx context.Context, apiClient *client.Client, companyID int, withOptions ...WithOption) (*Company, error) {
+func Get(ctx context.Context, apiClient *client.Client, companyID int, withOptions ...WithOption) (*Company, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies/%d", apiClient.GetBaseURL(), companyID)
 
@@ -94,8 +94,8 @@ func GetCompany(ctx context.Context, apiClient *client.Client, companyID int, wi
 	return &company, nil
 }
 
-// CreateCompany создает новую компанию в amoCRM.
-func CreateCompany(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
+// Create создает новую компанию в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/companies"
 	companyJSON, err := json.Marshal(company)
 	if err != nil {
@@ -123,8 +123,8 @@ func CreateCompany(ctx context.Context, apiClient *client.Client, company *Compa
 	return &newCompany, nil
 }
 
-// UpdateCompany обновляет существующую компанию в amoCRM.
-func UpdateCompany(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
+// Update обновляет существующую компанию в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, company *Company) (*Company, error) {
 	url := apiClient.GetBaseURL() + "/api/v4/companies/" + fmt.Sprintf("%d", company.ID)
 	companyJSON, err := json.Marshal(company)
 	if err != nil {
@@ -152,8 +152,8 @@ func UpdateCompany(ctx context.Context, apiClient *client.Client, company *Compa
 	return &updatedCompany, nil
 }
 
-// CompaniesResponse представляет ответ от API при получении списка компаний
-type CompaniesResponse struct {
+// ListResponse представляет ответ от API при получении списка компаний
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -162,9 +162,9 @@ type CompaniesResponse struct {
 	} `json:"_embedded"`
 }
 
-// GetCompanies получает список компаний с возможностью фильтрации и пагинации.
+// List получает список компаний с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с компаниями.
-func GetCompanies(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Company, error) {
+func List(ctx context.Context, apiClient *client.Client, page, limit int, withOptions ...WithOption) ([]Company, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/companies", apiClient.GetBaseURL())
 
@@ -197,7 +197,7 @@ func GetCompanies(ctx context.Context, apiClient *client.Client, page, limit int
 	}
 	defer resp.Body.Close()
 
-	var companies CompaniesResponse
+	var companies ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&companies); err != nil {
 		return nil, err
 	}

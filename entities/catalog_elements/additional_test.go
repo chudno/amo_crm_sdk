@@ -86,7 +86,7 @@ func TestCreateCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Создаем элементы для добавления
-	elements := []CatalogElement{
+	elements := []Element{
 		{
 			Name:      "Тестовый элемент 1",
 			CatalogID: catalogID,
@@ -118,7 +118,7 @@ func TestCreateCatalogElements(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdElements, err := CreateCatalogElements(context.Background(), apiClient, catalogID, elements)
+	createdElements, err := CreateBatch(context.Background(), apiClient, catalogID, elements)
 
 	// Проверяем результаты
 	if err != nil {
@@ -215,7 +215,7 @@ func TestUpdateCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Создаем элементы для обновления
-	elements := []CatalogElement{
+	elements := []Element{
 		{
 			ID:        456,
 			Name:      "Обновленный элемент 1",
@@ -249,7 +249,7 @@ func TestUpdateCatalogElements(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedElements, err := UpdateCatalogElements(context.Background(), apiClient, catalogID, elements)
+	updatedElements, err := UpdateBatch(context.Background(), apiClient, catalogID, elements)
 
 	// Проверяем результаты
 	if err != nil {
@@ -309,7 +309,7 @@ func TestBatchDeleteCatalogElements(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := BatchDeleteCatalogElements(context.Background(), apiClient, catalogID, elementIDs)
+	err := DeleteBatch(context.Background(), apiClient, catalogID, elementIDs)
 
 	// Проверяем результаты
 	if err != nil {

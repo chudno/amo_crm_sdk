@@ -16,11 +16,11 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateContact` | Создание нового контакта |
-| `GetContact` | Получение контакта по ID |
-| `GetContacts` | Получение списка контактов с фильтрацией |
-| `UpdateContact` | Обновление существующего контакта |
-| `DeleteContact` | Удаление контакта |
+| `Create` | Создание нового контакта |
+| `Get` | Получение контакта по ID |
+| `List` | Получение списка контактов с фильтрацией |
+| `Update` | Обновление существующего контакта |
+| `Delete` | Удаление контакта |
 
 ## Создание контакта
 
@@ -42,9 +42,9 @@ newContact := &contacts.Contact{
 }
 
 // Добавление номера телефона
-newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
+newContact.CustomFields = append(newContact.CustomFields, contacts.Field{
     FieldID: 1234, // ID поля "Телефон"
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "+79001234567",
             Enum: "WORK", // Тип телефона (рабочий)
@@ -53,9 +53,9 @@ newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
 })
 
 // Добавление email
-newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
+newContact.CustomFields = append(newContact.CustomFields, contacts.Field{
     FieldID: 5678, // ID поля "Email"
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "ivan@example.com",
             Enum: "WORK", // Тип email (рабочий)
@@ -64,7 +64,7 @@ newContact.CustomFields = append(newContact.CustomFields, contacts.CustomField{
 })
 
 // Сохранение контакта
-createdContact, err := contacts.CreateContact(ctx, apiClient, newContact)
+createdContact, err := contacts.Create(ctx, apiClient, newContact)
 if err != nil {
     // Обработка ошибки
 }
@@ -75,7 +75,7 @@ if err != nil {
 ```go
 // Получение контакта по ID
 contactID := 12345
-contact, err := contacts.GetContact(ctx, apiClient, contactID)
+contact, err := contacts.Get(ctx, apiClient, contactID)
 if err != nil {
     // Обработка ошибки
 }
@@ -85,7 +85,7 @@ if err != nil {
 
 ```go
 // Получение первых 50 контактов
-contactsList, err := contacts.GetContacts(ctx, apiClient, 1, 50)
+contactsList, err := contacts.List(ctx, apiClient, 1, 50)
 if err != nil {
     // Обработка ошибки
 }
@@ -95,7 +95,7 @@ filter := map[string]string{
     "query": "Иван", // Поиск по имени
     "created_at": "1609459200", // Контакты, созданные после указанной даты (timestamp)
 }
-filteredContacts, err := contacts.GetContacts(ctx, apiClient, 1, 50, filter)
+filteredContacts, err := contacts.List(ctx, apiClient, 1, 50, filter)
 ```
 
 ## Обновление контакта
@@ -105,9 +105,9 @@ filteredContacts, err := contacts.GetContacts(ctx, apiClient, 1, 50, filter)
 contact.Name = "Иван Петрович Иванов"
 
 // Добавление нового номера телефона
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
+contact.CustomFields = append(contact.CustomFields, contacts.Field{
     FieldID: 1234, // ID поля "Телефон"
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "+79009876543",
             Enum: "PERSONAL", // Тип телефона (личный)
@@ -115,7 +115,7 @@ contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
     },
 })
 
-updatedContact, err := contacts.UpdateContact(ctx, apiClient, contact)
+updatedContact, err := contacts.Update(ctx, apiClient, contact)
 if err != nil {
     // Обработка ошибки
 }
@@ -123,13 +123,13 @@ if err != nil {
 
 ## Пользовательские поля
 
-Для работы с пользовательскими полями контактов используйте структуры `CustomField` и `CustomFieldValue`:
+Для работы с пользовательскими полями контактов используйте структуры `Field` и `Value`:
 
 ```go
 // Добавление пользовательского поля
-contact.CustomFields = append(contact.CustomFields, contacts.CustomField{
+contact.CustomFields = append(contact.CustomFields, contacts.Field{
     FieldID: 9876, // ID пользовательского поля
-    Values: []contacts.CustomFieldValue{
+    Values: []contacts.Value{
         {
             Value: "Значение поля",
         },

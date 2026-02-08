@@ -53,11 +53,11 @@ type File struct {
 	URL        string     `json:"url,omitempty"`
 	Download   string     `json:"download_link,omitempty"`
 	Preview    string     `json:"preview,omitempty"`
-	Links      FileLinks  `json:"_links,omitempty"`
+	Links      Links      `json:"_links,omitempty"`
 }
 
-// FileLinks содержит URL-ссылки для файла
-type FileLinks struct {
+// Links содержит URL-ссылки для файла
+type Links struct {
 	Self struct {
 		Href string `json:"href"`
 	} `json:"self"`
@@ -66,8 +66,8 @@ type FileLinks struct {
 	} `json:"download"`
 }
 
-// FilesResponse представляет ответ API при получении списка файлов
-type FilesResponse struct {
+// ListResponse представляет ответ API при получении списка файлов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -76,8 +76,8 @@ type FilesResponse struct {
 	} `json:"_embedded"`
 }
 
-// UploadFile загружает файл в amoCRM и прикрепляет его к указанной сущности
-func UploadFile(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, filePath string) (*File, error) {
+// Upload загружает файл в amoCRM и прикрепляет его к указанной сущности
+func Upload(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, filePath string) (*File, error) {
 	// Открываем файл для чтения
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -154,8 +154,8 @@ func UploadFile(ctx context.Context, apiClient *client.Client, entityType Entity
 	return result.File, nil
 }
 
-// UploadFileByContent загружает файл в amoCRM по содержимому и прикрепляет его к указанной сущности
-func UploadFileByContent(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileName string, content []byte) (*File, error) {
+// UploadByContent загружает файл в amoCRM по содержимому и прикрепляет его к указанной сущности
+func UploadByContent(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileName string, content []byte) (*File, error) {
 	// Формируем URL для загрузки файла
 	uploadURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
@@ -219,8 +219,8 @@ func UploadFileByContent(ctx context.Context, apiClient *client.Client, entityTy
 	return result.File, nil
 }
 
-// GetFiles получает список файлов, прикрепленных к сущности
-func GetFiles(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, page, limit int) ([]File, error) {
+// List получает список файлов, прикрепленных к сущности
+func List(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, page, limit int) ([]File, error) {
 	// Формируем URL для запроса
 	baseURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
@@ -251,7 +251,7 @@ func GetFiles(ctx context.Context, apiClient *client.Client, entityType EntityTy
 	}
 
 	// Декодируем ответ
-	var filesResponse FilesResponse
+	var filesResponse ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&filesResponse); err != nil {
 		return nil, err
 	}
@@ -259,8 +259,8 @@ func GetFiles(ctx context.Context, apiClient *client.Client, entityType EntityTy
 	return filesResponse.Embedded.Files, nil
 }
 
-// GetFile получает информацию о конкретном файле
-func GetFile(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (*File, error) {
+// Get получает информацию о конкретном файле
+func Get(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (*File, error) {
 	// Формируем URL для запроса
 	fileURL := fmt.Sprintf("%s/api/v4/%s/%d/files/%d", apiClient.GetBaseURL(), entityType, entityID, fileID)
 
@@ -291,8 +291,8 @@ func GetFile(ctx context.Context, apiClient *client.Client, entityType EntityTyp
 	return &file, nil
 }
 
-// DeleteFile удаляет файл
-func DeleteFile(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) error {
+// Delete удаляет файл
+func Delete(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) error {
 	// Формируем URL для запроса
 	deleteURL := fmt.Sprintf("%s/api/v4/%s/%d/files/%d", apiClient.GetBaseURL(), entityType, entityID, fileID)
 
@@ -317,8 +317,8 @@ func DeleteFile(ctx context.Context, apiClient *client.Client, entityType Entity
 	return nil
 }
 
-// BatchDeleteFiles удаляет несколько файлов одним запросом
-func BatchDeleteFiles(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileIDs []int) error {
+// BatchDelete удаляет несколько файлов одним запросом
+func BatchDelete(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID int, fileIDs []int) error {
 	// Формируем URL для запроса
 	deleteURL := fmt.Sprintf("%s/api/v4/%s/%d/files", apiClient.GetBaseURL(), entityType, entityID)
 
@@ -354,10 +354,10 @@ func BatchDeleteFiles(ctx context.Context, apiClient *client.Client, entityType 
 	return nil
 }
 
-// DownloadFile скачивает файл и сохраняет его по указанному пути
-func DownloadFile(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int, savePath string) error {
+// Download скачивает файл и сохраняет его по указанному пути
+func Download(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int, savePath string) error {
 	// Получаем информацию о файле
-	file, err := GetFile(ctx, apiClient, entityType, entityID, fileID)
+	file, err := Get(ctx, apiClient, entityType, entityID, fileID)
 	if err != nil {
 		return err
 	}
@@ -402,10 +402,10 @@ func DownloadFile(ctx context.Context, apiClient *client.Client, entityType Enti
 	return nil
 }
 
-// GetDownloadFileURL получает URL для скачивания файла
-func GetDownloadFileURL(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (string, error) {
+// GetDownloadURL получает URL для скачивания файла
+func GetDownloadURL(ctx context.Context, apiClient *client.Client, entityType EntityType, entityID, fileID int) (string, error) {
 	// Получаем информацию о файле
-	file, err := GetFile(ctx, apiClient, entityType, entityID, fileID)
+	file, err := Get(ctx, apiClient, entityType, entityID, fileID)
 	if err != nil {
 		return "", err
 	}

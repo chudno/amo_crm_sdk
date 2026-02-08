@@ -21,7 +21,7 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(context.Background(), apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -38,7 +38,7 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(context.Background(), apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -53,7 +53,7 @@ func TestGetSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegment(context.Background(), apiClient, segmentID)
+		_, err := Get(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -71,7 +71,7 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegments(context.Background(), apiClient, 1, 50)
+		_, err := List(context.Background(), apiClient, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -88,7 +88,7 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegments(context.Background(), apiClient, 1, 50)
+		_, err := List(context.Background(), apiClient, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -116,7 +116,7 @@ func TestGetSegmentsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		segments, err := GetSegments(context.Background(), apiClient, 1, 50)
+		segments, err := List(context.Background(), apiClient, 1, 50)
 
 		if err != nil {
 			t.Fatalf("Неожиданная ошибка: %v", err)
@@ -152,7 +152,7 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(context.Background(), apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -169,7 +169,7 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(context.Background(), apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -190,7 +190,7 @@ func TestAddSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := AddSegment(context.Background(), apiClient, segment)
+		_, err := Create(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка пустого ответа, но получен nil")
@@ -214,7 +214,7 @@ func TestUpdateSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateSegment(context.Background(), apiClient, segment)
+		_, err := Update(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -231,7 +231,7 @@ func TestUpdateSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := UpdateSegment(context.Background(), apiClient, segment)
+		_, err := Update(context.Background(), apiClient, segment)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -241,7 +241,7 @@ func TestUpdateSegmentErrors(t *testing.T) {
 	// Тест на отсутствие ID
 	t.Run("MissingID", func(t *testing.T) {
 		apiClient := client.NewClient("http://example.com", "test_api_key")
-		_, err := UpdateSegment(context.Background(), apiClient, &Segment{
+		_, err := Update(context.Background(), apiClient, &Segment{
 			Name: "Сегмент без ID",
 			Type: SegmentTypeDynamic,
 		})
@@ -264,7 +264,7 @@ func TestDeleteSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := DeleteSegment(context.Background(), apiClient, segmentID)
+		err := Delete(context.Background(), apiClient, segmentID)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -285,7 +285,7 @@ func TestAddContactsToSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := AddContactsToSegment(context.Background(), apiClient, segmentID, contactIDs)
+		err := AddContacts(context.Background(), apiClient, segmentID, contactIDs)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -306,7 +306,7 @@ func TestRemoveContactsFromSegmentErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		err := RemoveContactsFromSegment(context.Background(), apiClient, segmentID, contactIDs)
+		err := RemoveContacts(context.Background(), apiClient, segmentID, contactIDs)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -326,7 +326,7 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegmentContacts(context.Background(), apiClient, segmentID, 1, 50)
+		_, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка HTTP статуса, но получен nil")
@@ -343,7 +343,7 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		_, err := GetSegmentContacts(context.Background(), apiClient, segmentID, 1, 50)
+		_, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err == nil {
 			t.Fatal("Ожидалась ошибка разбора JSON, но получен nil")
@@ -371,7 +371,7 @@ func TestGetSegmentContactsErrors(t *testing.T) {
 		defer server.Close()
 
 		apiClient := client.NewClient(server.URL, "test_api_key")
-		contactIDs, err := GetSegmentContacts(context.Background(), apiClient, segmentID, 1, 50)
+		contactIDs, err := ListContacts(context.Background(), apiClient, segmentID, 1, 50)
 
 		if err != nil {
 			t.Fatalf("Неожиданная ошибка: %v", err)

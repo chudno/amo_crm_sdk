@@ -17,10 +17,10 @@
 
 | Функция | Описание |
 |---------|----------|
-| `CreateWebhook` | Создание нового вебхука |
-| `GetWebhook` | Получение вебхука по ID |
-| `GetWebhooks` | Получение списка вебхуков |
-| `DeleteWebhook` | Удаление вебхука |
+| `Create` | Создание нового вебхука |
+| `Get` | Получение вебхука по ID |
+| `List` | Получение списка вебхуков |
+| `Delete` | Удаление вебхука |
 
 ## Создание вебхука
 
@@ -48,7 +48,7 @@ newWebhook := &webhooks.Webhook{
 }
 
 // Сохранение вебхука
-createdWebhook, err := webhooks.CreateWebhook(ctx, apiClient, newWebhook)
+createdWebhook, err := webhooks.Create(ctx, apiClient, newWebhook)
 if err != nil {
     // Обработка ошибки
 }
@@ -59,7 +59,7 @@ if err != nil {
 ```go
 // Получение вебхука по ID
 webhookID := 12345
-webhook, err := webhooks.GetWebhook(ctx, apiClient, webhookID)
+webhook, err := webhooks.Get(ctx, apiClient, webhookID)
 if err != nil {
     // Обработка ошибки
 }
@@ -74,7 +74,7 @@ fmt.Printf("События: %v\n", webhook.Settings.EventType)
 
 ```go
 // Получение всех вебхуков
-webhooksList, err := webhooks.GetWebhooks(ctx, apiClient)
+webhooksList, err := webhooks.List(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -92,7 +92,7 @@ for _, webhook := range webhooksList {
 ```go
 // Удаление вебхука по ID
 webhookID := 12345
-err := webhooks.DeleteWebhook(ctx, apiClient, webhookID)
+err := webhooks.Delete(ctx, apiClient, webhookID)
 if err != nil {
     // Обработка ошибки
 }

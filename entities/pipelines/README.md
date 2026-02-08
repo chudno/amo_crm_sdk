@@ -16,11 +16,11 @@
 
 | Функция | Описание |
 |---------|----------|
-| `GetPipeline` | Получение воронки по ID |
-| `GetPipelines` | Получение списка воронок |
-| `CreatePipeline` | Создание новой воронки |
-| `UpdatePipeline` | Обновление существующей воронки |
-| `DeletePipeline` | Удаление воронки |
+| `Get` | Получение воронки по ID |
+| `List` | Получение списка воронок |
+| `Create` | Создание новой воронки |
+| `Update` | Обновление существующей воронки |
+| `Delete` | Удаление воронки |
 | `CreateStatus` | Создание нового статуса в воронке |
 | `UpdateStatus` | Обновление существующего статуса |
 | `DeleteStatus` | Удаление статуса |
@@ -43,7 +43,7 @@ ctx := context.Background()
 
 // Получение воронки по ID
 pipelineID := 12345
-pipeline, err := pipelines.GetPipeline(ctx, apiClient, pipelineID)
+pipeline, err := pipelines.Get(ctx, apiClient, pipelineID)
 if err != nil {
     // Обработка ошибки
 }
@@ -62,7 +62,7 @@ for _, status := range pipeline.Statuses {
 
 ```go
 // Получение всех воронок
-pipelinesList, err := pipelines.GetPipelines(ctx, apiClient)
+pipelinesList, err := pipelines.List(ctx, apiClient)
 if err != nil {
     // Обработка ошибки
 }
@@ -120,7 +120,7 @@ newPipeline.Statuses = []pipelines.Status{
 }
 
 // Сохранение воронки
-createdPipeline, err := pipelines.CreatePipeline(ctx, apiClient, newPipeline)
+createdPipeline, err := pipelines.Create(ctx, apiClient, newPipeline)
 if err != nil {
     // Обработка ошибки
 }
@@ -140,7 +140,7 @@ pipeline.Statuses = append(pipeline.Statuses, pipelines.Status{
 })
 
 // Сохранение изменений
-updatedPipeline, err := pipelines.UpdatePipeline(ctx, apiClient, pipeline)
+updatedPipeline, err := pipelines.Update(ctx, apiClient, pipeline)
 if err != nil {
     // Обработка ошибки
 }
@@ -204,13 +204,13 @@ newLead := &leads.Lead{
 	// Другие поля лида
 }
 
-createdLead, err := leads.CreateLead(ctx, apiClient, newLead)
+createdLead, err := leads.Create(ctx, apiClient, newLead)
 if err != nil {
     // Обработка ошибки
 }
 
 // Перемещение лида в другой статус
-existingLead, err := leads.GetLead(ctx, apiClient, leadID)
+existingLead, err := leads.Get(ctx, apiClient, leadID)
 if err != nil {
     // Обработка ошибки
 }
@@ -219,7 +219,7 @@ existingLead.StatusID = 54321 // ID нового статуса
 // При необходимости можно сменить и воронку
 // existingLead.PipelineID = 98765
 
-updatedLead, err := leads.UpdateLead(ctx, apiClient, existingLead)
+updatedLead, err := leads.Update(ctx, apiClient, existingLead)
 if err != nil {
     // Обработка ошибки
 }

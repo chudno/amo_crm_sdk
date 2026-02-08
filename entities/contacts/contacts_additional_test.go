@@ -58,7 +58,7 @@ func TestGetContactWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contact, err := GetContact(context.Background(), apiClient, 123, WithCompanies)
+		contact, err := Get(context.Background(), apiClient, 123, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -119,7 +119,7 @@ func TestGetContactWithOptions(t *testing.T) {
 
 		// Вызываем тестируемый метод с несколькими параметрами
 		// (В этом примере только WithCompanies, но демонстрирует принцип)
-		contact, err := GetContact(context.Background(), apiClient, 123, WithCompanies)
+		contact, err := Get(context.Background(), apiClient, 123, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -145,7 +145,7 @@ func TestGetContactWithOptions(t *testing.T) {
 		apiClient := client.NewClient("http://non-existing-domain.example", "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetContact(context.Background(), apiClient, 999, WithCompanies)
+		_, err := Get(context.Background(), apiClient, 999, WithCompanies)
 
 		// Проверяем результаты
 		if err == nil {
@@ -228,7 +228,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contacts, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
+		contacts, err := List(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -289,7 +289,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		contacts, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
+		contacts, err := List(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err != nil {
@@ -313,7 +313,7 @@ func TestGetContactsWithOptions(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		_, err := GetContacts(context.Background(), apiClient, 1, 50, WithCompanies)
+		_, err := List(context.Background(), apiClient, 1, 50, WithCompanies)
 
 		// Проверяем результаты
 		if err == nil {
@@ -392,7 +392,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(context.Background(), apiClient, 123, 456)
+		err := LinkWithCompany(context.Background(), apiClient, 123, 456)
 
 		// Проверяем результаты
 		if err != nil {
@@ -412,7 +412,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(context.Background(), apiClient, 999, 456)
+		err := LinkWithCompany(context.Background(), apiClient, 999, 456)
 
 		// Проверяем результаты
 		if err == nil {
@@ -432,7 +432,7 @@ func TestLinkContactWithCompany(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := LinkContactWithCompany(context.Background(), apiClient, 123, -1)
+		err := LinkWithCompany(context.Background(), apiClient, 123, -1)
 
 		// Проверяем результаты
 		if err == nil {

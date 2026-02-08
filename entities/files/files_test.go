@@ -25,7 +25,7 @@ func TestUploadFile(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		file, err := UploadFile(context.Background(), apiClient, entityType, entityID, tempFile)
+		file, err := Upload(context.Background(), apiClient, entityType, entityID, tempFile)
 
 		// Проверяем результаты
 		if err != nil {
@@ -55,7 +55,7 @@ func TestUploadFileByContent(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		file, err := UploadFileByContent(context.Background(), apiClient, entityType, entityID, fileName, testContent)
+		file, err := UploadByContent(context.Background(), apiClient, entityType, entityID, fileName, testContent)
 
 		// Проверяем результаты
 		if err != nil {
@@ -81,7 +81,7 @@ func TestGetFiles(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод с параметрами пагинации
-		files, err := GetFiles(context.Background(), apiClient, entityType, entityID, 2, 30)
+		files, err := List(context.Background(), apiClient, entityType, entityID, 2, 30)
 
 		// Проверяем результаты
 		if err != nil {
@@ -105,7 +105,7 @@ func TestGetFiles(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод с дефолтными параметрами
-		files, err := GetFiles(context.Background(), apiClient, entityType, entityID, 1, 50)
+		files, err := List(context.Background(), apiClient, entityType, entityID, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -132,7 +132,7 @@ func TestDeleteFile(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := DeleteFile(context.Background(), apiClient, entityType, entityID, fileID)
+		err := Delete(context.Background(), apiClient, entityType, entityID, fileID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -156,7 +156,7 @@ func TestBatchDeleteFiles(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		err := BatchDeleteFiles(context.Background(), apiClient, entityType, entityID, fileIDs)
+		err := BatchDelete(context.Background(), apiClient, entityType, entityID, fileIDs)
 
 		// Проверяем результаты
 		if err != nil {
@@ -180,7 +180,7 @@ func TestGetFile(t *testing.T) {
 		apiClient := client.NewClient(server.URL, "test_api_key")
 
 		// Вызываем тестируемый метод
-		file, err := GetFile(context.Background(), apiClient, entityType, entityID, fileID)
+		file, err := Get(context.Background(), apiClient, entityType, entityID, fileID)
 
 		// Проверяем результаты
 		if err != nil {

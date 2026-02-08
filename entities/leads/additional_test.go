@@ -56,7 +56,7 @@ func TestUpdateLead(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedLead, err := UpdateLead(context.Background(), apiClient, leadToUpdate)
+	updatedLead, err := Update(context.Background(), apiClient, leadToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -96,7 +96,7 @@ func TestUpdateLeadWithoutID(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	_, err := UpdateLead(context.Background(), apiClient, leadToUpdate)
+	_, err := Update(context.Background(), apiClient, leadToUpdate)
 
 	// Проверяем результаты - должна быть ошибка
 	if err == nil {
@@ -129,7 +129,7 @@ func TestDeleteLead(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteLead(context.Background(), apiClient, leadID)
+	err := Delete(context.Background(), apiClient, leadID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -241,7 +241,7 @@ func TestGetLeadWithOptions(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемый метод с опциями
-			lead, err := GetLead(context.Background(), apiClient, leadID, tc.withOptions...)
+			lead, err := Get(context.Background(), apiClient, leadID, tc.withOptions...)
 
 			// Проверяем результаты
 			if err != nil {

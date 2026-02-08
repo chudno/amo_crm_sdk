@@ -65,7 +65,7 @@ func TestGetTags(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	tags, err := GetTags(context.Background(), apiClient, EntityTypeContact, 1, 50)
+	tags, err := List(context.Background(), apiClient, EntityTypeContact, 1, 50)
 
 	// Проверяем результаты
 	if err != nil {
@@ -134,7 +134,7 @@ func TestCreateTag(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdTag, err := CreateTag(context.Background(), apiClient, EntityTypeContact, newTag)
+	createdTag, err := Create(context.Background(), apiClient, EntityTypeContact, newTag)
 
 	// Проверяем результаты
 	if err != nil {
@@ -183,7 +183,7 @@ func TestGetTag(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	tag, err := GetTag(context.Background(), apiClient, EntityTypeContact, tagID)
+	tag, err := Get(context.Background(), apiClient, EntityTypeContact, tagID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -239,7 +239,7 @@ func TestUpdateTag(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedTag, err := UpdateTag(context.Background(), apiClient, EntityTypeContact, tagToUpdate)
+	updatedTag, err := Update(context.Background(), apiClient, EntityTypeContact, tagToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -282,7 +282,7 @@ func TestDeleteTag(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeleteTag(context.Background(), apiClient, EntityTypeContact, tagID)
+	err := Delete(context.Background(), apiClient, EntityTypeContact, tagID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -344,7 +344,7 @@ func TestLinkEntityWithTags(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	err := LinkEntityWithTags(context.Background(), apiClient, EntityTypeContact, entityID, tags)
+	err := LinkEntity(context.Background(), apiClient, EntityTypeContact, entityID, tags)
 
 	// Проверяем результаты
 	if err != nil {
@@ -394,7 +394,7 @@ func TestGetEntityTags(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	tags, err := GetEntityTags(context.Background(), apiClient, EntityTypeContact, entityID)
+	tags, err := ListForEntity(context.Background(), apiClient, EntityTypeContact, entityID)
 
 	// Проверяем результаты
 	if err != nil {
@@ -478,7 +478,7 @@ func TestCreateTags(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdTags, err := CreateTags(context.Background(), apiClient, EntityTypeContact, tagsToCreate)
+	createdTags, err := CreateBatch(context.Background(), apiClient, EntityTypeContact, tagsToCreate)
 
 	// Проверяем результаты
 	if err != nil {

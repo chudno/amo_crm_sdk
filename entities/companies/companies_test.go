@@ -40,7 +40,7 @@ func TestGetCompany(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	company, err := GetCompany(context.Background(), apiClient, 123)
+	company, err := Get(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -97,7 +97,7 @@ func TestCreateCompany(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdCompany, err := CreateCompany(context.Background(), apiClient, companyToCreate)
+	createdCompany, err := Create(context.Background(), apiClient, companyToCreate)
 
 	// Проверяем результаты
 	if err != nil {

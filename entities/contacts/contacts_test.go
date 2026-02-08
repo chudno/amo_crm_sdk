@@ -41,7 +41,7 @@ func TestGetContact(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	contact, err := GetContact(context.Background(), apiClient, 123)
+	contact, err := Get(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -98,7 +98,7 @@ func TestCreateContact(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdContact, err := CreateContact(context.Background(), apiClient, contactToCreate)
+	createdContact, err := Create(context.Background(), apiClient, contactToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -183,7 +183,7 @@ func TestListContacts(t *testing.T) {
 			apiClient := client.NewClient(server.URL, "test_api_key")
 
 			// Вызываем тестируемую функцию
-			contacts, err := GetContacts(context.Background(), apiClient, tt.page, tt.limit)
+			contacts, err := List(context.Background(), apiClient, tt.page, tt.limit)
 
 			// Проверяем результаты
 			if tt.expectError && err == nil {

@@ -63,8 +63,8 @@ type Call struct {
     CallStartTime        string       `json:"call_start_time,omitempty"`
     CallEndTime          string       `json:"call_end_time,omitempty"`
     Version              int          `json:"version,omitempty"`
-    Embedded            *CallEmbedded `json:"_embedded,omitempty"`
-    Links              *CallLinks     `json:"_links,omitempty"`
+    Embedded            *Embedded `json:"_embedded,omitempty"`
+    Links              *Links     `json:"_links,omitempty"`
     EntityType          *EntityType   `json:"entity_type,omitempty"`
     EntityID             int          `json:"entity_id,omitempty"`
 }
@@ -152,7 +152,7 @@ func main() {
     }
 
     // Отправляем запрос на создание звонка
-    createdCall, err := calls.AddCall(ctx, apiClient, call)
+    createdCall, err := calls.Add(ctx, apiClient, call)
     if err != nil {
         log.Fatalf("Ошибка при добавлении звонка: %v", err)
     }
@@ -198,7 +198,7 @@ func main() {
     }
 
     // Получаем список звонков с фильтрацией и с включением тегов
-    callsList, err := calls.GetCalls(ctx, apiClient, page, limit, filter, calls.WithTags)
+    callsList, err := calls.List(ctx, apiClient, page, limit, filter, calls.WithTags)
     if err != nil {
         log.Fatalf("Ошибка при получении списка звонков: %v", err)
     }
@@ -251,7 +251,7 @@ func main() {
     callID := 123
 
     // Получаем информацию о звонке с тегами
-    call, err := calls.GetCall(ctx, apiClient, callID, calls.WithTags)
+    call, err := calls.Get(ctx, apiClient, callID, calls.WithTags)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о звонке: %v", err)
     }
@@ -309,7 +309,7 @@ func main() {
     }
 
     // Отправляем запрос на обновление звонка
-    updatedCall, err := calls.UpdateCall(ctx, apiClient, call)
+    updatedCall, err := calls.Update(ctx, apiClient, call)
     if err != nil {
         log.Fatalf("Ошибка при обновлении звонка: %v", err)
     }
@@ -347,7 +347,7 @@ func main() {
     callID := 123
 
     // Удаляем звонок
-    err := calls.DeleteCall(ctx, apiClient, callID)
+    err := calls.Delete(ctx, apiClient, callID)
     if err != nil {
         log.Fatalf("Ошибка при удалении звонка: %v", err)
     }
@@ -385,7 +385,7 @@ func main() {
     entityID := 456                   // ID сделки
 
     // Связываем звонок с сделкой
-    err := calls.LinkCallWithEntity(ctx, apiClient, callID, entityType, entityID)
+    err := calls.LinkWithEntity(ctx, apiClient, callID, entityType, entityID)
     if err != nil {
         log.Fatalf("Ошибка при связывании звонка с сущностью: %v", err)
     }
@@ -423,7 +423,7 @@ func main() {
     entityID := 456                   // ID сделки
 
     // Отвязываем звонок от сделки
-    err := calls.UnlinkCallFromEntity(ctx, apiClient, callID, entityType, entityID)
+    err := calls.UnlinkFromEntity(ctx, apiClient, callID, entityType, entityID)
     if err != nil {
         log.Fatalf("Ошибка при отвязывании звонка от сущности: %v", err)
     }

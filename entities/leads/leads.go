@@ -17,27 +17,27 @@ import (
 
 // Lead представляет собой структуру лида в amoCRM.
 type Lead struct {
-	ID                 int                              `json:"id"`
-	Name               string                           `json:"name"`
-	Price              int                              `json:"price"`
-	ResponsibleUserID  int                              `json:"responsible_user_id,omitempty"`
-	GroupID            int                              `json:"group_id,omitempty"`
-	StatusID           int                              `json:"status_id,omitempty"`
-	PipelineID         int                              `json:"pipeline_id,omitempty"`
-	LossReasonID       int                              `json:"loss_reason_id,omitempty"`
-	SourceID           int                              `json:"source_id,omitempty"`
-	CreatedBy          int                              `json:"created_by,omitempty"`
-	UpdatedBy          int                              `json:"updated_by,omitempty"`
-	CreatedAt          int64                            `json:"created_at,omitempty"`
-	UpdatedAt          int64                            `json:"updated_at,omitempty"`
-	ClosedAt           int64                            `json:"closed_at,omitempty"`
-	ClosestTaskAt      int64                            `json:"closest_task_at,omitempty"`
-	IsDeleted          bool                             `json:"is_deleted,omitempty"`
-	CustomFieldsValues []custom_fields.CustomFieldValue `json:"custom_fields_values,omitempty"`
-	Score              int                              `json:"score,omitempty"`
-	AccountID          int                              `json:"account_id,omitempty"`
-	Tags               []Tag                            `json:"tags,omitempty"`
-	Embedded           *LeadEmbedded                    `json:"_embedded,omitempty"`
+	ID                 int                   `json:"id"`
+	Name               string                `json:"name"`
+	Price              int                   `json:"price"`
+	ResponsibleUserID  int                   `json:"responsible_user_id,omitempty"`
+	GroupID            int                   `json:"group_id,omitempty"`
+	StatusID           int                   `json:"status_id,omitempty"`
+	PipelineID         int                   `json:"pipeline_id,omitempty"`
+	LossReasonID       int                   `json:"loss_reason_id,omitempty"`
+	SourceID           int                   `json:"source_id,omitempty"`
+	CreatedBy          int                   `json:"created_by,omitempty"`
+	UpdatedBy          int                   `json:"updated_by,omitempty"`
+	CreatedAt          int64                 `json:"created_at,omitempty"`
+	UpdatedAt          int64                 `json:"updated_at,omitempty"`
+	ClosedAt           int64                 `json:"closed_at,omitempty"`
+	ClosestTaskAt      int64                 `json:"closest_task_at,omitempty"`
+	IsDeleted          bool                  `json:"is_deleted,omitempty"`
+	CustomFieldsValues []custom_fields.Value `json:"custom_fields_values,omitempty"`
+	Score              int                   `json:"score,omitempty"`
+	AccountID          int                   `json:"account_id,omitempty"`
+	Tags               []Tag                 `json:"tags,omitempty"`
+	Embedded           *Embedded             `json:"_embedded,omitempty"`
 }
 
 // Tag представляет тег сделки
@@ -46,8 +46,8 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
-// LeadEmbedded содержит связанные с лидом сущности
-type LeadEmbedded struct {
+// Embedded содержит связанные с лидом сущности
+type Embedded struct {
 	Contacts  []contacts.Contact  `json:"contacts,omitempty"`
 	Companies []companies.Company `json:"companies,omitempty"`
 	Tags      []Tag               `json:"tags,omitempty"`
@@ -61,9 +61,9 @@ const (
 	WithCompanies WithOption = "companies"
 )
 
-// GetLead получает лид по его ID.
+// Get получает лид по его ID.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидом.
-func GetLead(ctx context.Context, apiClient *client.Client, leadID int, withOptions ...WithOption) (*Lead, error) {
+func Get(ctx context.Context, apiClient *client.Client, leadID int, withOptions ...WithOption) (*Lead, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
@@ -98,8 +98,8 @@ func GetLead(ctx context.Context, apiClient *client.Client, leadID int, withOpti
 	return &lead, nil
 }
 
-// CreateLead создает новый лид в amoCRM.
-func CreateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
+// Create создает новый лид в amoCRM.
+func Create(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
 	url := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
 	leadData, err := json.Marshal([]*Lead{lead})
@@ -137,8 +137,8 @@ func CreateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lea
 	return response.Embedded.Leads[0], nil
 }
 
-// UpdateLead обновляет существующий лид в amoCRM.
-func UpdateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
+// Update обновляет существующий лид в amoCRM.
+func Update(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lead, error) {
 	if lead.ID == 0 {
 		return nil, fmt.Errorf("ID лида не указан")
 	}
@@ -171,57 +171,8 @@ func UpdateLead(ctx context.Context, apiClient *client.Client, lead *Lead) (*Lea
 	return &updatedLead, nil
 }
 
-// ListLeads получает список лидов с возможностью фильтрации и пагинации.
-func ListLeads(ctx context.Context, apiClient *client.Client, limit int, page int, filter map[string]any) ([]*Lead, error) {
-	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
-
-	// Добавляем параметры запроса
-	params := url.Values{}
-	params.Add("limit", fmt.Sprintf("%d", limit))
-	params.Add("page", fmt.Sprintf("%d", page))
-
-	// Если указаны фильтры, добавляем их в запрос
-	if len(filter) > 0 {
-		filterData, err := json.Marshal(filter)
-		if err != nil {
-			return nil, err
-		}
-		params.Add("filter", string(filterData))
-	}
-
-	url := baseURL + "?" + params.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := apiClient.DoRequest(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Проверяем статус-код ответа
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
-	}
-
-	var response struct {
-		Embedded struct {
-			Leads []*Lead `json:"leads"`
-		} `json:"_embedded"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, err
-	}
-
-	return response.Embedded.Leads, nil
-}
-
-// DeleteLead удаляет лид по его ID.
-func DeleteLead(ctx context.Context, apiClient *client.Client, leadID int) error {
+// Delete удаляет лид по его ID.
+func Delete(ctx context.Context, apiClient *client.Client, leadID int) error {
 	url := fmt.Sprintf("%s/api/v4/leads/%d", apiClient.GetBaseURL(), leadID)
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
@@ -242,8 +193,8 @@ func DeleteLead(ctx context.Context, apiClient *client.Client, leadID int) error
 	return nil
 }
 
-// LeadsResponse представляет ответ от API при получении списка лидов
-type LeadsResponse struct {
+// ListResponse представляет ответ от API при получении списка лидов
+type ListResponse struct {
 	Page     int `json:"page"`
 	PerPage  int `json:"per_page"`
 	Total    int `json:"total"`
@@ -252,9 +203,9 @@ type LeadsResponse struct {
 	} `json:"_embedded"`
 }
 
-// GetLeads получает список лидов с возможностью фильтрации и пагинации.
+// List получает список лидов с возможностью фильтрации и пагинации.
 // Параметр withOptions позволяет указать, какие связанные сущности нужно получить вместе с лидами.
-func GetLeads(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
+func List(ctx context.Context, apiClient *client.Client, page, limit int, filter map[string]string, withOptions ...WithOption) ([]Lead, error) {
 	// Формируем базовый URL
 	baseURL := fmt.Sprintf("%s/api/v4/leads", apiClient.GetBaseURL())
 
@@ -296,7 +247,7 @@ func GetLeads(ctx context.Context, apiClient *client.Client, page, limit int, fi
 		return nil, fmt.Errorf("неожиданный статус-код: %d", resp.StatusCode)
 	}
 
-	var response LeadsResponse
+	var response ListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}

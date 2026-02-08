@@ -61,7 +61,7 @@ func TestGetPipeline(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	pipeline, err := GetPipeline(context.Background(), apiClient, 123)
+	pipeline, err := Get(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {
@@ -142,7 +142,7 @@ func TestCreatePipeline(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	createdPipeline, err := CreatePipeline(context.Background(), apiClient, pipelineToCreate)
+	createdPipeline, err := Create(context.Background(), apiClient, pipelineToCreate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -213,7 +213,7 @@ func TestUpdatePipeline(t *testing.T) {
 	}
 
 	// Вызываем тестируемый метод
-	updatedPipeline, err := UpdatePipeline(context.Background(), apiClient, pipelineToUpdate)
+	updatedPipeline, err := Update(context.Background(), apiClient, pipelineToUpdate)
 
 	// Проверяем результаты
 	if err != nil {
@@ -277,7 +277,7 @@ func TestListPipelines(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	pipelines, err := ListPipelines(context.Background(), apiClient)
+	pipelines, err := List(context.Background(), apiClient)
 
 	// Проверяем результаты
 	if err != nil {
@@ -319,7 +319,7 @@ func TestDeletePipeline(t *testing.T) {
 	apiClient := client.NewClient(server.URL, "test_api_key")
 
 	// Вызываем тестируемый метод
-	err := DeletePipeline(context.Background(), apiClient, 123)
+	err := Delete(context.Background(), apiClient, 123)
 
 	// Проверяем результаты
 	if err != nil {

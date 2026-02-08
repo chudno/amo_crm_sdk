@@ -123,7 +123,7 @@ func TestGetMailings(t *testing.T) {
 		mockClient := createGetMailingsSuccessMockClient()
 
 		// Вызываем тестируемую функцию
-		mailings, err := GetMailingsWithRequester(context.Background(), mockClient, 1, 50)
+		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -138,7 +138,7 @@ func TestGetMailings(t *testing.T) {
 		mockClient := createGetMailingsEmptyMockClient()
 
 		// Вызываем тестируемую функцию
-		mailings, err := GetMailingsWithRequester(context.Background(), mockClient, 1, 50)
+		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -153,7 +153,7 @@ func TestGetMailings(t *testing.T) {
 		mockClient := createGetMailingsErrorMockClient()
 
 		// Вызываем тестируемую функцию
-		_, err := GetMailingsWithRequester(context.Background(), mockClient, 1, 50)
+		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err == nil {
@@ -171,7 +171,7 @@ func TestGetMailings(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию с фильтром
-		mailings, err := GetMailingsWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
+		mailings, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithFilter(filter))
 
 		// Проверяем результаты
 		if err != nil {
@@ -217,7 +217,7 @@ func TestGetMailing(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		mailingInfo, err := GetMailingWithRequester(context.Background(), mockClient, 1001)
+		mailingInfo, err := GetWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -256,7 +256,7 @@ func TestGetMailing(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := GetMailingWithRequester(context.Background(), mockClient, 9999)
+		_, err := GetWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -289,7 +289,7 @@ func TestCreateMailing(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		createdMailing, err := CreateMailingWithRequester(context.Background(), mockClient, mailingData)
+		createdMailing, err := CreateWithRequester(context.Background(), mockClient, mailingData)
 
 		// Проверяем результаты
 		if err != nil {
@@ -347,7 +347,7 @@ func TestCreateMailing(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		_, err := CreateMailingWithRequester(context.Background(), mockClient, mailingData)
+		_, err := CreateWithRequester(context.Background(), mockClient, mailingData)
 
 		// Проверяем результаты
 		if err == nil {
@@ -379,7 +379,7 @@ func TestUpdateMailing(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		updatedMailing, err := UpdateMailingWithRequester(context.Background(), mockClient, mailingData)
+		updatedMailing, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
 		// Проверяем результаты
 		if err != nil {
@@ -427,7 +427,7 @@ func TestUpdateMailing(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		_, err := UpdateMailingWithRequester(context.Background(), mockClient, mailingData)
+		_, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
 		// Проверяем результаты
 		if err == nil {
@@ -449,7 +449,7 @@ func TestUpdateMailing(t *testing.T) {
 		}
 
 		// Вызываем тестируемую функцию
-		_, err := UpdateMailingWithRequester(context.Background(), mockClient, mailingData)
+		_, err := UpdateWithRequester(context.Background(), mockClient, mailingData)
 
 		// Проверяем результаты
 		if err == nil {
@@ -468,7 +468,7 @@ func TestDeleteMailing(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		err := DeleteMailingWithRequester(context.Background(), mockClient, 1001)
+		err := DeleteWithRequester(context.Background(), mockClient, 1001)
 
 		// Проверяем результаты
 		if err != nil {
@@ -500,7 +500,7 @@ func TestDeleteMailing(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		err := DeleteMailingWithRequester(context.Background(), mockClient, 9999)
+		err := DeleteWithRequester(context.Background(), mockClient, 9999)
 
 		// Проверяем результаты
 		if err == nil {
@@ -525,7 +525,7 @@ func TestChangeMailingStatus(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		updatedMailing, err := ChangeMailingStatusWithRequester(context.Background(), mockClient, 1001, MailingStatusPaused)
+		updatedMailing, err := ChangeStatusWithRequester(context.Background(), mockClient, 1001, MailingStatusPaused)
 
 		// Проверяем результаты
 		if err != nil {
@@ -572,7 +572,7 @@ func TestChangeMailingStatus(t *testing.T) {
 		})
 
 		// Вызываем тестируемую функцию
-		_, err := ChangeMailingStatusWithRequester(context.Background(), mockClient, 1001, "invalid_status")
+		_, err := ChangeStatusWithRequester(context.Background(), mockClient, 1001, "invalid_status")
 
 		// Проверяем результаты
 		if err == nil {

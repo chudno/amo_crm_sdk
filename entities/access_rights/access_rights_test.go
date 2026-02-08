@@ -96,7 +96,7 @@ func TestGetAccessRights(t *testing.T) {
 		accessType := TypeGroup
 
 		// Вызываем тестируемый метод
-		rights, err := GetAccessRightsWithRequester(context.Background(), mockClient, 1, 50, WithType(accessType))
+		rights, err := ListWithRequester(context.Background(), mockClient, 1, 50, WithType(accessType))
 
 		// Проверяем результаты
 		if err != nil {
@@ -147,7 +147,7 @@ func TestGetAccessRights(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/access_rights", http.StatusOK, emptyResponse, nil)
 
 		// Вызываем тестируемый метод
-		rights, err := GetAccessRightsWithRequester(context.Background(), mockClient, 1, 50)
+		rights, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err != nil {
@@ -166,7 +166,7 @@ func TestGetAccessRights(t *testing.T) {
 		mockClient.AddResponse("GET", "/api/v4/access_rights", http.StatusInternalServerError, `{"error": "Internal server error"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := GetAccessRightsWithRequester(context.Background(), mockClient, 1, 50)
+		_, err := ListWithRequester(context.Background(), mockClient, 1, 50)
 
 		// Проверяем результаты
 		if err == nil {
@@ -216,7 +216,7 @@ func TestGetAccessRight(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusOK, successResponse, nil)
 
 		// Вызываем тестируемый метод
-		accessRight, err := GetAccessRightWithRequester(context.Background(), mockClient, accessRightID)
+		accessRight, err := GetWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err != nil {
@@ -251,7 +251,7 @@ func TestGetAccessRight(t *testing.T) {
 		mockClient.AddResponse("GET", fmt.Sprintf("/api/v4/access_rights/%d", accessRightID), http.StatusNotFound, `{"error": "Access right not found"}`, nil)
 
 		// Вызываем тестируемый метод
-		_, err := GetAccessRightWithRequester(context.Background(), mockClient, accessRightID)
+		_, err := GetWithRequester(context.Background(), mockClient, accessRightID)
 
 		// Проверяем результаты
 		if err == nil {

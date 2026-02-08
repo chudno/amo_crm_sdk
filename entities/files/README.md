@@ -71,7 +71,7 @@ type File struct {
     URL         string      `json:"url,omitempty"`
     Download    string      `json:"download_link,omitempty"`
     Preview     string      `json:"preview,omitempty"`
-    Links       FileLinks   `json:"_links,omitempty"`
+    Links       Links   `json:"_links,omitempty"`
 }
 ```
 
@@ -104,7 +104,7 @@ func main() {
     filePath := "/path/to/document.pdf" // Путь к файлу для загрузки
 
     // Загружаем файл
-    file, err := files.UploadFile(ctx, apiClient, entityType, entityID, filePath)
+    file, err := files.Upload(ctx, apiClient, entityType, entityID, filePath)
     if err != nil {
         log.Fatalf("Ошибка при загрузке файла: %v", err)
     }
@@ -153,7 +153,7 @@ func main() {
     }
 
     // Загружаем файл по содержимому
-    file, err := files.UploadFileByContent(ctx, apiClient, entityType, entityID, fileName, content)
+    file, err := files.UploadByContent(ctx, apiClient, entityType, entityID, fileName, content)
     if err != nil {
         log.Fatalf("Ошибка при загрузке файла: %v", err)
     }
@@ -197,7 +197,7 @@ func main() {
     limit := 50                        // Лимит файлов на странице
 
     // Получаем список файлов
-    filesList, err := files.GetFiles(ctx, apiClient, entityType, entityID, page, limit)
+    filesList, err := files.List(ctx, apiClient, entityType, entityID, page, limit)
     if err != nil {
         log.Fatalf("Ошибка при получении списка файлов: %v", err)
     }
@@ -243,7 +243,7 @@ func main() {
     fileID := 456                      // ID файла
 
     // Получаем информацию о файле
-    file, err := files.GetFile(ctx, apiClient, entityType, entityID, fileID)
+    file, err := files.Get(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при получении информации о файле: %v", err)
     }
@@ -287,7 +287,7 @@ func main() {
     fileID := 456                      // ID файла для удаления
 
     // Удаляем файл
-    err := files.DeleteFile(ctx, apiClient, entityType, entityID, fileID)
+    err := files.Delete(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при удалении файла: %v", err)
     }
@@ -323,7 +323,7 @@ func main() {
     fileIDs := []int{456, 789, 1234}   // ID файлов для удаления
 
     // Удаляем файлы
-    err := files.BatchDeleteFiles(ctx, apiClient, entityType, entityID, fileIDs)
+    err := files.BatchDelete(ctx, apiClient, entityType, entityID, fileIDs)
     if err != nil {
         log.Fatalf("Ошибка при массовом удалении файлов: %v", err)
     }
@@ -360,7 +360,7 @@ func main() {
     savePath := "/path/to/save/file.pdf" // Путь для сохранения файла
 
     // Скачиваем файл
-    err := files.DownloadFile(ctx, apiClient, entityType, entityID, fileID, savePath)
+    err := files.Download(ctx, apiClient, entityType, entityID, fileID, savePath)
     if err != nil {
         log.Fatalf("Ошибка при скачивании файла: %v", err)
     }
@@ -396,7 +396,7 @@ func main() {
     fileID := 456                      // ID файла
 
     // Получаем URL для скачивания файла
-    downloadURL, err := files.GetDownloadFileURL(ctx, apiClient, entityType, entityID, fileID)
+    downloadURL, err := files.GetDownloadURL(ctx, apiClient, entityType, entityID, fileID)
     if err != nil {
         log.Fatalf("Ошибка при получении URL для скачивания файла: %v", err)
     }

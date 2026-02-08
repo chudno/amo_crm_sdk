@@ -17,45 +17,45 @@ type Requester interface {
 	DoRequest(ctx context.Context, req *http.Request) (*http.Response, error)
 }
 
-// AccessRightsType определяет тип доступа
-type AccessRightsType string
+// Type определяет тип доступа
+type Type string
 
 // Константы для типов доступа
 const (
-	TypeGroup  AccessRightsType = "group"
-	TypeCustom AccessRightsType = "custom"
+	TypeGroup  Type = "group"
+	TypeCustom Type = "custom"
 )
 
-// AccessEntityType определяет тип сущности для доступа
-type AccessEntityType string
+// EntityType определяет тип сущности для доступа
+type EntityType string
 
 // Константы для типов сущностей
 const (
-	EntityLead       AccessEntityType = "leads"
-	EntityContact    AccessEntityType = "contacts"
-	EntityCompany    AccessEntityType = "companies"
-	EntityTask       AccessEntityType = "tasks"
-	EntityCustomer   AccessEntityType = "customers"
-	EntityCatalog    AccessEntityType = "catalogs"
-	EntityUnsorted   AccessEntityType = "unsorted"
-	EntityWidgets    AccessEntityType = "widgets"
-	EntityMails      AccessEntityType = "mail"
-	EntityChatWidget AccessEntityType = "chat_widget"
+	EntityLead       EntityType = "leads"
+	EntityContact    EntityType = "contacts"
+	EntityCompany    EntityType = "companies"
+	EntityTask       EntityType = "tasks"
+	EntityCustomer   EntityType = "customers"
+	EntityCatalog    EntityType = "catalogs"
+	EntityUnsorted   EntityType = "unsorted"
+	EntityWidgets    EntityType = "widgets"
+	EntityMails      EntityType = "mail"
+	EntityChatWidget EntityType = "chat_widget"
 )
 
-// AccessRight структура для права доступа
-type AccessRight struct {
-	ID         int              `json:"id,omitempty"`
-	Name       string           `json:"name,omitempty"`
-	Type       AccessRightsType `json:"type,omitempty"`
-	Rights     Rights           `json:"rights,omitempty"`
-	CreatedBy  int              `json:"created_by,omitempty"`
-	UpdatedBy  int              `json:"updated_by,omitempty"`
-	CreatedAt  int              `json:"created_at,omitempty"`
-	UpdatedAt  int              `json:"updated_at,omitempty"`
-	AccountID  int              `json:"account_id,omitempty"`
-	UserIDs    []int            `json:"user_ids,omitempty"`
-	UserGroups []UserGroup      `json:"_embedded.user_groups,omitempty"`
+// Right структура для права доступа
+type Right struct {
+	ID         int         `json:"id,omitempty"`
+	Name       string      `json:"name,omitempty"`
+	Type       Type        `json:"type,omitempty"`
+	Rights     Rights      `json:"rights,omitempty"`
+	CreatedBy  int         `json:"created_by,omitempty"`
+	UpdatedBy  int         `json:"updated_by,omitempty"`
+	CreatedAt  int         `json:"created_at,omitempty"`
+	UpdatedAt  int         `json:"updated_at,omitempty"`
+	AccountID  int         `json:"account_id,omitempty"`
+	UserIDs    []int       `json:"user_ids,omitempty"`
+	UserGroups []UserGroup `json:"_embedded.user_groups,omitempty"`
 }
 
 // UserGroup структура для группы пользователей
@@ -95,12 +95,12 @@ type SettingsRights struct {
 	Edit bool `json:"edit,omitempty"`
 }
 
-// AccessRightsResponse структура ответа API amoCRM для списка прав доступа
-type AccessRightsResponse struct {
-	Page       int           `json:"page"`
-	PerPage    int           `json:"per_page"`
-	TotalItems int           `json:"_total_items"`
-	Rights     []AccessRight `json:"_embedded.access_rights"`
+// ListResponse структура ответа API amoCRM для списка прав доступа
+type ListResponse struct {
+	Page       int     `json:"page"`
+	PerPage    int     `json:"per_page"`
+	TotalItems int     `json:"_total_items"`
+	Rights     []Right `json:"_embedded.access_rights"`
 }
 
 // WithOption функциональный тип для передачи опций в методы
@@ -116,24 +116,24 @@ func WithFilter(filter map[string]string) WithOption {
 }
 
 // WithType добавляет фильтрацию по типу права доступа
-func WithType(accessType AccessRightsType) WithOption {
+func WithType(accessType Type) WithOption {
 	return func(params map[string]string) {
 		params["filter[type]"] = string(accessType)
 	}
 }
 
-// GetAccessRights получает список прав доступа с возможностью фильтрации
+// List получает список прав доступа с возможностью фильтрации
 //
 // Пример использования:
 //
 //	// Фильтрация по типу
-//	rights, err := access_rights.GetAccessRights(ctx, apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
-func GetAccessRights(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]AccessRight, error) {
-	return GetAccessRightsWithRequester(ctx, apiClient, page, limit, options...)
+//	rights, err := access_rights.List(ctx, apiClient, 1, 50, access_rights.WithType(access_rights.TypeGroup))
+func List(ctx context.Context, apiClient *client.Client, page, limit int, options ...WithOption) ([]Right, error) {
+	return ListWithRequester(ctx, apiClient, page, limit, options...)
 }
 
-// GetAccessRightsWithRequester получает список прав доступа с использованием интерфейса Requester
-func GetAccessRightsWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]AccessRight, error) {
+// ListWithRequester получает список прав доступа с использованием интерфейса Requester
+func ListWithRequester(ctx context.Context, requester Requester, page, limit int, options ...WithOption) ([]Right, error) {
 	// Формируем параметры запроса
 	params := make(map[string]string)
 	params["page"] = strconv.Itoa(page)
@@ -188,7 +188,7 @@ func GetAccessRightsWithRequester(ctx context.Context, requester Requester, page
 		Page     int `json:"page"`
 		PerPage  int `json:"per_page"`
 		Embedded struct {
-			AccessRights []AccessRight `json:"access_rights"`
+			AccessRights []Right `json:"access_rights"`
 		} `json:"_embedded"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&rightsResponse); err != nil {
@@ -198,17 +198,17 @@ func GetAccessRightsWithRequester(ctx context.Context, requester Requester, page
 	return rightsResponse.Embedded.AccessRights, nil
 }
 
-// GetAccessRight получает информацию о конкретном праве доступа по ID
+// Get получает информацию о конкретном праве доступа по ID
 //
 // Пример использования:
 //
-//	accessRight, err := access_rights.GetAccessRight(ctx, apiClient, 123)
-func GetAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int) (*AccessRight, error) {
-	return GetAccessRightWithRequester(ctx, apiClient, accessRightID)
+//	accessRight, err := access_rights.Get(ctx, apiClient, 123)
+func Get(ctx context.Context, apiClient *client.Client, accessRightID int) (*Right, error) {
+	return GetWithRequester(ctx, apiClient, accessRightID)
 }
 
-// GetAccessRightWithRequester получает информацию о конкретном праве доступа по ID с использованием интерфейса Requester
-func GetAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int) (*AccessRight, error) {
+// GetWithRequester получает информацию о конкретном праве доступа по ID с использованием интерфейса Requester
+func GetWithRequester(ctx context.Context, requester Requester, accessRightID int) (*Right, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
@@ -242,7 +242,7 @@ func GetAccessRightWithRequester(ctx context.Context, requester Requester, acces
 	}
 
 	// Разбираем ответ
-	var accessRight AccessRight
+	var accessRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&accessRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -250,11 +250,11 @@ func GetAccessRightWithRequester(ctx context.Context, requester Requester, acces
 	return &accessRight, nil
 }
 
-// CreateAccessRight создает новое право доступа
+// Create создает новое право доступа
 //
 // Пример использования:
 //
-//	newRight := &access_rights.AccessRight{
+//	newRight := &access_rights.Right{
 //		Name: "Менеджеры продаж",
 //		Type: access_rights.TypeGroup,
 //		Rights: access_rights.Rights{
@@ -266,13 +266,13 @@ func GetAccessRightWithRequester(ctx context.Context, requester Requester, acces
 //		},
 //		UserIDs: []int{123, 456},
 //	}
-//	createdRight, err := access_rights.CreateAccessRight(ctx, apiClient, newRight)
-func CreateAccessRight(ctx context.Context, apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
-	return CreateAccessRightWithRequester(ctx, apiClient, accessRight)
+//	createdRight, err := access_rights.Create(ctx, apiClient, newRight)
+func Create(ctx context.Context, apiClient *client.Client, accessRight *Right) (*Right, error) {
+	return CreateWithRequester(ctx, apiClient, accessRight)
 }
 
-// CreateAccessRightWithRequester создает новое право доступа с использованием интерфейса Requester
-func CreateAccessRightWithRequester(ctx context.Context, requester Requester, accessRight *AccessRight) (*AccessRight, error) {
+// CreateWithRequester создает новое право доступа с использованием интерфейса Requester
+func CreateWithRequester(ctx context.Context, requester Requester, accessRight *Right) (*Right, error) {
 	// Формируем URL для запроса
 	url := "/api/v4/access_rights"
 
@@ -313,7 +313,7 @@ func CreateAccessRightWithRequester(ctx context.Context, requester Requester, ac
 	}
 
 	// Разбираем ответ
-	var createdRight AccessRight
+	var createdRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&createdRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -321,11 +321,11 @@ func CreateAccessRightWithRequester(ctx context.Context, requester Requester, ac
 	return &createdRight, nil
 }
 
-// UpdateAccessRight обновляет существующее право доступа
+// Update обновляет существующее право доступа
 //
 // Пример использования:
 //
-//	updateRight := &access_rights.AccessRight{
+//	updateRight := &access_rights.Right{
 //		ID: 123,
 //		Name: "Менеджеры продаж (обновлено)",
 //		Rights: access_rights.Rights{
@@ -338,13 +338,13 @@ func CreateAccessRightWithRequester(ctx context.Context, requester Requester, ac
 //		},
 //		UserIDs: []int{123, 456, 789},
 //	}
-//	updatedRight, err := access_rights.UpdateAccessRight(ctx, apiClient, updateRight)
-func UpdateAccessRight(ctx context.Context, apiClient *client.Client, accessRight *AccessRight) (*AccessRight, error) {
-	return UpdateAccessRightWithRequester(ctx, apiClient, accessRight)
+//	updatedRight, err := access_rights.Update(ctx, apiClient, updateRight)
+func Update(ctx context.Context, apiClient *client.Client, accessRight *Right) (*Right, error) {
+	return UpdateWithRequester(ctx, apiClient, accessRight)
 }
 
-// UpdateAccessRightWithRequester обновляет существующее право доступа с использованием интерфейса Requester
-func UpdateAccessRightWithRequester(ctx context.Context, requester Requester, accessRight *AccessRight) (*AccessRight, error) {
+// UpdateWithRequester обновляет существующее право доступа с использованием интерфейса Requester
+func UpdateWithRequester(ctx context.Context, requester Requester, accessRight *Right) (*Right, error) {
 	if accessRight.ID == 0 {
 		return nil, fmt.Errorf("ID права доступа не может быть пустым")
 	}
@@ -389,7 +389,7 @@ func UpdateAccessRightWithRequester(ctx context.Context, requester Requester, ac
 	}
 
 	// Разбираем ответ
-	var updatedRight AccessRight
+	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -397,17 +397,17 @@ func UpdateAccessRightWithRequester(ctx context.Context, requester Requester, ac
 	return &updatedRight, nil
 }
 
-// DeleteAccessRight удаляет право доступа
+// Delete удаляет право доступа
 //
 // Пример использования:
 //
-//	err := access_rights.DeleteAccessRight(ctx, apiClient, 123)
-func DeleteAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int) error {
-	return DeleteAccessRightWithRequester(ctx, apiClient, accessRightID)
+//	err := access_rights.Delete(ctx, apiClient, 123)
+func Delete(ctx context.Context, apiClient *client.Client, accessRightID int) error {
+	return DeleteWithRequester(ctx, apiClient, accessRightID)
 }
 
-// DeleteAccessRightWithRequester удаляет право доступа с использованием интерфейса Requester
-func DeleteAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int) error {
+// DeleteWithRequester удаляет право доступа с использованием интерфейса Requester
+func DeleteWithRequester(ctx context.Context, requester Requester, accessRightID int) error {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
@@ -453,12 +453,12 @@ func DeleteAccessRightWithRequester(ctx context.Context, requester Requester, ac
 //		Add: true,
 //	}
 //	updatedRight, err := access_rights.SetEntityRights(ctx, apiClient, 123, access_rights.EntityLead, entityRights)
-func SetEntityRights(ctx context.Context, apiClient *client.Client, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
+func SetEntityRights(ctx context.Context, apiClient *client.Client, accessRightID int, entityType EntityType, rights EntityRights) (*Right, error) {
 	return SetEntityRightsWithRequester(ctx, apiClient, accessRightID, entityType, rights)
 }
 
 // SetEntityRightsWithRequester обновляет права доступа к конкретной сущности с использованием интерфейса Requester
-func SetEntityRightsWithRequester(ctx context.Context, requester Requester, accessRightID int, entityType AccessEntityType, rights EntityRights) (*AccessRight, error) {
+func SetEntityRightsWithRequester(ctx context.Context, requester Requester, accessRightID int, entityType EntityType, rights EntityRights) (*Right, error) {
 	// Формируем URL для запроса
 	url := fmt.Sprintf("/api/v4/access_rights/%d", accessRightID)
 
@@ -508,7 +508,7 @@ func SetEntityRightsWithRequester(ctx context.Context, requester Requester, acce
 	}
 
 	// Разбираем ответ
-	var updatedRight AccessRight
+	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -516,20 +516,20 @@ func SetEntityRightsWithRequester(ctx context.Context, requester Requester, acce
 	return &updatedRight, nil
 }
 
-// AddUsersToAccessRight добавляет пользователей в право доступа
+// AddUsers добавляет пользователей в право доступа
 //
 // Пример использования:
 //
 //	userIDs := []int{123, 456, 789}
-//	updatedRight, err := access_rights.AddUsersToAccessRight(ctx, apiClient, 123, userIDs)
-func AddUsersToAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
-	return AddUsersToAccessRightWithRequester(ctx, apiClient, accessRightID, userIDs)
+//	updatedRight, err := access_rights.AddUsers(ctx, apiClient, 123, userIDs)
+func AddUsers(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*Right, error) {
+	return AddUsersWithRequester(ctx, apiClient, accessRightID, userIDs)
 }
 
-// AddUsersToAccessRightWithRequester добавляет пользователей в право доступа с использованием интерфейса Requester
-func AddUsersToAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
+// AddUsersWithRequester добавляет пользователей в право доступа с использованием интерфейса Requester
+func AddUsersWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*Right, error) {
 	// Получаем текущее право доступа
-	currentRight, err := GetAccessRightWithRequester(ctx, requester, accessRightID)
+	currentRight, err := GetWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
@@ -595,7 +595,7 @@ func AddUsersToAccessRightWithRequester(ctx context.Context, requester Requester
 	}
 
 	// Разбираем ответ
-	var updatedRight AccessRight
+	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
@@ -603,20 +603,20 @@ func AddUsersToAccessRightWithRequester(ctx context.Context, requester Requester
 	return &updatedRight, nil
 }
 
-// RemoveUsersFromAccessRight удаляет пользователей из права доступа
+// RemoveUsers удаляет пользователей из права доступа
 //
 // Пример использования:
 //
 //	userIDs := []int{123, 456}
-//	updatedRight, err := access_rights.RemoveUsersFromAccessRight(ctx, apiClient, 123, userIDs)
-func RemoveUsersFromAccessRight(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*AccessRight, error) {
-	return RemoveUsersFromAccessRightWithRequester(ctx, apiClient, accessRightID, userIDs)
+//	updatedRight, err := access_rights.RemoveUsers(ctx, apiClient, 123, userIDs)
+func RemoveUsers(ctx context.Context, apiClient *client.Client, accessRightID int, userIDs []int) (*Right, error) {
+	return RemoveUsersWithRequester(ctx, apiClient, accessRightID, userIDs)
 }
 
-// RemoveUsersFromAccessRightWithRequester удаляет пользователей из права доступа с использованием интерфейса Requester
-func RemoveUsersFromAccessRightWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*AccessRight, error) {
+// RemoveUsersWithRequester удаляет пользователей из права доступа с использованием интерфейса Requester
+func RemoveUsersWithRequester(ctx context.Context, requester Requester, accessRightID int, userIDs []int) (*Right, error) {
 	// Получаем текущее право доступа
-	currentRight, err := GetAccessRightWithRequester(ctx, requester, accessRightID)
+	currentRight, err := GetWithRequester(ctx, requester, accessRightID)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при получении права доступа: %w", err)
 	}
@@ -682,7 +682,7 @@ func RemoveUsersFromAccessRightWithRequester(ctx context.Context, requester Requ
 	}
 
 	// Разбираем ответ
-	var updatedRight AccessRight
+	var updatedRight Right
 	if err := json.NewDecoder(resp.Body).Decode(&updatedRight); err != nil {
 		return nil, fmt.Errorf("ошибка при разборе ответа: %w", err)
 	}
